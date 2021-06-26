@@ -1,0 +1,194 @@
+---
+title: "1_2_cleaning_NOAA_EBS_data"
+author: "Aidan Coyle"
+date: "6/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+This script deals with the NOAA EBS data on _Hematodinium_ infection, obtained by the Roberts lab from Pam Jensen. These data contain _Hematodinium_ test infection results from the annual NOAA Eastern Bering Sea (EBS) trawl surveys from 2014 to 2019.
+
+Since files do not have consistent formatting and organization, each is read in separately rather than in a single loop.
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "readxl")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+#### See all files to be read in
+```{r}
+# Get a list of all our data files
+files <- paste0("../data/NOAA_EBS_trawl_survey/", list.files(path = "../data/NOAA_EBS_trawl_survey/"))
+# Display all files we'll be reading in
+files
+```
+
+
+#### Read in 2014 data
+```{r}
+# Read in file from 2014
+full_data <- read_excel(files[1], sheet = 2)
+
+# See first few lines of full data sheet
+head(full_data)
+```
+
+#### Read in 2015 data
+```{r}
+# Read in file from 2015
+new_data <- read_excel(files[2], sheet = 2)
+
+# Check if names match between the two years
+all_equal(new_data, full_data, ignore_col_order = FALSE)
+
+# Appears that the differences are solely in formatting (Chela -> chela and STATIONID -> STATION ID). Let's fix those so the 2015 data match the 2014 data
+new_data <- new_data %>%
+  rename(
+    Chela = chela,
+    STATIONID = "STATION ID"
+  )
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Join the 2015 data to the 2014 data
+full_data <- bind_rows(full_data, new_data)
+```
+
+#### Read in 2016 data
+```{r}
+# Read in file from 2016
+new_data <- read_excel(files[3], sheet = 2)
+
+# Check if names match between 2016 data and our full_data table
+all_equal(new_data, full_data, ignore_col_order = FALSE)
+
+# Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
+new_data <- new_data %>%
+  rename(
+    Chela = chela,
+    "PCR result" = "PCR Result",
+    "Host_Tissue" = "Host Tissue"
+  )
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Convert START TIME column from character to POSIX
+new_data$`START TIME` <- strptime(new_data$`START TIME`, format = '%m/%d/%Y %H:%M')
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Join the 2016 data to the table with data from previous years
+full_data <- bind_rows(full_data, new_data)
+```
+
+#### Read in 2017 data
+
+```{r}
+# Read in file from 2017
+new_data <- read_excel(files[4], sheet = 2)
+
+# Check if names match between 2017 data and our full_data table
+all_equal(new_data, full_data, ignore_col_order = FALSE)
+
+# Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
+new_data <- new_data %>%
+  rename(
+    Chela = chela,
+    "Host_Tissue" = "Host Tissue"
+  )
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Join the 2017 data to the table with data from previous years
+full_data <- bind_rows(full_data, new_data)
+```
+
+#### Read in 2018 data
+
+```{r}
+# Read in file from 2018
+new_data <- read_excel(files[5], sheet = 2)
+
+# Check if names match between 2018 data and our full_data table
+all_equal(full_data, new_data)
+
+# Looks like there are 5 extra columns in the 2018 data. Let's see where these are
+names(new_data)[names(full_data) != names(new_data)]
+
+# Appears that in 2018 alternative definitions of maturity began to be examined. This resulted in extra columns for ln(CW), meas'd ln(Ch), calc ln(Ch), mat, and Mat1. Because there's some odd variable names there, remove based on indexing
+new_data <- new_data[, -c(6:10)]
+
+# Check again if names match between 2018 data and our full_data table
+all_equal(full_data, new_data)
+
+# Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
+new_data <- new_data %>%
+  rename(
+    Chela = chela,
+    "Host_Tissue" = "Host Tissue"
+  )
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Join the 2018 data to the table with data from previous years
+full_data <- bind_rows(full_data, new_data)
+```
+
+#### Read in 2019 data
+
+```{r}
+# Read in file from 2019
+new_data <- read_excel(files[6], sheet = 3)
+
+# Check if names match between 2019 data and our full_data table
+all_equal(full_data, new_data)
+
+# Looks like there are 9 extra columns in the 2019 data. Let's see where these are
+names(new_data)[names(full_data) != names(new_data)]
+
+# Appears that the examination of alternative definitions of maturity continued. This resulted in six extra columns noting chela height and carapace width calculations. Furthermore, there are three columns on the end that should be removed - they appear to have been used only for calculations. Because there's some odd variable names there, remove based on indexing
+new_data <- new_data[, -c(5, 7:11, 43:45)]
+
+# Check again if names match between 2019 data and our full_data table
+all_equal(full_data, new_data)
+
+# Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
+new_data <- new_data %>%
+  rename(
+    Chela = chela,
+    "Host_Tissue" = "Host Tissue",
+    VESSEL = Vessel,
+    HAUL = Haul
+  )
+
+# See if we have any other mismatches
+all_equal(new_data, full_data, ignore_col_order = FALSE, convert = TRUE)
+
+# Join the 2019 data to the table with data from previous years
+full_data <- bind_rows(full_data, new_data)
+```
+
+#### End of data import
+
+We now have a single table (full_data) that contains approximately 7100 rows, with each row corresponding to the test results for a single crab. However, not all columns contain information relevant to the model. Therefore, we will now remove those columns from the data

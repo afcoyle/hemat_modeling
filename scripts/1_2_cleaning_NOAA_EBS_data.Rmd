@@ -19,7 +19,7 @@ Since files do not have consistent formatting and organization, each is read in 
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "readxl")
+list.of.packages <- c("tidyverse", "readxl", "lubridate", "rnaturalearth", "rnaturalearthdata", "sf", "rgeos")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -191,4 +191,184 @@ full_data <- bind_rows(full_data, new_data)
 
 #### End of data import
 
-We now have a single table (full_data) that contains approximately 7100 rows, with each row corresponding to the test results for a single crab. However, not all columns contain information relevant to the model. Therefore, we will now remove those columns from the data
+#### Clean up column names so that none contain spaces
+
+```{r}
+names(full_data) <- str_replace_all(names(full_data), c(" " = "_", "," = ""))
+```
+
+
+We now have a single table (full_data) that contains approximately 7100 rows, with each row corresponding to the test results for a single crab. However, not all columns contain information relevant to the model. Therefore, we will now remove those columns from the data. We will remove the following columns for the following reasons:
+
+SPNO: Gives the row number for that year, which we don't care about
+
+Random: Contains NAs in all rows except 3
+
+Collection_Comments: Checked, and no rows contain info relevant to model
+
+ANOM_ID: Contains no useful information
+
+General_Location: For all, is BS (Bering Sea)
+
+Collected_By: Collector should be irrelevant
+
+Reference_NO: Used for testing, irrelevant once PCR results obtained
+
+DNA_Plate_No: Used for testing, irrelevant once PCR results obtained
+
+DNA_Well_No: Used for testing, irrelevant once PCR results obtained
+
+Host_Tissue: Either leg muscle or blood, should be irrelevant after PCR testing
+
+Preservative: Irrelevant after PCR results obtained
+
+Sample_Status: Irrelevant after PCR results obtained
+
+C_V_H: Amalgamation of three other columns (CRUISE, VESSEL, and HAUL)
+
+CRUISE: Survey leg is irrelevant once collection has been made
+
+VESSEL: Also does not matter after collection
+
+HAUL: Haul number of survey does not matter after collection
+
+GEAR_DEPTH: Also have a column for BOTTOM DEPTH, and it would be quite surprising if any mid-water trawls picked up crab!
+
+SURFACE_TEMP: Also have a column for bottom temp, which is more relevant for crab conditions
+
+```{r}
+full_data <- subset(full_data, select = -c(SPNO, Random, Collection_Comments, ANOM_ID, General_Location, Collected_By, Reference_NO, DNA_Plate_No, DNA_Well_No, Host_Tissue, Preservative, Sample_Status, C_V_H, CRUISE, VESSEL, HAUL, GEAR_DEPTH, SURFACE_TEMP))
+```
+
+#### Examining Additional Variables to Eliminate
+
+```{r}
+table(full_data$Egg_Cond)
+# Can eliminate - indicates little beyond egg presence
+full_data <- subset(full_data, select = -Egg_Cond)
+
+table(full_data$Specific_Location)
+# Can eliminate - sites are year-specific
+full_data <- subset(full_data, select = -Specific_Location)
+
+table(full_data$Egg_Color, full_data$PCR_result)
+# Practically all eggs are either 0 (absent) or 4 (orange). We already have clutch fullness data which provides presence/absence information (and more), so this column can be removed.
+full_data <- subset(full_data, select = -Egg_Color)
+
+table(full_data$STRATUM, full_data$Year)
+# Looks like for all of 2008, we have almost entirely NAs. Therefore, rather than losing a year, let's drop and use latitude/longitude. Since we're using latitude/longitude, we'll also drop STATIONID
+full_data <- subset(full_data, select = -c(STRATUM, STATIONID))
+```
+
+#### Modifying Categorical Variables
+
+We will now examine and eliminate unnecessary complexity by grouping variable categories and eliminating minimally-represented variation
+
+```{r}
+# First, we will convert START_TIME to Julian day (day from the start of the year)
+full_data$JUL_DAY <- yday(full_data$START_TIME)
+hist(full_data$JUL_DAY)
+# We can now drop the START_TIME column
+full_data <- subset(full_data, select = -START_TIME)
+
+table(full_data$Sex)
+sum(is.na(full_data$Sex))
+# Eliminate all 4 rows where sex is unknown (=3), along with the 6 rows where sex is NA
+full_data <- subset(full_data, Sex < 3)
+
+table(full_data$Species_Name)
+# Eliminate the one helmet crab included in the data set
+full_data <- subset(full_data, Species_Name != "Telmessus cheiragonus")
+
+table(full_data$Shell_Cond)
+sum(is.na(full_data$Shell_Cond))
+# #liminate all 0s, 1s, and 2s (soft-, fresh- and very very old-shell crab. 10 total among all 3 categories). Also eliminates the 10 crabs with NA shell condition
+full_data <- subset(full_data, Shell_Cond < 5 & Shell_Cond > 1)
+
+table(full_data$Clutch)
+# Given the relatively small number of crabs with eggs, I think it makes more sense to change this to 0 (no eggs present) and 1 (eggs present). Essentially, all crabs with egg codes from 1-6 will be converted to egg code 1
+full_data$Clutch <- recode_factor(full_data$Clutch, "0" = "0", "1" = "1", "2" = "1", "3" = "1", "4" = "1", "5" = "1", "6" = "1")
+
+table(full_data$PCR_result)
+# Only want to keep conclusive PCR results, so eliminating all NAs and 3s
+full_data <- subset(full_data, PCR_result < 2)
+
+table(full_data$Year)
+```
+
+#### Eliminating NAs
+
+We eliminated some NAs above, but want to examine in more detail to see how many are feasible to eliminate
+
+```{r}
+colSums(is.na(full_data))
+
+# Looks like the only NAs are for chela height and clutch condition. NAs in these categories are expected - chela height is not measured for females and clutch size is not measured for females. However, let's verify in more detail
+
+colSums(is.na(full_data[full_data$Sex == 1, ]))
+colSums(is.na(full_data[full_data$Sex == 2, ]))
+
+# Looks like we do have NAs for chela height for males and NAs for clutch condition for females. We'll sort those out later, when we create sex-specific dataframes
+
+# Otherwise, looks like we've already sorted out our NAs!
+```
+
+#### Checking for Data Entry Errors for Continuous Variables
+
+```{r}
+# Since male and female Chionoecetes crab have quite different sizes, we'll check for each of these separately
+hist(full_data[full_data$Sex == 1, ]$Size)
+hist(full_data[full_data$Sex == 2, ]$Size)
+summary(full_data[full_data$Sex == 1, ]$Size)
+summary(full_data[full_data$Sex == 2, ]$Size)
+# Looks like no data entry errors for size!
+
+# Now moving on to chela height
+hist(full_data$Chela)
+summary(full_data$Chela)
+# Looks like no data entry errors for chela height
+
+# Now moving on to latitude and longitude. For this, we will map each point
+world <- ne_countries(scale = "medium", returnclass = "sf")
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred")
+
+# No global data entry errors - all are clustered within the EBS region. However, let's examine on a smaller scale
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# From this map, it appears that our points fall into 6 distinct clusters - Bristol Bay, Pribilof Islands, outer shelf south, St. Matthew Island, outer shelf north, and Bering Strait. This indicates we may want to modify this into a categorical variable rather than a continuous one
+# However, we will address that later. No data entry errors seem apparent
+
+# Moving on to bottom depth
+hist(full_data$BOTTOM_DEPTH)
+summary(full_data$BOTTOM_DEPTH)
+# No data entry errors apparent
+
+# Moving on to bottom temperature
+hist(full_data$Bottom_Temp)
+summary(full_data$Bottom_Temp)
+# A temperature of 9 degrees seems anomalous - let's examine further
+head(sort(unique(full_data$Bottom_Temp), decreasing = TRUE))
+# It certainly is high, but not high enough to conclude a data entry error was made
+
+# Moving on to
+hist(full_data$JUL_DAY)
+# No data entry errors apparent - all seem within standard survey date ranges
+```
+
+#### Modifying Latitude/Longitude into a Categorical Variable
+
+
+
+min(full_data$WIDTH_MILLIMETERS)
+
+max(full_data[full_data$SEX_CODE == "M", ]$WIDTH_MILLIMETERS)
+
+max(full_data[full_data$SEX_CODE == "F", ]$WIDTH_MILLIMETERS)
+
+
+

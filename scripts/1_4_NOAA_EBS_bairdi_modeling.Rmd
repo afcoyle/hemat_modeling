@@ -1,0 +1,318 @@
+---
+title: "1_4_NOAA_EBS_bairdi_modeling.Rmd"
+author: "Aidan Coyle"
+date: "6/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#
+# Background
+
+In this script, we will create a generalized linear mixed model to examine potential associations between _Hematodinium_ infection status and physical variables
+
+This script will include only  _Chionoecetes bairdi_ (Tanner crab), and will include both male and female crabs
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "rnaturalearth", "rnaturalearthdata", "sf", "rgeos", "doBy")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+#### Read in data
+
+```{r}
+crabdat <- read.csv("../output/NOAA_EBS_trawl_survey/modified_data/cleaned_bairdi.csv")
+```
+
+#### Check all variables were read in correctly as either categorical or continuous predictors
+
+```{r}
+# First, since all crabs are C. bairdi, we can drop the Species column
+crabdat <- subset(crabdat, select = -Species)
+
+# See class of each column
+str(crabdat)
+# Looks like we've got lots of columns that should be converted to factors!
+crabdat$Sex <- factor(crabdat$Sex)
+crabdat$Shell_Condition <- ordered(crabdat$Shell_Condition)
+crabdat$PCR_Result <- factor(crabdat$PCR_Result)
+crabdat$Location <- factor(crabdat$Location)
+
+# See updated class of each column
+str(crabdat)
+```
+
+## Check for correlation
+
+Prior to modeling anything, we're going to run checks on combinatinos of variables to see if any are correlated
+
+#### Correlation between continuous variables
+
+We will use Pearson's test to examine for correlation
+
+```{r}
+# Pull all numeric variables into a new data frame
+crabnums <- select_if(crabdat, is.numeric)
+# Calculate correlation
+numcor <- cor(crabnums, method = "pearson")
+
+# See the resulting table
+print(numcor)
+
+# See if any correlations are > 0.6 (our bar for correlation) and less than 1 (since every variable is perfectly correlated with itself)
+any(abs(numcor) > 0.6 & numcor <1)
+
+# See how many correlations we have (since each correlation is shown twice - A vs B and B vs A - the true number of correlations is 1/2 this number)
+sum(abs(numcor) > 0.6 & numcor <1)
+
+```
+
+Hmm, we do! Upon an examination of the above table, we have the following correlations:
+
+Latitude and longitude
+
+Latitude and depth
+
+Latitude and Julian day
+
+Longitude and depth
+
+Longitude and Julian day
+
+Depth and Julian day
+
+It looks like all six of these are generally associated with the survey design. Sampling generally proceeds in a northwesterly direction (hence the latitude/longitude correlation), and surveys follow a predictable pattern over time, hence the linkages between depth, day, and lat/long. This indicates that using location may be better than using latitude/longitude, and we may not be able to include Julian day (Which is fine, as it is one of our least-likely variables to be biologically relevant).
+
+The correlations between latitude/longitude and depth likely also are due to the bathymetry of the Eastern Bering Sea. Though much of the sea is shallow, there is a distinct drop-off along its western edge (along which many _Chionoecetes_ crabs are caught)
+
+#### Correlation between categorical variables
+
+Now we're using Cramer's V test to look for correlation among our categorical variables
+
+```{r}
+# Pull all categorical variables into a new data frame
+crabcat <-  select_if(crabdat, is.factor)
+
+# Turn all from factors to numeric
+crabcat[] <- sapply(crabcat, as.numeric)
+
+# Initialize a blank matrix
+results_matrix <- matrix(nrow = length(crabcat), ncol = length(crabcat))
+# Name all rows and columns with our variable names
+colnames(results_matrix) <- names(crabcat)
+rownames(results_matrix) <- names(crabcat)
+
+# Fill in the matrix by performing Cramer's V test on each possible combination of factors
+
+for (i in 1:ncol(crabcat)) {
+  for (j in 1:ncol(crabcat)) {
+    cramer.table <- table(crabcat[,i],crabcat[,j])
+    cramer.matrix <- as.matrix(cramer.table)
+    results_matrix[i,j] <- cramerV(cramer.matrix)
+  }
+}
+
+# See the resulting matrix
+print(results_matrix)
+
+# See if any of our correlations, aside from self-correlations, cross our boundary of too much correlation
+any(abs(results_matrix) > 0.6 & results_matrix < 1)
+
+# Looks like we have no correlation between categorical variables!
+```
+
+#### Correlations between Categorical and Continuous Variables
+
+For this, we will use Spearman rank-order correlation
+
+```{r}
+crabrank <- crabdat
+crabrank[] <- sapply(crabdat, as.numeric)
+crabcomps <- cor(crabrank, method = "spearman")
+any(abs(crabcomps) > 0.6 & crabcomps < 1)
+linkages <- which(abs(crabcomps) > 0.6 & crabcomps < 1, arr.ind = TRUE)
+# List linkages
+for (i in 1:(0.5*length(linkages))) {
+  print(names(crabdat)[c(linkages[i,])])
+}
+
+print(0.5*length(linkages))
+```
+
+Woof, a lot of correlations! They are as follows:
+
+- Shell condition and carapace width. Linkage of 0.605, which is extremely borderline - might be alright with including both in the model. But generally, this is likely because Tanner crabs have a terminal molt. Before they reach that, they will nearly always be shell condition = new. So larger size likely correlates with shell condition. However, let's just quickly plot that to confirm
+
+```{r}
+ggplot(crabdat, aes(x = Shell_Condition, y = Carapace_Width)) +
+  geom_violin()
+```
+
+Yep, we see practically no crab with Shell Condition = old or very old that have a carapace width below (approximately) 60.
+
+- Latitude and Longitude: Discussed in correlation of continuous variables
+
+- Julian day and Latitude: Discussed in correlation of continuous variables
+
+- Location and Latitude: Locations naturally cluster by latitude. Not an issue, as we weren't planning to have both in the same model
+
+- Depth and Longitude: There's a distinct shelf within the Bering Sea - likely describes that feature
+
+- Julian day and Longitude: Discussed in correlation of continuous variables
+
+- Location and Longitude: Locations naturally also cluster by longitude. Not an issue, as we weren't planning to have both in the same model
+
+- Julian day and depth: Discussed in correlation of continuous variables
+
+- Location and depth: Locations within the Bering Sea will naturally have different depths, due to bathymetric features such as the shelf discussed above
+
+- Location and Julian day: The survey follows the same general pattern from year to year
+
+## Conclusions from testing for correlation:
+
+#### Lat/Long vs. Location: 
+
+We have several ways to treat location information - as a categorical variable or as lat/long data. Each has upsides and downsides. By treating location as categorical, we would eliminate the issue of lat/long correlation. However, we would also be adding a random effect of location, whereas lat/long could be treated as simply a variable.
+
+One solution would be to use longitude only. Since we're looking at Tanner crab, the predominant distribution in the Bering Sea is E-W rather than N-S, as we can see in this map! However, it would also require us to eliminate depth as a variable - problematic, as in our initial (overdispersed) SE AK Tanner crab model, depth was a significant variable
+
+```{r}
+crab_latlong <- summaryBy(crabdat~Latitude + Longitude, data = crabdat, FUN = length)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = crab_latlong, aes(x = Longitude, y = Latitude, size = Latitude.length), shape = 16) +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+```
+
+A second solution would be (as described above) to use both latitude and longitude. However, this may create problems (of what kind, I'm not totally aware) due to the correlation between lat and long. We also would not be able to use depth in that variable
+
+A third solution is to (also as described above) use location as a categorical variable. Again, we wouldn't be able to use depth due to correlation
+
+A fourth solution is to neglect location and lat/long entirely, and solely use depth. 
+
+In all of these, we have a common issue - being unable to use depth and location data simultaneously. Let's see how much of an issue this is by examining the relationship between these
+
+Via map:
+
+```{r}
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = crabdat, aes(x = Longitude, y = Latitude, color = Depth), shape = 16) +
+  scale_fill_continuous(type = "viridis") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+```
+
+Note the unintuitive color use (sorry, would be a bit fancier if this was more than a script). Regardless, generally things get deeper as you move west. Now let's look at it with a violin plot:
+
+```{r}
+ggplot(data = crabdat, aes(x = Location, y = Depth)) +
+  geom_violin()
+```
+
+The North Slope (NS) can be neglected, as only 10 Tanners are present (`r sum(crabdat$Location == "NS")`)
+
+Bristol Bay is certainly much shallower than the South Slope, with the Pribilof Islands representing an intermediate zone.
+
+#### Variables to Exclude
+
+Lots of correlation between Julian day and other variables. Since this is perhaps our least likely variable to be important, we'll leave it out of all models.
+
+```{r}
+crabdat <- subset(crabdat, select = -Julian_Day)
+```
+
+
+Depth also shows strong correlation with all methods of determining location (lat/long and categorical location). Therefore, we'll leave it out of (nearly all) of our full models - with the exception of that one location-only-no-depth model.
+
+#### Overall Summary:
+
+Due to the extremely borderline correlation between carapace width and shell condition, we'll include both in our full model initially.
+
+We'll also try each of the 4 methods for defining location above. They are:
+
+- Use only longitude
+
+- Use lat + long (may have issues from correlation)
+
+- Use categorical location
+
+- Use depth only
+
+
+## Scaling Variables
+
+To allow the model to fit more easily, we'll scale some of our predictors - particularly, our continuous predictors
+
+```{r}
+# Subtract the year before the earliest data, so year now starts at 1
+crabdat$s.Year <- crabdat$Year - (min(crabdat$Year) - 1)
+
+# Scale all other continuous variables
+crabdat$CW_scaled <- scale(crabdat$Carapace_Width)
+crabdat$Latitude_scaled <- scale(crabdat$Latitude)
+crabdat$Longitude_scaled <- scale(crabdat$Longitude)
+crabdat$Depth_scaled <- scale(crabdat$Depth)
+crabdat$Bottom_Temp_scaled <- scale(crabdat$Bottom_Temp)
+
+str(crabdat)
+```
+
+## Modeling
+
+```{r}
+long_mod1 <- glmer(PCR_Result ~ CW_scaled +  Longitude_scaled + Bottom_Temp_scaled + Sex + Shell_Condition + (1 | s.Year),
+                  data = crabdat,
+                  family = binomial,
+                  na.action = "na.fail", # this chunk is for dredge()
+                  control = glmerControl(optimizer = c("bobyqa")))
+
+latlong_mod2 <- glmer(PCR_Result ~ CW_scaled +  Longitude_scaled + Latitude_scaled + Bottom_Temp_scaled + Sex + Shell_Condition + (1 | s.Year),
+                  data = crabdat,
+                  family = binomial,
+                  na.action = "na.fail", # this chunk is for dredge()
+                  control = glmerControl(optimizer = c("bobyqa")))
+
+loc_mod3 <- glmer(PCR_Result ~ CW_scaled + Bottom_Temp_scaled + Sex + Shell_Condition + (1 | s.Year) + (1 | Location),
+                  data = crabdat,
+                  family = binomial,
+                  na.action = "na.fail", # this chunk is for dredge()
+                  control = glmerControl(optimizer = c("bobyqa")))
+
+depth_mod4 <- glmer(PCR_Result ~ CW_scaled + Depth_scaled + Bottom_Temp_scaled + Sex + Shell_Condition + (1 | s.Year),
+                  data = crabdat,
+                  family = binomial,
+                  na.action = "na.fail", # this chunk is for dredge()
+                  control = glmerControl(optimizer = c("bobyqa")))
+
+extractAIC(long_mod1)
+extractAIC(latlong_mod2)
+extractAIC(loc_mod3)
+extractAIC(depth_mod4)
+
+```
+
+
+
+
+
+
+
+
+

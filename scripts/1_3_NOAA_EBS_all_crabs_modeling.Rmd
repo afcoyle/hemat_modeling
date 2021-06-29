@@ -1,0 +1,165 @@
+---
+title: "1_3_NOAA_EBS_all_crabs_modeling"
+author: "Aidan Coyle"
+date: "6/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+In this script, we will create a generalized linear mixed model to examine potential associations between _Hematodinium_ infection status and physical variables
+
+This script will include both _Chionoecetes opilio_ (snow crab) and _Chionoecetes bairdi_ (Tanner crab), along with males and females of both species
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+#### Read in data
+
+```{r}
+crabdat <- read.csv("../output/NOAA_EBS_trawl_survey/modified_data/cleaned_all_crabs.csv")
+```
+
+#### Check all variables were read in correctly as either categorical or continuous predictors
+
+```{r}
+# See class of each column
+str(crabdat)
+# Looks like we've got lots of columns that should be converted to factors!
+
+crabdat$Species <- factor(crabdat$Species)
+crabdat$Sex <- factor(crabdat$Sex)
+crabdat$Shell_Condition <- ordered(crabdat$Shell_Condition)
+crabdat$PCR_Result <- factor(crabdat$PCR_Result)
+crabdat$Year <- factor(crabdat$Year)
+crabdat$Location <- factor(crabdat$Location)
+
+# See updated class of each column
+str(crabdat)
+```
+
+## Check for correlation
+
+Prior to modeling anything, we're going to run checks on combinatinos of variables to see if any are correlated
+
+#### Correlation between continuous variables
+
+We will use Pearson's test to examine for correlation
+
+```{r}
+# Pull all numeric variables into a new data frame
+crabnums <- select_if(crabdat, is.numeric)
+# Calculate correlation
+numcor <- cor(crabnums, method = "pearson")
+
+# See the resulting table
+print(numcor)
+
+# See if any correlations are > 0.6 (our bar for correlation) and less than 1 (since every variable is perfectly correlated with itself)
+any(abs(numcor) > 0.6 & numcor <1)
+
+# See how many correlations we have (since each correlation is shown twice - A vs B and B vs A - the true number of correlations is 1/2 this number)
+sum(abs(numcor) > 0.6 & numcor <1)
+
+```
+
+Hmm, we do! Upon an examination of the above table, we have the following correlations:
+Latitude and longitude
+Latitude and Julian day
+Longitude and Julian day
+
+It looks like all three of these are generally associated with the survey design. Sampling generally proceeds in a northwesterly direction (hence the latitude/longitude correlation), and surveys follow a predictable pattern over time. This indicates that using location may be better than using latitude/longitude, and we may not be able to include Julian day (Which is fine, as it is one of our least-likely variables to be biologically relevant)
+
+#### Correlation between categorical variables
+
+Now we're using Cramer's V test to look for correlation among our categorical variables
+
+```{r}
+# Pull all categorical variables into a new data frame
+crabcat <-  select_if(crabdat, is.factor)
+
+# Turn all from factors to numeric
+crabcat[] <- sapply(crabcat, as.numeric)
+
+# Initialize a blank matrix
+results_matrix <- matrix(nrow = length(crabcat), ncol = length(crabcat))
+# Name all rows and columns with our variable names
+colnames(results_matrix) <- names(crabcat)
+rownames(results_matrix) <- names(crabcat)
+
+# Fill in the matrix by performing Cramer's V test on each possible combination of factors
+
+for (i in 1:ncol(crabcat)) {
+  for (j in 1:ncol(crabcat)) {
+    cramer.table <- table(crabcat[,i],crabcat[,j])
+    cramer.matrix <- as.matrix(cramer.table)
+    results_matrix[i,j] <- cramerV(cramer.matrix)
+  }
+}
+
+# See the resulting matrix
+print(results_matrix)
+
+# See if any of our correlations, aside from self-correlations, cross our boundary of too much correlation
+any(abs(results_matrix) > 0.6 & results_matrix < 1)
+
+# See how many correlations we have
+0.5 * sum(abs(results_matrix > 0.6) & results_matrix < 1)
+```
+Upon examination of the table, we have only one correlation - location and species. This makes sense - snow crabs live in more northern waters than Tanner crabs. However, it also indicates that it will be difficult to include both species information and location data in our model. Both of these could be quite important to the model. Therefore, it may be more optimal to continue with one of our species-specific datasets.
+
+Though this may be continued in the future, we'll leave this analysis here for now (after for the sake of completeness, testing for correlations between categorical and continuous variables, as it may raise interesting red flags for future work)
+
+#### Correlations between Categorical and Continuous Variables
+
+For this, we will use Spearman rank-order correlation
+
+```{r}
+crabrank <- crabdat
+crabrank[] <- sapply(crabdat, as.numeric)
+crabcomps <- cor(crabrank, method = "spearman")
+any(abs(crabcomps) > 0.6 & crabcomps < 1)
+linkages <- which(abs(crabcomps) > 0.6 & crabcomps < 1, arr.ind = TRUE)
+# List linkages
+for (i in 1:(0.5*length(linkages))) {
+  print(names(crabdat)[c(linkages[i,])])
+}
+```
+
+Alright, looks we have the following linkages with the following explanations:
+- Latitude and Species: Makes sense - as described above with the location/species linkage, snow crab are more prevalent at higher latitudes
+
+- Bottom temp and species: Makes sense for the same reasons described above: it's colder at higher latitudes
+
+- Longitude and latitude: Already described when checking for correlation between continuous variables
+
+- Bottom temp and latitude: Already described when checking for correlation between continuous variables
+
+- Day and latitude: Already described when checking for correlation between continuous variables
+
+- Latitude and Julian day: Already described when checking for correlation between continuous variables
+
+- Longitude and Julian day: Already described when checking for correlation between continuous variables
+
+Essentially, we have two novel correlations between continuous and categorical variables - bottom temp and species, and latitude and species. Both of these indicate the same as above - including location information and species information in our model simultaneously is problematic, indicating we should switch to a species-specific model
+
+For that reason, this script will now end, and modeling will continue with 1_4_NOAA_EBS_bairdi_modeling.RMd
+

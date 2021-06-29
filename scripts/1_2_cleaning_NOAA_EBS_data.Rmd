@@ -288,6 +288,11 @@ full_data <- subset(full_data, Shell_Cond < 5 & Shell_Cond > 1)
 table(full_data$Clutch)
 # Given the relatively small number of crabs with eggs, I think it makes more sense to change this to 0 (no eggs present) and 1 (eggs present). Essentially, all crabs with egg codes from 1-6 will be converted to egg code 1
 full_data$Clutch <- recode_factor(full_data$Clutch, "0" = "0", "1" = "1", "2" = "1", "3" = "1", "4" = "1", "5" = "1", "6" = "1")
+# Check if we have any males with a listed clutch fullness
+table(full_data$Clutch, full_data$Sex)
+# Assuming the 3 with no chela heights are females accidentally entered as males. The one with a chela height listed will be removed regardless later, as it has no PCR result associated with it, so we'll just change all to females
+full_data[!is.na(full_data$Clutch) & full_data$Sex == 1, ]$Sex <- 2
+table(full_data$Clutch, full_data$Sex)
 
 table(full_data$PCR_result)
 # Only want to keep conclusive PCR results, so eliminating all NAs and 3s
@@ -326,7 +331,13 @@ summary(full_data[full_data$Sex == 2, ]$Size)
 # Now moving on to chela height
 hist(full_data$Chela)
 summary(full_data$Chela)
-# Looks like no data entry errors for chela height
+# Check to see if any females have non-NA entries for chela height
+table(full_data[full_data$Sex == 2, ]$Chela)
+# Looks like we have 7 crab! Assume these are males who were accidentally mislabeled as females - coming up with a specific chela height seems unlikely as a possible data entry error
+
+full_data[!is.na(full_data$Chela) & full_data$Sex == 2, ]
+
+# Data entry errors for chela height have now been fixed
 
 # Now moving on to latitude and longitude. For this, we will map each point
 world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -340,8 +351,8 @@ ggplot(data = world) +
   geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
   coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
 
-# From this map, it appears that our points fall into 6 distinct clusters - Bristol Bay, Pribilof Islands, outer shelf south, St. Matthew Island, outer shelf north, and Bering Strait. This indicates we may want to modify this into a categorical variable rather than a continuous one
-# However, we will address that later. No data entry errors seem apparent
+# From this map, it appears that our points fall into 6 distinct clusters - Bristol Bay, Pribilof Islands, outer shelf south, St. Matthew Island, outer shelf north, and St. Lawrence Island. This indicates we may want to modify this into a categorical variable rather than a continuous one
+# We will address that in the chunk below
 
 # Moving on to bottom depth
 hist(full_data$BOTTOM_DEPTH)
@@ -355,20 +366,218 @@ summary(full_data$Bottom_Temp)
 head(sort(unique(full_data$Bottom_Temp), decreasing = TRUE))
 # It certainly is high, but not high enough to conclude a data entry error was made
 
-# Moving on to
+# Moving on to Julian day
 hist(full_data$JUL_DAY)
 # No data entry errors apparent - all seem within standard survey date ranges
 ```
 
-#### Modifying Latitude/Longitude into a Categorical Variable
+#### Adding Categorical Variable for Area from Latitude-Longitude
 
+As described above, our points fall into 6 distinct clusters. They are as follows (north to south): 
 
+- Bristol Bay (BB)
+- Pribilof Islands (PI)
+- South Slope (SS)
+- St. Matthew Island (SMI)
+- North Slope (NS)
+- St. Lawrence Island (SLI)
 
-min(full_data$WIDTH_MILLIMETERS)
+To have the option of defining location as one categorical variable rather than two continuous variables (latitude and longitude), we will create a new categorical variable. 
 
-max(full_data[full_data$SEX_CODE == "M", ]$WIDTH_MILLIMETERS)
+They will be assigned numbers from 1-6, following the same order as above.
 
-max(full_data[full_data$SEX_CODE == "F", ]$WIDTH_MILLIMETERS)
+```{r}
+# Plot overall map of haul locations
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
 
+## Plot same map but with lines showing boundaries of Bristol Bay cluster (BB)
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 58, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -167, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
 
+# The Bristol Bay cluster will be assigned as trawls with latitude < 58 and longitude > -167
+
+# Create new column for location (initially 0 for all crab)
+full_data$Location <- "Not Assigned"
+
+# Assign "BB" to the Bristol Bay cluster
+full_data[full_data$START_LATITUDE < 57 & full_data$START_LONGITUDE > -167,]$Location <- "BB"
+
+# Moving on to Pribilof Islands
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 59, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -167, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -173, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# The Pribilof Islands cluster will be assigned as trawls with latitude < 59 and longitude between -167 and -173
+
+full_data[full_data$START_LATITUDE < 59 & full_data$START_LONGITUDE > -173 & full_data$START_LONGITUDE < -167,]$Location <- "PI"
+
+# Moving on to South Slope
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 59.5, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -173, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# The South Slope cluster will be assigned as trawls with latitude < 59.5 and longitude < -173
+
+full_data[full_data$START_LATITUDE < 59.5 & full_data$START_LONGITUDE < -173,]$Location <- "SS"
+
+# Moving on to St. Matthew Island
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 59, linetype = "solid", color = "black") +
+  geom_hline(yintercept = 62, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -167, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -173, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# The St. Matthew Island cluster will be assigned as trawls with latitude between 59 and 62 and longitude between -167 and -173
+
+full_data[full_data$START_LATITUDE > 59 & full_data$START_LATITUDE < 62 & full_data$START_LONGITUDE > -173 & full_data$START_LONGITUDE < -167,]$Location <- "SMI"
+
+# Moving on to North Slope
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 61, linetype = "solid", color = "black") +
+  geom_hline(yintercept = 63, linetype = "solid", color = "black") +
+  geom_vline(xintercept = -173, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# The North Slope cluster will be assigned as trawls with latitude between 61 and 63 and longitude < -173
+
+full_data[full_data$START_LATITUDE > 61 & full_data$START_LATITUDE < 63 & full_data$START_LONGITUDE < -173,]$Location <- "NS"
+
+# Moving on to St. Lawrence Island
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE), size = 1, shape = 23, fill = "darkred") +
+  geom_hline(yintercept = 63, linetype = "solid", color = "black") +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# The St. Lawrence Island cluster will be assigned as trawls with latitude > 63
+
+full_data[full_data$START_LATITUDE > 63,]$Location <- "SLI"
+
+# Alright, let's check that we did this correctly
+
+# See if any hauls were not assigned a location code, along with the distribution of crabs
+table(full_data$Location)
+
+# Looks like all crabs were assigned a location! Let's check to ensure that each was placed in the correct location by mapping
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = full_data, aes(x = START_LONGITUDE, y = START_LATITUDE, color = Location), size = 1, shape = 16) +
+  coord_sf(xlim = c(-180, -160), ylim = c(50, 70), expand = FALSE)
+
+# Fantastic, looks great!
+```
+
+#### Modifying Variable Names
+
+We now have fully cleaned our full data. For the sake of consistency, however, we will modify our variable names, which have inconsistent notation and capitalization
+
+```{r}
+# See current variable names
+names(full_data)
+
+# Modify names to be consistent
+names(full_data) <- c("Species", "Sex", "Carapace_Width", "Chela_Height", "Shell_Condition", "Clutch_Fullness", "PCR_Result", "Year", "Latitude", "Longitude", "Depth", "Bottom_Temp", "Julian_Day", "Location")
+
+names(full_data)
+```
+
+#### Creating sex-specific table for males
+
+Since the effect of chela height and clutch fullness may be interesting, we will create two sub-tables. One will only include males with a measurement for chela height, and the other will only include females with a measurement for clutch fullness.
+
+```{r}
+# Create table containing data for males
+males <- full_data[full_data$Sex == 1,]
+
+# Drop clutch fullness from males dataset
+males <- subset(males, select = -Clutch_Fullness)
+
+# See how many males have an NA for chela height and if any other NAs are present
+colSums(is.na(males))
+
+# Drop the 851 males without a value for chela height from the dataset
+males <- na.omit(males)
+```
+
+#### Creating sex-specific table for females
+
+This table will, as described above, only include females with a measurement for clutch fullness
+
+```{r}
+# Create table containing data for females
+females <- full_data[full_data$Sex == 2, ]
+
+# Drop chela height from females dataset
+females <- subset(females, select = -Chela_Height)
+
+# See how many females have an NA for clutch fullness and if any other NAs are present
+colSums(is.na(females))
+
+# Drop the 341 females without a value for clutch fullness from the dataset
+females <- na.omit(females)
+```
+
+#### Eliminate sex-specific variables from our dataset with both male and female crabs
+
+Since any analysis that includes all crabs will include neither chela height or clutch fullness (since those measurements are, definitionally, only available for either male or female crab), we will eliminate both of these variables from our dataset that includes all crabs
+
+```{r}
+# Remove sex-specific variables
+all_crabs <- subset(full_data, select = -c(Chela_Height, Clutch_Fullness))
+
+# Check if we have any NAs
+colSums(is.na(all_crabs))
+```
+
+#### Congratulations, we finished with data cleaning! Now it's time to write our datasets to a table
+
+At this point, we have three data frames - one including only males, one including only females, and one with both males and females.
+
+Along with these, we will write two more to files - one for each of our two species, _Chionoecetes bairdi_ and _Chionoecetes opilio_
+
+```{r}
+# Write males to file
+write.csv(males, file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_males.csv", row.names = FALSE)
+
+# Write females to file
+write.csv(females, file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_females.csv", row.names = FALSE)
+
+# Write all crabs to file
+write.csv(all_crabs, file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_all_crabs.csv", row.names = FALSE)
+
+# Write C. bairdi to file
+write.csv(all_crabs[all_crabs$Species == "Chionoecetes bairdi", ],
+          file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_bairdi.csv",
+          row.names = FALSE)
+
+# Write C. opilio to file
+write.csv(all_crabs[all_crabs$Species == "Chionoecetes opilio", ],
+          file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_opilio.csv",
+          row.names = FALSE)
+```
 

@@ -1,0 +1,429 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Stylesheet>
+    <Resources>
+    </Resources>
+    <Styles>
+        <Style Name="ToolbarItem">
+            <Classes>
+                <StyleClass Name="Logo">
+                    <Properties>
+                        <Property Name="Icon">url('onset%20small.GIF')</Property>
+                        <Property Name="Tooltip">Logo</Property>
+                        <Property Name="ControlType">Logo</Property>
+                        <Property Name="LogoAlternateText">Logo</Property>
+                        <Property Name="AboutBoxAlternateText">A propos de</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="AccordionTitle">
+                    <Properties>
+                        <Property Name="ControlType">AccordionTitle</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="QuickSearch">
+                    <Properties>
+                        <Property Name="Tooltip">Recherche rapide</Property>
+                        <Property Name="ControlType">QuickSearch</Property>
+                        <Property Name="SearchBoxTooltip">Champ d'entrée recherche rapide</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="ExpandAll">
+                    <Properties>
+                        <Property Name="Tooltip">Afficher tout</Property>
+                        <Property Name="ControlType">ExpandAll</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="CollapseAll">
+                    <Properties>
+                        <Property Name="Tooltip">Masquer tout</Property>
+                        <Property Name="ControlType">CollapseAll</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="RemoveHighlight">
+                    <Properties>
+                        <Property Name="Tooltip">Supprimer mise en surbrillance </Property>
+                        <Property Name="ControlType">RemoveHighlight</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Print">
+                    <Properties>
+                        <Property Name="Tooltip">Imprimer rubrique</Property>
+                        <Property Name="ControlType">Print</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="ToggleNavigationPane">
+                    <Properties>
+                        <Property Name="Tooltip">Masquer navigation</Property>
+                        <Property Name="ControlType">ToggleNavigationPane</Property>
+                        <Property Name="ShowTooltip">Afficher navigation</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Back">
+                    <Properties>
+                        <Property Name="Tooltip">Retour</Property>
+                        <Property Name="ControlType">Back</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Forward">
+                    <Properties>
+                        <Property Name="Tooltip">En avant</Property>
+                        <Property Name="ControlType">Forward</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Home">
+                    <Properties>
+                        <Property Name="Tooltip">Démarrage</Property>
+                        <Property Name="ControlType">Home</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Stop">
+                    <Properties>
+                        <Property Name="Tooltip">Arrêter</Property>
+                        <Property Name="ControlType">Stop</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Refresh">
+                    <Properties>
+                        <Property Name="Tooltip">Actualiser</Property>
+                        <Property Name="ControlType">Refresh</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectTOC">
+                    <Properties>
+                        <Property Name="Tooltip">Table des Matières</Property>
+                        <Property Name="ControlType">SelectTOC</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectIndex">
+                    <Properties>
+                        <Property Name="Tooltip">Index</Property>
+                        <Property Name="ControlType">SelectIndex</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectSearch">
+                    <Properties>
+                        <Property Name="Tooltip">Recherche</Property>
+                        <Property Name="ControlType">SelectSearch</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectFavorites">
+                    <Properties>
+                        <Property Name="Tooltip">Favoris</Property>
+                        <Property Name="ControlType">SelectFavorites</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectGlossary">
+                    <Properties>
+                        <Property Name="Tooltip">Glossaire</Property>
+                        <Property Name="ControlType">SelectGlossary</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectBrowseSequence">
+                    <Properties>
+                        <Property Name="Tooltip">Navigation</Property>
+                        <Property Name="ControlType">SelectBrowseSequence</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectTopicComments">
+                    <Properties>
+                        <Property Name="Tooltip">Commentaires de sujet</Property>
+                        <Property Name="ControlType">SelectTopicComments</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SelectRecentComments">
+                    <Properties>
+                        <Property Name="Tooltip">Commentaries récents</Property>
+                        <Property Name="ControlType">SelectRecentComments</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="AddTopicToFavorites">
+                    <Properties>
+                        <Property Name="Tooltip">Ajouter rubrique aux favoris</Property>
+                        <Property Name="ControlType">AddTopicToFavorites</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="TopicRatings">
+                    <Properties>
+                        <Property Name="Tooltip">Évaluation de sujet</Property>
+                        <Property Name="ControlType">TopicRatings</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Separator">
+                    <Properties>
+                        <Property Name="Tooltip">Séparateur</Property>
+                        <Property Name="ControlType">Separator</Property>
+                        <Property Name="SeparatorAlternateText">Séparateur</Property>
+                    </Properties>
+                </StyleClass>
+            </Classes>
+        </Style>
+        <Style Name="Frame">
+            <Classes>
+                <StyleClass Name="Toolbar">
+                    <Properties>
+                        <Property Name="Height">0.5in</Property>
+                        <Property Name="BackgroundGradient">horizontal #535e93 #485181</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="BodyComments">
+                    <Properties>
+                        <Property Name="Label">Commentaires</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="RecentComments">
+                    <Properties>
+                        <Property Name="Label">Commentaires récents</Property>
+                    </Properties>
+                </StyleClass>
+            </Classes>
+        </Style>
+        <Style Name="Formats">
+            <Properties>
+                <Property Name="CrossReferenceFormat">See \"{paratext}\"</Property>
+                <Property Name="CrossReferencePrintFormat">See \"{paratext}\" on page {page}</Property>
+                <Property Name="CrossReferenceBelow">below</Property>
+                <Property Name="CrossReferenceAbove">above</Property>
+                <Property Name="CrossReferenceOnPage">on page </Property>
+                <Property Name="CrossReferenceOnPreviousPage">on previous page</Property>
+                <Property Name="CrossReferenceOnNextPage">on next page</Property>
+                <Property Name="CrossReferenceOnFacingPage">on the facing page</Property>
+                <Property Name="BreadcrumbsYouAreHereText">You are here: </Property>
+                <Property Name="KeywordLinkText">Search Index</Property>
+                <Property Name="RelatedTopicsText">Related Topics</Property>
+                <Property Name="ConceptLinkText">See Also</Property>
+            </Properties>
+        </Style>
+        <Style Name="TocEntry">
+            <Properties>
+                <Property Name="TopicIconAlternateText">Rubrique</Property>
+                <Property Name="BookIconAlternateText">Livre</Property>
+                <Property Name="MarkAsNewIconAlternateText">Nouveau</Property>
+            </Properties>
+        </Style>
+        <Style Name="AccordionItem">
+            <Properties>
+                <Property Name="ItemHeight">28px</Property>
+            </Properties>
+            <Classes>
+                <StyleClass Name="IconTray">
+                    <Properties>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="TOC">
+                    <Properties>
+                        <Property Name="Label">Table des Matières</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Index">
+                    <Properties>
+                        <Property Name="Label">Index</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Favorites">
+                    <Properties>
+                        <Property Name="Label">Favoris</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Glossary">
+                    <Properties>
+                        <Property Name="Label">Glossaire</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="BrowseSequence">
+                    <Properties>
+                        <Property Name="Label">Navigation</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Search">
+                    <Properties>
+                        <Property Name="Label">Recherche</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="TopicComments">
+                    <Properties>
+                        <Property Name="Label">Commentaires de sujet</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="RecentComments">
+                    <Properties>
+                        <Property Name="Label">Commentaires récents</Property>
+                        <Property Name="ItemHeight">28px</Property>
+                    </Properties>
+                </StyleClass>
+            </Classes>
+        </Style>
+        <Style Name="Control">
+            <Classes>
+                <StyleClass Name="SearchButton">
+                    <Properties>
+                        <Property Name="Label">Rechercher</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchBox">
+                    <Properties>
+                        <Property Name="Tooltip">Champ d'entrée recherche</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchFiltersLabel">
+                    <Properties>
+                        <Property Name="Label">Filtre</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchUnfilteredLabel">
+                    <Properties>
+                        <Property Name="Label">(non filtré)</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchFavoritesLabel">
+                    <Properties>
+                        <Property Name="Label">Recherches favorites</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="TopicFavoritesLabel">
+                    <Properties>
+                        <Property Name="Label">Rubriques favorites</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchFavoritesDeleteButton">
+                    <Properties>
+                        <Property Name="Tooltip">Supprimer les favoris sélectionnés</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="TopicFavoritesDeleteButton">
+                    <Properties>
+                        <Property Name="Tooltip">Supprimer les rubriques sélectionnées</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="EmptySearchFavoritesLabel">
+                    <Properties>
+                        <Property Name="Label">(pas de recherche par défaut)</Property>
+                        <Property Name="Tooltip">(pas de recherche par défaut)</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="EmptyTopicFavoritesLabel">
+                    <Properties>
+                        <Property Name="Label">(pas de rubrique par défaut)</Property>
+                        <Property Name="Tooltip">(pas de rubrique par défaut)</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="AddSearchToFavoritesButton">
+                    <Properties>
+                        <Property Name="Tooltip">Ajouter recherche aux favoris</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="IndexSearchBox">
+                    <Properties>
+                        <Property Name="Tooltip">Champ d'entrée mots clés</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="SearchResults">
+                    <Properties>
+                        <Property Name="RankLabel">Rang</Property>
+                        <Property Name="TitleLabel">Titre</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="Messages">
+                    <Properties>
+                        <Property Name="Loading">RECHERCHE EN COURS</Property>
+                        <Property Name="LoadingAlternateText">Recherche en cours</Property>
+                        <Property Name="NoTopicsFound">Rubriques introuvables</Property>
+                        <Property Name="InvalidToken">Jeton non valide</Property>
+                        <Property Name="QuickSearchExternal">Recherche de thèmes externes impossible</Property>
+                        <Property Name="QuickSearchIE5.5">Internet Explorer 5.5 ne permet pas d'effectuer une recherche par thème</Property>
+                        <Property Name="RemoveHighlightIE5.5">Internet Explorer 5.5 ne permet pas de supprimer la mise en surbrillance des termes de recherche</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="CommentsAddButton">
+                    <Properties>
+                        <Property Name="Tooltip">Ajouter commentaire</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="CommentsReplyButton">
+                    <Properties>
+                        <Property Name="Tooltip">Répondre au commentaire</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="CommentsRefreshButton">
+                    <Properties>
+                        <Property Name="Tooltip">Refraîchir</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="NavigationLinkTop">
+                    <Properties>
+                        <Property Name="Label">Open topic with navigation</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="NavigationLinkBottom">
+                    <Properties>
+                        <Property Name="Label">Open topic with navigation</Property>
+                    </Properties>
+                </StyleClass>
+            </Classes>
+        </Style>
+        <Style Name="Dialog">
+            <Classes>
+                <StyleClass Name="Rating">
+                    <Properties>
+                        <Property Name="SubmitButtonLabel">Soumettre</Property>
+                        <Property Name="CancelButtonLabel">Annuler</Property>
+                        <Property Name="TitleLabel">Évaluation de sujet:</Property>
+                        <Property Name="AverageRatingLabel">Évaluation moyenne:</Property>
+                        <Property Name="YourRatingLabel">Votre Évaluation:</Property>
+                        <Property Name="CommentLabel">Commentaires pour l'auteur (optionnel):</Property>
+                        <Property Name="AverageRatingTooltip">Évaluation de sujet</Property>
+                        <Property Name="YourRatingTooltip">Votre évaluation </Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="AddComment">
+                    <Properties>
+                        <Property Name="SubmitButtonLabel">Soumettre</Property>
+                        <Property Name="CancelButtonLabel">Annuler</Property>
+                        <Property Name="TitleLabel">Ajouter commentaire:</Property>
+                        <Property Name="UserNameLabel">Nom d'utilisateur:</Property>
+                        <Property Name="SubjectLabel">Sujet:</Property>
+                        <Property Name="CommentLabel">Commentaire: </Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="ReplyComment">
+                    <Properties>
+                        <Property Name="SubmitButtonLabel">Soumettre</Property>
+                        <Property Name="CancelButtonLabel">Annuler</Property>
+                        <Property Name="TitleLabel">Répondre au commentaire:</Property>
+                        <Property Name="UserNameLabel">Nom d'utilisateur:</Property>
+                        <Property Name="SubjectLabel">Sujet:</Property>
+                        <Property Name="CommentLabel">Commentaire: </Property>
+                        <Property Name="OriginalCommentLabel">Commentaire originel:</Property>
+                    </Properties>
+                </StyleClass>
+                <StyleClass Name="RegisterUser">
+                    <Properties>
+                        <Property Name="SubmitButtonLabel">Soumetrre</Property>
+                        <Property Name="CancelButtonLabel">Annuler</Property>
+                        <Property Name="TitleLabel">Créer un profil de service des commentaires:</Property>
+                        <Property Name="UserNameLabel">Nom d'utilisateur:</Property>
+                        <Property Name="EmailAddressLabel">Adresse Email:</Property>
+                        <Property Name="FirstNameLabel">Prénom:</Property>
+                        <Property Name="LastNameLabel">Nom de famille:</Property>
+                        <Property Name="CountryLabel">Pays:</Property>
+                        <Property Name="PostalCodeLabel">Code postal:</Property>
+                        <Property Name="GenderLabel">Genre:</Property>
+                        <Property Name="Registration">Vous devez créer un profil d'utilisateur à publier commentaires à cet système d'aide. S'il vous plaît, saisissez l'information au-dessous. Un email sera envoyé à l'adresse que vous fournissez. S'il vous plaît, suivez les instructions dans l'email pour complèter l'activation.</Property>
+                        <Property Name="RegistrationSubmit">Votre information a été envoyé à MadCap Software.Lorsque l'information est traité, vous recevrez un email avec un lien à une page de vérification. Cliquez sur ce lien, ou copiez et collez le lien dans votre navigateur web afin de complèter l'inscription.</Property>
+                        <Property Name="RegistrationSubmitNote">Quelques fournisseurs de service ont les filtres d'email qui peut causer l'email de notification d'être envoyé à votre dossier de spam. Si vous ne recevez pas un email de notification, s'il vous plaît, regarder dans ce dossier.</Property>
+                    </Properties>
+                </StyleClass>
+            </Classes>
+        </Style>
+    </Styles>
+    <ResourcesInfo>
+        <Resource Name="onsetlogo.gif" Width="99" Height="36" />
+        <Resource Name="onset small.GIF" Width="111" Height="24" />
+    </ResourcesInfo>
+</Stylesheet>

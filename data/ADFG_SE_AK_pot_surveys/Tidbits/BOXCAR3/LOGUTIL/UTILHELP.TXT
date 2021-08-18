@@ -1,0 +1,292 @@
+Onset Computer Corp                                             
+
+
+
+	LogUtil DOS Utility for StowAways, HOBO (HOBO version 1),
+
+	     HOBO Event, HOBO State, HOBO Pro series, & H08
+
+	      Ver. 3.6                July 28, 1999 
+
+			
+
+-------------------------------------------------------------------
+
+
+
+*Installation*
+To install LogUtil, go to the logutil directory 
+(cd c:\boxcar3\logutil) and type "logutil_" to expand LogUtil.
+Then, type "logutil" to run LogUtil. (Please substitute the 
+name of your hard drive for c:\ in the commands above as 
+appropriate.)
+
+*Main Menu*
+At program startup, you are presented with the Main 
+Menu. Return to this menu at any time from the 'Choice:' prompt by 
+typing ?. When there is a logger file currently loaded into memory,
+the Main Menu changes to give you additional options: Display Data,
+Export Data, File Information, and Save Datafile as BoxCar File.
+When there are no points in the data file, the Display
+Data and Export Data features are not displayed.
+
+*Launch*
+When you select L: Launch from the Main Menu, LogUtil will display the
+logger's description and the current date, time and reading. If the
+time displayed is not correct, exit LogUtil and reset your 
+computer's clock before launching loggers. For more information on
+the launch features, refer to your BoxCar for Windows User's Guide.
+After setting the launch parameters for your experiment, press S to
+start the logger.
+
+*Readout*
+To read out data from your logger, select R:
+Readout from the Main Menu. When LogUtil completes reading 
+data from a logger, it presents general information about the 
+logger and asks you to save the data. If you don't choose to save
+the data at this time, later you can choose D:Display the data, 
+E:Export it to a text file, or S:Save it as a BoxCar file.
+
+*Shuttle Readout*
+To read out data from an Optic Shuttle, select U:Shuttle Readout
+at the Main Menu.  LogUtil will instruct you to connect the
+logger to the specified port and press the button.  If the port
+specified is not correct, Cancel out of the Shuttle Readout and use
+the P:Change Port command to change the port. Once the Shuttle's
+files have been offloaded, LogUtil will reset the shuttle's 
+time to the computer's time, warning you if there was a discrepancy
+between the two times. Then it will display the file information
+for each file and ask you if you wish to save the file as a BoxCar
+file.  If you do not choose to save the files, you will **not** be
+able to save the files later unless you read out the Shuttle again.
+
+*HOBO Shuttle Readout*
+This function lets you read out data files (possibly many) from a
+HOBO Shuttle. Since the function of Onset's HOBO Shuttle family 
+(including the H-9 & H-10 HOBO shuttles) is to archive data files 
+from other loggers, you are prompted individually to save each
+data file in the shuttle. This process is similar to the one 
+described above for the Optic shuttle. This feature will also warn
+you of any discrepancy between the computer's and the Shuttle's 
+time base.
+
+*Open File*
+You can open files previously saved as BoxCar files (*.DTF) by
+selecting O: Open File from the Main Menu. Specify the path (if
+necessary) and filename that contains your data and LogUtil
+will open it and display the File Information. If you return to
+the Main Menu, there are other options now available to view your
+data.
+
+*Current Time and Value*
+If you select C: Current Time and Value from the Main Menu, the
+Utility will attempt to connect to a logger and display the current
+time (from the computer's system clock) and the current value from
+the logger in the selected unit.
+
+**NOTE**
+The logger does not log in this mode and if it was 
+logging it will STOP. Prolonged use of this mode will 
+result in a shorter battery life for the logger.
+
+*Change Port*
+To select the port LogUtil will use when looking for a logger,
+select P: Change Port from the Main Menu. The current port setting
+is displayed, (1 is the default); the P: options lets you change 
+this setting. This setting is *not* saved when you leave the 
+Utility. Another way to set the port is to do it when you begin the
+Utility by using the /p flag. For example, to start LogUtil and
+set the port to COM2:
+
+c:\> logutil /p2
+
+
+
+****** Options available once you have a datafile open ******
+
+*Display Data*
+To view your data, select Display Data. Choose the unit you would like to display.  
+Then you navigate through the data using P for the previous page, S to stop 
+viewing the data, N to display without page breaks, or any other 
+key to proceed to the next page.
+
+
+*Export Data*
+To export your data to an ASCII text file, choose the following 
+command from the Main Menu:
+
+	E: Export Data 
+
+From there you will be given the choice of selecting the MS-Excel 
+defaults (Excel time/date format and tab separated columns), the 
+Lotus 123 defaults (Lotus time/date format and comma separated 
+columns) or customizing the export.  Then you will be asked to 
+choose which units to export.  Be sure to save your file with the 
+.TXT extension to ensure easier importing into your spreadsheet 
+package.
+
+*File Information*
+To view information about the current data such as Serial Number, 
+Start and end date, number of samples, etc., choose the following 
+from the Main Menu :
+
+	I: File Information
+
+
+*Save Datafile as BoxCar File*
+With LogUtil you can save your data file as a BoxCar (version 
+3.0 and above) compatible file after you have read out a logger. 
+When you read out a new logger, the old information from the 
+previous logger is erased from memory, so save the data file before
+reading out new information from other loggers. To Save a file, 
+choose 
+
+	S: Save Datafile as a BoxCar File 
+
+from the main menu. LogUtil does not automatically add an 
+extension to the filename, so we recommend you use the .DTF 
+extension to identify your data files as BoxCar files.
+
+Special Notes for Version upgrades of Logutil
+
+* The following information applies to LogUtil versions 3.0, 3.5 & 3.6.
+
+Starting with version 3.0, LogUtil has been upgraded to support 
+additional loggers by Onset Computer. The following loggers have been added:
+
+	1. The HOBO Event Logger: A logger which stores time when
+	an event occurs.
+	2. The HOBO State Logger: Stores the time of a state
+	transistion.
+	3. The HOBO Shuttle: Reads and stores multiple data files,
+	possibly from more than one HOBO.
+	4. The H8: a multi-channel logger which can have up to four
+	selectable channels.
+	5. TidbiT: Contains no new features; is a different form of
+	the Optic StowAway.
+	6. The H-10 Shuttle: A HOBO Shuttle operating at a 38400 
+	Baud rate.
+	7. The HOBO Pro: H8 logger operating at 38400 Baud, with a
+	64k data file size.
+	
+The following sections describe the features of these added 
+loggers:
+
+(The Optic StowAway, regular StowAway and the Tidbit can be 
+considered as one logger, since they have the same launch features.)
+
+LOGGER FEATURE TABLE
+
+* The table below summarizes which features are available for which 
+loggers:
+
+Key:
+H - HOBO
+S - StowAway & Optic StowAway & TidbiT
+HE - HOBO Event
+HS - HOBO State
+H8 - H8
+
+Feature                         Logger(s)
+------------------------------------------------------
+Description                   All
+
+Wrap around when full         All except Pro
+
+Delay                         S, HE, HS, HO8
+
+Interval                      H, S, HO8
+
+Measurement unit              H, S
+
+No Blink mode (stealth)       HE, HS
+
+Event name                    HE
+
+Event value                   HE                
+
+Lockout after event           HE
+
+Open state string             HS
+
+Closed state string           HS
+
+Trigger                       S
+
+Multiple sampling             S
+
+Alarm                         S
+
+
+
+HO8 - INTERNAL & SELECTABLE CHANNELS
+
+The HO8  and HOBO pro SERIES loggers are unique among the loggers 
+mentioned here. These logger families can support more than one 
+channel. Look at the documentation of 
+your HO8 or HOBO Pro logger for the exact layout of channels and sensors.
+
+Before launching a multiple channel logger, a channel must be enabled from the main 
+menu. Channels that are successfully enabled will display 'Yes' next to them on the launch menu.
+
+The HO8 and HOBO Pro series loggers can have from one to four selectable channels. 
+The channel is called selectable because you choose the sensor attached to 
+this channel during launching. 
+
+A selectable channel still needs to be enabled as does a regular
+channel. However, it also must have a sensor attached to 
+it. If the documentation for your particular HO8 (or HOBO Pro Series logger) 
+indicates you have one or more Selectable channels, a list of the 
+sensors available for the selectable channels will be displayed in the 
+Launch menu. (Get to
+the Launch menu by typing 'L' from the main menu.)
+
+If you have an Selectable channel, enable it normally, then you will be prompted 
+to connect a sensor to the channel. (Pick the number from the list of available sensors 
+that is displayed.)
+
+
+HOBO EVENT and HOBO STATE
+The HOBO(R) Event and HOBO State loggers have some features not
+possessed by other Onset loggers. For instance, the HOBO State has 
+Open State string and Closed State string. The HOBO Event has 
+Event Name, Event Value, and Lockout After Event. Below 
+is some additional information about the special features  
+of the HOBO Event and HOBO State loggers.
+
+HOBO State Features 
+
+Enter characters in the Open and Closed state fields to let you
+provide descriptive information about the meaning of a state open
+or a state close. Please refer to your HOBO State documentation 
+for more information about open and closed states.
+
+
+HOBO Event Features
+
+Event name 
+The HOBO (R) Event logger is used to log the time of a certain
+"event." To give the event a descriptive title, use the Event Name 
+option from the HOBO Event launch menu (accessed with 'L' from the 
+main menu). LogUtil will use the name you provide to describe the 
+event. 
+
+Event value
+The Event value can be entered by choosing the Event Value option 
+(item 3 from the Event launch menu). This command prompts for an 
+argument n; 'n' should be entered as a number in floating point.
+
+Lockout after Event
+The HOBO (R) Event logger is the only logger capable of Lockout
+after Event. When an event occurs, the HOBO Event stores the 
+current date and time in its memory. The term, 'time-stamp' is 
+sometimes used to refer to this type of behavior. After an event, 
+you may want to stop recording events for a specified time to let 
+characteristics in the experiment environment settle. If so, use 
+the lockout after event feature. The LogUtil program will prompt 
+you for a lockout interval in hours minutes and seconds format. 
+Days are not required (and they are not accepted) by this command.
+
+Updates to UtilHelp.txt: 6/12/97, 6/25/97, 7/28/99
+
+

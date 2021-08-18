@@ -305,8 +305,53 @@ extractAIC(long_mod1)
 extractAIC(latlong_mod2)
 extractAIC(loc_mod3)
 extractAIC(depth_mod4)
-
 ```
+Based on this, the lowest AIC by quite a margin is the model that includes no true location parameters, but does include one for depth. Let's continue with that as our full model.
+
+We will now use the dredge() function to generate a model selection table with various combinations of fixed effect terms
+
+```{r}
+lap_mods <- dredge(depth_mod4, beta = "none",
+                   eval = TRUE,
+                   rank = "AICc")
+lap_mods
+```
+
+Looks like 8 of our models have weights above 1%! Let's examine the first few before averaging them all
+
+```{r}
+# Get all models with weights above 0.01
+best_models <- get.models(lap_mods, subset = weight > 0.01)
+
+# Look at first model (weight = 0.26)
+summary(best_models[[1]])
+
+# Includes bottom temp, CW, and depth. Of these, CW and depth are highly significant
+
+# Look at second model (weight = 0.21)
+summary(best_models[[2]])
+
+#Includes bottom temp, CW, depth, and sex. Of these, CW and depth are highly significant
+
+# Look at third model (weight = 0.14)
+summary(best_models[[3]])
+
+# Includes only CW and depth, both of which are highly significant
+```
+
+Now we'll move on to averaging all models based on AICc
+
+```{r}
+avg_model <- model.avg(best_models, beta = "none")
+
+# See what the average model looks like
+avg_model$coefficients
+summary(avg_model)
+```
+
+Our average model contains terms for bottom temperature, carapace width, depth, sex, and shell condition. Of these, only carapace width and depth are significant.
+
+
 
 
 

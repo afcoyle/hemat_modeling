@@ -1,0 +1,14 @@
+---
+title: "2_2_cleaning_ADFG_SE_AK_crab_data"
+author: "Aidan Coyle"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In the previous script, we merged several files together to create a single file of all Tanner crab survey data. In this script, we will clean that crab data

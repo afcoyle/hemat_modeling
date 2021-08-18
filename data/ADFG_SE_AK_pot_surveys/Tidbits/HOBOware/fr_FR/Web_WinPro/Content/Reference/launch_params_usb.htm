@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:id="Launch_window_-_USB_loggers" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" class="" MadCap:lastBlockDepth="3" MadCap:lastHeight="1477" MadCap:lastWidth="787" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Lancement d'un périphérique|Lancement d'un périphérique série U" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Options de lancement pour les enregistreurs série U</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1 MadCap:conditions=""><a name="kanchor27"></a>Options de lancement pour les enregistreurs série U</h1>
+        <p MadCap:conditions="">Cette rubrique décrit les paramètres de lancement que vous définissez dans la fenêtre de lancement pour les enregistreurs série U. </p>
+        <p><b></b>
+        </p>
+        <h3 MadCap:conditions=""> Informations sur l'enregistreur</h3>
+        <p><i>Type d'enregistreur </i>:&#160;modèle et description de l'enregistreur.</p>
+        <p><i>Numéro de série </i>: notez que certains capteurs externes ont également des numéros de série, qui n'apparaissent pas ici.</p>
+        <p><i>Numéro de déploiement </i>: nombre de lancements de l'enregistreur (cette fois-ci incluse).À chaque fois que vous effectuez un nouveau lancement, le numéro de déploiement augmente de 1.</p>
+        <p><i>Pile</i> ou    <i>Niveau de charge pile </i>: état de la pile à l'ouverture de la fenêtre de lancement. L'indicateur 
+ varie selon le modèle d'enregistreur. Par exemple, certains enregistreurs exigent que vous spécifiiez si la pile est alcaline ou au lithium. Pour des détails sur la capacité de la pile, consultez la documentation de l'enregistreur.</p>
+        <p><i style="font-style: normal;font-weight: bold;">Description</i>
+        </p>
+        <p>Entrez une description du lancement (40 caractères maximum) dans ce champ.Cette description sert de nom de fichier par défaut lorsque vous lisez et enregistrez les données enregistrées par l'enregistreur. Il s'agit aussi du titre du graphe.</p>
+        <h3>Canaux à enregistrer</h3>
+        <p>Voir    <a href="../Device/chnls-to-log-st.htm">« Directives concernant les canaux à enregistrer pour les enregistreurs de station Station Logger »</a>.</p>
+        <h3>Intervalle d'enregistrement</h3>
+        <p>Choisissez la fréquence à laquelle vous voulez enregistrer les données. L'intervalle minimum 
+ d'enregistrement est de 1 seconde et l'intervalle maximum , pour la plupart des enregistreurs est de 18 
+ heures, 12 minutes et 15 secondes. Plus l'intervalle d'enregistrement est court, plus la mémoire se remplit et la pile se vide vite.&#160;Si vous ne voulez pas sélectionner de canaux à enregistrer, ce champ sera grisée et indisponible.</p>
+        <p>Voir aussi    <a href="../Device/Mlt-log-intv.htm">« Intervalles d'enregistrement multiples »</a> et  <a href="../Device/Fst_log_intv.htm">« Intervalles d'enregistrement courts »</a>.</p>
+        <h3>Durée d'enregistrement</h3>
+        <p>Temps approximatif qu'il faudrait à la mémoire de l'enregistreur pour se remplir, en fonction de l'intervalle d'enregistrement et des capteurs actuellement branchés et activés, le cas échéant. <span style="font-style: italic;">Il s'agit seulement d'une estimation théorique ;</span> la durée de vie de la pile et la fréquence d'enregistrement des états et des événements affecteront votre déploiement. Si vous enregistrez uniquement des changements d'état et des événements, aucune estimation n'est possible.</p>
+        <h3>Options de lancement</h3>
+        <p>Indique quand lancer l'enregistreur. Par défaut,<span style="font-weight: normal;">Options de lancement </span>correspond au paramètre du lancement précédent de l'enregistreur. Pour que tous les enregistreurs utilisent la même option de lancement par défaut, reportez-vous à <a href="../Preferences/gp-lnch-ts.htm">« Options automatiques au lancement »,</a> ((HOBOware Pro seulement).</p>
+        <p class="bodyindent"><span style="font-weight: normal;"><i>Immédiat </i>:</span> l'enregistrement démarre dès que vous cliquez sur le bouton <span style="font-weight: bold;">Lancer</span>.</p>
+        <p class="bodyindent"><span style="font-weight: normal;"><i>À l'intervalle </i>:</span> l'enregistrement commence à intervalles exacts (9:00:00 par exemple, au lieu de 8:47:00 lorsque vous choisissez un intervalle d'enregistrement d'une heure). L'heure exacte de démarrage dépend de l'intervalle d'enregistrement que vous choisissez.</p>
+        <p class="bodyindent"><span style="font-weight: normal;"><i>Différé </i>:</span> l'enregistrement commence à la date et à l'heure que vous spécifiez, six moins environ du moment présent.</p>
+        <p class="bodyindent"><a name="kanchor28"></a><i>Déclenché </i>:  
+ (Disponible uniquement sur certains enregistreurs.) L'enregistrement ne démarre pas tant que vous n'appuyez pas sur le bouton de l'enregistreur pendant 3 secondes minimum ou ramenez l'enregistreur au coupleur sans la station de base pendant 3 secondes minimum (pour plus d'informations, reportez-vous au manuel de l'enregistreur).  Si l'enregistreur a un voyant, le voyant clignote rapidement lorsque l'enregistrement commence.</p>
+        <h3>Ignorer la fenêtre de lancement la fois suivante (HOBOware Pro seulement)</h3>
+        <p MadCap:conditions="">Cochez cette case si vous voulez contourner cette fenêtre la prochaine fois que vous choisirez <span style="font-weight: bold;">Lancer</span> dans le menu Périphérique ou cliquez sur l'icône Lancer. Ainsi, l'enregistreur suivant sera lancé avec les paramètres par défaut, comme indiqué par Remplissez<span style="font-weight: bold;"> la fenêtre de lancement avec</span> le contenu de.&#160;Pour désactiver ce paramètre pour pouvoir accéder à nouveau à la fenêtre de lancement, cliquez sur <b>Préférences </b>&gt; <b>Généralités </b>&gt; <span style="font-weight: bold;">Options automatiques au lancement </span> et dans la liste déroulante    <i>« Lors d'un lancement », </i>sélectionnez « Afficher l'écran de lancement ».  </p>
+        <p MadCap:conditions="">Pour toujours utiliser les paramètres à partir de la mémoire de l'enregistreur, vous pouvez rétablir le paramètre par défaut en allant à <b>Préférences </b>&gt; <b>Généralités&#160;</b>&gt;&#160;<b>Options automatiques au lancement</b> et choisissez  
+ <span style="font-weight: normal;font-style: italic;">« Remplissez la fenêtre de lancement avec le contenu de : Enregistreur en cours »</span>.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:id="Formatting_the_date/time_column_in_Excel" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" MadCap:lastBlockDepth="4" MadCap:lastHeight="649" MadCap:lastWidth="829.2967" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Importation de données (HOBOware Pro seulement)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Formatage de la colonne 
+ date/heure dans Excel
+</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor84"></a>Formatage de la colonne 
+ date/heure dans Excel</h1>
+        <p>Dans Excel, les dates et les heures pour chaque point de données pourront au départ apparaître sous la forme 
+ #######. Il est possible que l'heure ne mentionne pas les secondes. </p>
+        <h2>Procédure</h2>
+        <p>Pour afficher la date et l'heure complètes avec les secondes dans Excel :</p>
+        <ol style="list-style: decimal;list-style-type: decimal;">
+            <li class="sp_bull" value="1">Ajustez la largeur de colonne de l'heure pour pouvoir voir la date et l'heure en entier. </li>
+            <li class="sp_bull" value="2">Sélectionnez la colonne de l'heure à partir de la ligne 3 vers le bas.</li>
+            <li class="sp_bull" value="3">Dans le menu Format, cliquez sur<span style="font-weight: bold;"> Cellules</span>.</li>
+            <li class="sp_bull" value="4">Sélectionnez  la catégorie<span style="font-weight: bold;">&#160;Personnalisé</span>, puism <span style="font-weight: bold;">/j/aaaa h:mm comme</span> type.</li>
+            <li class="sp_bull" value="5">Ajoutez « :ss » (ou « :ss.000 » si vous avez utilisé un<a href="../Device/Fst_log_intv.htm"> intervalle  d'enregistrement court</a>) à la fin de la chaîne dans le champ<span style="font-weight: bold;">&#160; Type 
+ :</span></li>
+        </ol>
+        <p style="margin-left: 92px;"><span class="Typethis">m/j/aaaa h:mm:ss </span>(intervalle d'enregistrement<br /><span class="Typethis"> normal)m/j/aaaa h:mm</span>:ss.000 (intervalle d'enregistrement court)</p>
+        <ol start="6" style="list-style: decimal;list-style-type: decimal;">
+            <li class="sp_bull" value="6">Cliquez sur<span style="font-weight: bold;">&#160;OK</span>.</li>
+        </ol>
+        <p>Les secondes devraient apparaître automatiquement.</p>
+        <p>Pour exporter la date et l'heure dans des colonnes séparées, allez à Préférences &gt; Généralités &gt;<a href="../Preferences/gp-export.htm">&#160;Paramètres d'exportation</a>&#160;et activez<i> Format de date et d'heure : Séparer dans deux colonnes</i>.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

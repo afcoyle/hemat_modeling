@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:id="Importing_text_files" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" MadCap:lastBlockDepth="5" MadCap:lastHeight="1508" MadCap:lastWidth="771" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Importation de données (HOBOware Pro seulement)" MadCap:PathToHelpSystem="../" MadCap:SearchType="Stem">
+    <head><title>Importation de fichiers texte
+</title>
+        <link href="Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="SkinSupport/MadCapBody.js">
+        </script>
+        <script src="SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor82"></a>Importation de fichiers texte</h1>
+        <p><b>REMARQUE </b>:&#160;Cette fonction est uniquement disponible dans HOBOware Pro.</p>
+        <p>Vous pourrez obtenir une représentation graphique des données non-HOBOware en important les données de certains fichiers texte :&#160;</p>
+        <ul style="list-style: disc;" type="disc">
+            <li class="sp_bull" value="1">Vous pouvez facilement ouvrir des fichiers 
+ texte qui ont été créées par le logiciel Alarm &amp;&#160;Readout Tool d'Onset version 
+ 2.0 ou supérieure. <br /></li>
+            <li class="sp_bull" value="2">Vous pouvez aussi ouvrir des fichiers texte qui ont été exportés à partir du logiciel BoxCar Pro 4.3 d'Onset, à l'aide des paramètres d'exportation BoxCar par défaut. Ceci vous permet d'afficher les données d'enregistreurs Onset qui ne peuvent pas être lus à l'aide de HOBOware Pro.<br /></li>
+            <li class="sp_bull" value="3">Moyennant certains ajustements, 
+ vous pourrez ouvrir des fichiers texte qui ont été exportés à partir d'un autre logiciel. Vous pourrez également créer des fichiers 
+ texte de A à Z, à l'aide d'informations historiques ou d'autres types d'information. </li>
+        </ul>
+        <p>Voir aussi<a href="Data Files/imp_reqs.htm">&#160;Importation d'exigences liées aux</a></p>
+        <h2>Procédure</h2>
+        <p>Pour importer des données à partir d'un fichier texte correctement formaté :</p>
+        <ol style="list-style: decimal;list-style-type: decimal;">
+            <li class="sp_bull" value="1">Dans le menu<b> Fichier</b>, sélectionnez<span style="font-weight: normal;font-style: italic;"> Importer données</span> texte. </li>
+            <li class="sp_bull" value="2">Sélectionnez un fichier texte (.txt)<span style="font-weight: bold;"> et cliquez</span> sur Ouvrir.</li>
+            <li class="sp_bull" value="3">Si le fichier texte a été créé par le logiciel Alarm &amp; 
+ Readout Tool, passez directement à l'étape 8. </li>
+        </ol>
+        <p class="bodyindent">Sinon, HOBOware Pro essaie d'analyser le fichier texte et affiche la boîte de dialogue Informations d'importation de texte. Pour 
+ conserver les ressources système, il affiche uniquement les premiers enregistrements dans le fichier, et non pas tout le contenu.</p>
+        <ol style="list-style: decimal;list-style-type: decimal;" MadCap:continue="true">
+            <li class="sp_bull" value="4">Observez les données dans<span style="font-weight: bold;"> la zone Aperçu délimiteur</span> pour vous assurer que les colonnes de date, d'heure et de données ont été correctement séparées. </li>
+        </ol>
+        <blockquote>
+            <ul>
+                <li value="1">Sinon, utilisez les listes<span style="font-weight: bold;"> déroulantes Séparateur</span><span style="font-weight: bold;"> de données, Séparateur</span><span style="font-weight: bold;"> de date/heure</span> et Séparateur décimal 
+ pour choisir d'autres délimiteurs jusqu'à ce que les données aient un aspect correct.</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Vous pouvez redimensionner les colonnes en glissant-déplaçant les séparations entre les titres de colonne.</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Pour les fichiers texte qui n'ont pas été exportés dans le format BoxCar par défaut, cliquez sur le bouton<span style="font-weight: bold;">  Modifier format date/heure</span> et assurez-vous que la fonction d'importation interprète correctement les séparateurs et formats de date, heure et année. Utilisez la date et l'heure en cours affichées dans le panneau Échantillon en guise de guide. Apportez les modifications nécessaires, puis cliquez sur<span style="font-weight: bold;">&#160;OK</span>.</li>
+            </ul>
+        </blockquote>
+        <ol style="list-style: decimal;list-style-type: decimal;" MadCap:continue="true">
+            <li class="sp_bull" value="5">Lorsque le<span style="font-weight: bold;"> champAperçu délimiteur</span> est correct, cliquez<span style="font-weight: bold;"></span> sur OK.</li>
+            <li class="sp_bull" value="6">Selon le contenu du fichier, la boîte<a href="plot_setup_window.htm"> de dialogue Configuration de tracé</a> pourra s'afficher à ce moment. Dans ce cas, passez à l'étape 
+ 8. </li>
+        </ol>
+        <p class="bodyindent">Sinon, la boîte  de dialogue<b> Informations sur fichier texte</b> s'affiche. Cette boîte de dialogue vous permet d'ajouter
+ des informations facultatives et de modifier les unités au besoin. </p>
+        <ol style="list-style: disc;list-style-type: decimal;">
+            <ul style="list-style: disc;" type="disc">
+                <li class="sp_bull" value="1">Entrez une<span style="font-weight: bold;"> Description</span>, qui deviendra le titre du tracé et sera incluse au volet Détails<a href="Reference/details.htm"></a>.</li>
+                <li class="sp_bull" value="2">Sélectionnez<span style="font-weight: bold;"> un</span> Modèle sur la liste. Si vous sélectionnez<span style="font-weight: bold;"> Autre/tierce partie</span>, vous pouvez entrer une description 
+ (20 caractères maximum) de l'enregistreur ou d'une autre source de données dans le champ suivant.</li>
+                <li class="sp_bull" value="3">Entrez le 
+ <span style="font-weight: bold;"> N° de série</span> de l'enregistreur, le cas échéant.</li>
+                <li class="sp_bull" value="4">Dans le champ<span style="font-weight: bold;"> Paramètres de canal</span>, assurez-vous que les unités sont correct ez pour les données dans le fichier.</li>
+            </ul>
+        </ol>
+        <ol start="7" style="list-style: decimal;list-style-type: decimal;">
+            <li class="sp_bull" value="7">Cliquez sur<span style="font-weight: bold;"> OK</span>.</li>
+            <li class="sp_bull" value="8">La  boîte<a href="plot_setup_window.htm"> de dialogue Configuration  de tracé</a> s'affiche. Sélectionnez la série que vous voulez afficher dans le tracé. Vous avez également l'option de modifier les heures sur le tracé en changeant le fuseau horaire. </li>
+            <li class="sp_bull" value="9">Lorsque vous faites vos sélections, cliquez sur le bouton<span style="font-weight: bold;"> Tracé</span>. </li>
+        </ol>
+        <p>Le tracé s'affiche. Il est possible que vous vouliez enregistrer votre travail dans un fichier de projet (.hproj) pour visualisation rapide par la suite.</p>
+        <script type="text/javascript" src="SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

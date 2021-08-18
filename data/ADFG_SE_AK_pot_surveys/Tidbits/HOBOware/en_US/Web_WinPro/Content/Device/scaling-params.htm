@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" class="" MadCap:lastBlockDepth="2" MadCap:lastHeight="1403" MadCap:lastWidth="808" MadCap:tocPath="FlexSmart Modules/Analog Sensor Ports (HOBOware Pro Only)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Setting Scaling Parameters</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Setting Scaling Parameters</h1>
+        <p>This topic describes the settings for the scaling parameters section of the <b>Configure Channel</b> pane.</p>
+        <p>
+            <img src="../Resources/Images/asp-scaling.png" />
+        </p>
+        <h2>Raw
+</h2>
+        <h3>Units: </h3>
+        <p>This is the type of output the sensor has; either V or mA, corresponding to the type of sensor selected.
+</p>
+        <p>Raw Value 1 and Raw Value 2 should be input in these units.
+</p>
+        <p>For example, if the external sensor has an output of 4 – 20 mA, the raw units would be in mA.
+</p>
+        <h3>Value 1
+</h3>
+        <p>The low raw value given by the external sensor. In the previous example, this would be 4 mA.
+</p>
+        <h3>Value 2
+</h3>
+        <p>The high raw value given by the external sensor. In the previous example, this would be 20 mA. </p>
+        <p>Raw Value 2 must always be greater than Raw Value 1.
+</p>
+        <h2>Scaled
+</h2>
+        <h3>Units
+</h3>
+        <p>Choose one of the predefined units from the pull-down list, or choose <i>Custom</i> to define units for other types of sensors. See Custom Units below.
+</p>
+        <h3>Value 1
+</h3>
+        <p>The value you will see on the graph when the sensor reports a raw value equal to Raw Value 1. This value should be entered in the same units that are specified in the <b>Scaled Units</b> box.
+</p>
+        <h3>Value 2</h3>
+        <p>The value you will see on the graph when the sensor reports a raw value equal to Raw Value 2. This value should be entered in the same units that are specified in the <b>Scaled Units</b> box.
+</p>
+        <h2>Custom Units
+</h2>
+        <p>If you select
+<i>Custom</i> in the
+<b>Scaled Units</b> drop-down list, the following dialog appears.
+</p>
+        <p>
+            <img src="../Resources/Images/asp-custom-units.png" />
+        </p>
+        <p>Enter a description up to eight characters of the units associated with the physical property to be measured. For example, if the sensor attached to this channel was a flow meter that measured flow rate, you could specify CFS (Cubic Feet per Second) as the scaled unit. If you want to see data in particular SI or US units, you need to enter the appropriate scaling values and units here.
+</p>
+        <p>Custom units do not allow for  conversion between SI to US units. It is only a reference used to indicate how the module is configured and how the resulting data should be labeled.
+</p>
+        <p>Check the
+<b>Save this value for next time</b> box
+to have this unit name added to the <b>Scaled
+Units</b> <![CDATA[ ]]>drop-down list so that it can be selected in the future when using the same type of module. </p>
+        <p>Custom unit names are removed when you restore preference defaults.
+</p>
+        <p>Click <b>OK</b> to return to the <b>Configure Channel</b> dialog.
+ 
+ 
+
+
+
+</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

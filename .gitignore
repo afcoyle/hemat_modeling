@@ -1,2 +1,5 @@
 # Files to ignore
 .Rproj.user
+
+# Extra copy, temporary - will be sent over to Gannett
+data/ADFG_SE_AK_pot_surveys/copy_for_gannet/*

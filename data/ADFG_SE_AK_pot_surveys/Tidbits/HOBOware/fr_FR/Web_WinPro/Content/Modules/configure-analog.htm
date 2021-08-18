@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:lastBlockDepth="4" MadCap:lastHeight="1925" MadCap:lastWidth="830" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Modules FlexSmart/ports de capteur analogiques (HOBOware Pro seulement)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Configuration d'un port/module analogique</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <link href="../SkinSupport/MadCap.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Configuration d'un port/module analogique</h1>
+        <p>Cette rubrique décrit comment configurer un port de capteur analogique dans l'enregistreur HOBO U30 Station ou un module FlexSmart dans le Logger Pro.       <a href="#"></a></p>
+        <p><b>REMARQUE </b>La configuration d'un port/module analogique est uniquement disponible avecHOBOware Pro.</p>
+        <h2>Présentation</h2>
+        <p>L'enregistreur HOBO Energy Logger Pro est compatible avec les capteurs intelligents Onset et les modules FlexSmart. La station HOBO U30 utilise des capteurs intelligents et un port de capteur analogique en option. Les modules FlexSmart et le port de capteur analogique sont configurables par l'utilisateur pour permettre l'utilisation d'un large éventail de capteurs Onset et d'autres marques. Pour tirer parti de cette adaptabilité, HOBOware Pro vous permet de configurer ces modules à l'heure du lancement ou de créer et d'enregistrer différentes configurations à charger dans les modules/ports chaque fois que nécessaire.</p>
+        <h2>Procédure</h2>
+        <p><b>REMARQUE</b>:&#160;Cette procédure concerne la création d'une configuration et son envoi à un port. Pour envoyer une configuration déjà enregistrée à un port, reportez-vous à 
+<a href="../Load_reset_flexconfig.htm">« Chargement d'une configuration de port/module analogique », </a>.</p>
+        <p>Pour configurer un port ou un module analogique, procédez comme suit </p>
+        <ol>
+            <li value="1">Lancer... HOBOware Pro.</li>
+            <li value="2">Branchez l'enregistreur sur l'ordinateur.</li>
+            <li value="3">Dans le menu<b> Périphérique</b>, choisissez<i> Configurer modules</i>/ports.</li>
+        </ol>
+        <p>
+            <img src="../Resources/Images/conmodsprts.png" />
+        </p>
+        <p>Si l'enregistreur enregistre déjà, vous serez averti de l'arrêter dans un premier temps.</p>
+        <p>La boîte de dialogue <b>Sélectionner le canal à configurer</b> s'affiche pour indiquer tous les capteurs analogiques configurables attachés à l'enregistreur.</p>
+        <p><b></b>Si vous utilisez l'enregistreur HOBO Energy Logger Pro, vous pouvez brancher des modules supplémentaires durant l'affichage de cette boîte de dialogue. Ensuite, cliquez sur <b>Rafraîchir</b> pour mettre à jour la liste des modules.  </p>
+        <ol MadCap:continue="true">
+            <li value="4">Cliquez sur le signe + pour développer l'entrée et afficher les canaux.</li>
+        </ol>
+        <p>
+            <img src="../Resources/Images/Select-chan-dialog2.png" />
+        </p>
+        <p>Chaque canal dans le module est défini par son numéro de canal (ordre physique dans le module), le nom de canal configuré et tout emplacement (assigné au lancement) défini pour ce canal dans l'enregistreur.</p>
+        <p><b>REMARQUE</b> : Les noms de canal par défaut Tension et Intensité sont juste des paramètres fictifs et chaque canal peut être configuré pour mesurer la tension ou l'intensité. Par exemple, les deux canaux peuvent servir à surveiller les capteurs à sortie 4-20 mA.</p>
+        <ol MadCap:continue="true">
+            <li value="5">Sélectionnez un nom de canal, puis cliquez sur le bouton 
+<b>Configurer</b> pour ouvrir la boîte de dialogue de configuration pour ce canal.</li>
+        </ol>
+        <p class="bodyindent"><b>REMARQUE </b>:&#160;Vous pouvez également accéder à la boîte de dialogue de <b>configuration</b> à partir de la fenêtre de       <b>lancement</b>. Dans la section <i>Canaux à enregistrer</i>, cliquez deux fois sur le nom de module/port pour le développer, cliquez sur le nom de canal pour le sélectionner, puis cliquez sur le bouton       <b>Configurer</b>.</p>
+        <p>La boîte<a href="../configure_module.htm" target="" title="" alt="" class="MCXref_h1">Boîte de dialogue Configurer canal</a> canal s'affiche.</p>
+        <ol MadCap:continue="true">
+            <li value="6">Modifiez tous les paramètres configurables pertinents :</li>
+            <li value="7">Enregistrez la configuration (facultatif).  </li>
+        </ol>
+        <p class="bodyindent">Inutile d'enregistrer la configuration si vous allez l'envoyer immédiatement au module/port, mais vous pourrez trouver commode d'enregistrer la configuration pour une utilisation ultérieure, surtout si vous avez défini des paramètres de capteur personnalisés.&#160;</p>
+        <p class="bodyindent">Pour enregistrer cette configuration pour une utilisation future avec tout module/port du même type, cliquez sur <b>Enregistrer</b>,<b></b> entrez un nom pour le fichier et cliquez sur      <b>Enregistrer</b>.</p>
+        <p class="bodyindent">Par défaut, le fichier est enregistré à l'emplacement suivant avec l'extension .hcfg</p>
+        <p class="bodyindent">Windows : Mes Documents\HOBOware\Configs</p>
+        <p class="bodyindent">Mac:&#160;Finder\HOBOware\Configs</p>
+        <ol MadCap:continue="true">
+            <li value="8">Pour envoyer la configuration actuellement affichée sur le module/port, cliquez<b> sur</b> Configurer. </li>
+        </ol>
+        <p>Le module restera dans cette configuration jusqu'à ce que vous lui envoyiez une configuration différente.
+&#160;</p>
+        <p>&#160;</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

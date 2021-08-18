@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:ignoredWords="FlexSmart" MadCap:lastBlockDepth="4" MadCap:lastHeight="1525" MadCap:lastWidth="966" MadCap:tocPath="The HOBO U30 Station (HOBOware Pro Only)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Working with the HOBO U30 Station (HOBOware Pro&#160;Only)</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Working with the HOBO U30 Station (HOBOware Pro&#160;Only)</h1>
+        <p>The HOBO U30 Station is designed primarily for use with HOBOlink which allows for continuous logging and transmission of data using mobile network technology. There are, however, some features that are only accessible through HOBOware Pro, and some recommended guidelines for using HOBOware Pro. </p>
+        <h2>Overriding HOBOlink</h2>
+        <p>If you attempt to launch, read out, or check that status of the HOBO U30 Station using HOBOware Pro, you may see a message indicating there is already a live HOBOlink session underway. You can choose to override the HOBOlink connection and use HOBOware Pro instead. </p>
+        <p>Alternatively, you may see a message indicating the HOBO U30 Station is busy and a HOBOware Pro session cannot begin. Try again in a few minutes.</p>
+        <p>	The readout configuration you define in HOBOlink sets up how frequently the HOBO U30 Station will connect to HOBOlink. For example, if you set a connection interval for 4 hours then the HOBO U30 Station will contact HOBOlink automatically every 4 hours. </p>
+        <p>There may be circumstances in which you want to override this schedule and contact HOBOlink immediately. For example, you moved the HOBO U30 Station to a different location and you want to make sure it can still connect to HOBOlink, but you don’t want to wait four hours until the next connection. Click the Contact HOBOlink button in the Status window to force an immediate connection.</p>
+        <h2>Which Software to Use</h2>
+        <p>The following table details when to use HOBOware Pro instead of HOBOlink.</p>
+        <h3>Launching</h3>
+        <p>It is strongly recommended that launching be done exclusively through HOBOlink Any launch that you have configured with HOBOlink will override the launch parameters set with HOBOware Pro.</p>
+        <h3>Reading out</h3>
+        <p>Readouts are done automatically on a schedule that you set with HOBOlink. Use HOBOware Pro to read out only if you are conducting a test or if you need an immediate readout.</p>
+        <p>Checking status and signal strength</p>
+        <p>Check HOBOlink for the latest data, current status, and alarm information.&#160;</p>
+        <p>Open the Status window in HOBOware Pro if you wish to check how powerful the cellular signal for the HOBO U30 Station in the current location. This will help you determine if you need to reposition the station for optimal signal strength.</p>
+        <h3>Configuring the Analog Sensor Port</h3>
+        <p>This can only be done in HOBOware Pro and is accessed through the Launch window. See <a href="../configure_module.htm">Configuring FlexSmart Modules and Analog Sensor Ports</a> for details.</p>
+        <h3>Changing the default relay setting or testing the relay</h3>
+        <p>The default relay setting for the HOBO U30 Station is normally open, and can only be changed in HOBOware Pro. You can also use HOBOware Pro to test the relay.&#160;</p>
+        <p>See <a href="relay.htm">Controlling the Relay on the U30 Station</a> for details. </p>
+        <p>Use HOBOlink to set up individual alarms.</p>
+        <h3>Testing individual Smart Sensors</h3>
+        <p>Use HOBOware Pro to test the accuracy of individual Smart Sensors.&#160;</p>
+        <p>When the HOBO U30 Station is not logging, </p>
+        <ol>
+            <li value="1">Unplug all Smart Sensors. </li>
+            <li value="2">Plug one Smart Sensor back in. </li>
+            <li value="3">Check the current reading for the sensor in the HOBOware Pro launch window. </li>
+            <li value="4">Repeat with the remaining Smart Sensors.</li>
+        </ol>
+        <h3>Additional plotting and analysis of datafiles</h3>
+        <p>HOBOlink displays data read-out from the HOBO U30 Station in line graphs and shows the readings from the last connection. The data is also saved in a datafile that can be downloaded and saved to your computer. You can then open the datafile in HOBOware Pro and view and plot the data in different ways. </p>
+        <p>&#160;</p>
+        <p>&#160;</p>
+        <h2>&#160;</h2>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

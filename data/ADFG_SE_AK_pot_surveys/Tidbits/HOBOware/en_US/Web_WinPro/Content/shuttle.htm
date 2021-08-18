@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:id="Shuttle_Management_dialog" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" MadCap:lastBlockDepth="4" MadCap:lastHeight="2700" MadCap:lastWidth="685" MadCap:tocPath="HOBO Shuttles (HOBOware Pro Only)" MadCap:PathToHelpSystem="../" MadCap:SearchType="Stem">
+    <head><title>Shuttle Management dialog</title>
+        <link href="Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="SkinSupport/MadCapBody.js">
+        </script>
+        <script src="SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor105"></a>Shuttle Management Dialog</h1>
+        <p>This topic describes the fields in the Shuttle Management dialog 
+ for the U-Shuttle and Waterproof Shuttle.</p>
+        <p><b>NOTE</b>:&#160;You can only offload HOBO&#160;Shuttles using HOBOware Pro.&#160;</p>
+        <h3 style="font-weight: normal;"><span style="font-weight: bold;">U-Shuttle Battery Life</span>
+        </h3>
+        <p>While the Shuttle 
+ Management dialog is displayed, the U-Shuttle remains on battery power 
+ for up to an hour. After one hour, or any time the U-Shuttle's main battery 
+ level becomes low, the dialog closes and the shuttle powers down.&#160;&#160;To further 
+ conserve the shuttle's battery life, you should close the dialog, disconnect 
+ the shuttle, and turn the shuttle off as soon as you finish working with 
+ it.</p>
+        <p> The Waterproof Shuttle is powered by the USB port, and does not need 
+ to be turned off.</p>
+        <p>
+            <img src="Resources/Images/Shuttle-mgmnt.png" />
+        </p>
+        <ol>
+            <li value="1">Device Details</li>
+        </ol>
+        <p class="bodyindent" style="font-weight: bold;"><span style="font-weight: normal;"><i>Device Type</i>: Shuttle model and description.</span>
+        </p>
+        <p class="bodyindent"><i>Serial Number</i>: Serial number of the shuttle.</p>
+        <p class="bodyindent"><i>Firmware Version</i>: Version number of the shuttle's firmware.</p>
+        <p class="bodyindent"><i>Main Batt Level (AA)</i><span style="font-style: normal;">(</span>U-Shuttle only)<span style="font-style: italic;"></span></p>
+        <blockquote>
+            <p class="bodyindent">Condition of the shuttle's main batteries. Consult the <span style="font-style: italic;">U-Shuttle 
+ User's Guide</span> for specifics on battery capacity.</p>
+        </blockquote>
+        <p class="bodyindent"><a name="kanchor106"></a><i>Clock Batt Level (CR1225)</i><span style="font-style: italic;"> <![CDATA[ ]]></span>(U-Shuttle only)<span style="font-style: italic;"></span></p>
+        <blockquote>
+            <p class="bodyindent">Condition of the battery that provides backup power to the shuttle's 
+ clock. Consult the <span style="font-style: italic;">U-Shuttle User's 
+ Guide</span> for details.</p>
+        </blockquote>
+        <p class="bodyindent"><i>Battery Level</i> <![CDATA[ ]]><span style="font-style: normal;">(Waterproof Shuttle only)</span></p>
+        <blockquote>
+            <p class="bodyindent">Condition of the shuttle's batteries when you opened the Waterproof 
+ Shuttle Management dialog. If the batteries are low, remember to change 
+ them before going into the field. Consult the <span style="font-style: italic;">Waterproof 
+ Shuttle User's Guide</span> for specifics on battery capacity.</p>
+        </blockquote>
+        <p class="bodyindent"><i>Last Launched</i>
+        </p>
+        <blockquote>
+            <p class="bodyindent"><a name="kanchor107"></a>Date, time, and offset to Greenwich Mean Time (GMT, also known as UTC) 
+ when the shuttle was last launched.</p>
+        </blockquote>
+        <p class="bodyindent"><i>Computer Clock</i>: Time reported by the computer's clock.</p>
+        <p class="bodyindent"><i>Shuttle Clock</i>
+        </p>
+        <blockquote>
+            <p class="bodyindent">Status of the shuttle's clock in relation to the computer's clock. If 
+ the difference is more than five seconds, the shuttle clock label and 
+ icon will flash red. The shuttle's clock is synchronized to the computer 
+ when you launch the shuttle or press the <span style="font-weight: bold;">Set 
+ Shuttle Clock</span> button.</p>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li value="2">Files on Shuttle</li>
+        </ol>
+        <p class="bodyindent"><i style="font-style: normal;">This panel lists the logger datafiles that are available to be offloaded 
+ from the shuttle. If the shuttle is empty, this will say "No Files 
+ Available on Shuttle."</i>
+        </p>
+        <p class="bodyindent"><i>Status</i>: <span style="font-weight: normal;font-style: normal;">Message 
+ that describes the state of the datafile on the shuttle. When HOBOware 
+ Pro is offloading a file from the shuttle, the status message is replaced 
+ by a progress bar.</span><i>&#160;</i></p>
+        <blockquote>
+            <p class="bodyindent">For the U-Shuttle 
+ only, the status message <span style="font-weight: bold;">AWAITING OFFLOAD</span> 
+ appears when HOBOware Pro is offloading files from the shuttle, and <span style="font-weight: bold;">FINISHED</span> after each file is offloaded.</p>
+        </blockquote>
+        <blockquote>
+            <p class="bodyindent">For the Waterproof 
+ shuttle only, files have the status message <span style="font-weight: bold;">OFFLOADED</span> 
+ only if the file has been offloaded from the shuttle and saved as a datafile. 
+ If the file has not been offloaded, or it has been offloaded but not saved, 
+ its status is <span style="font-weight: bold;">NOT OFFLOADED</span>.</p>
+        </blockquote>
+        <p class="bodyindent"><i>Logger Type</i>: Model and description of the logger that logged the data in this file.</p>
+        <p class="bodyindent">Serial No.: Serial number of the logger that logged the data in this file.</p>
+        <p class="bodyindent"><i>Launch Desc.</i>: Description entered when the logger was launched. This description will 
+ be the default datafile name.</p>
+        <p class="bodyindent"><i>Launch Time</i>: Date, 
+ time, and offset to Greenwich Mean Time (GMT, also known as UTC) when 
+ the shuttle was last launched.</p>
+        <p class="bodyindent"><i>File Size</i>: Actual size of the datafile.</p>
+        <ol MadCap:continue="true">
+            <li value="3">Check All/Uncheck All</li>
+        </ol>
+        <p class="bodyindent">Use these buttons to check or uncheck all of the files on the shuttle to be offloaded.</p>
+        <ol MadCap:continue="true">
+            <li value="4">Synch Shuttle Clock</li>
+        </ol>
+        <p class="bodyindent">&#160;<span style="font-weight: normal;">Click this button to synchronize 
+ the shuttle's clock to the computer clock without launching the shuttle. 
+ (Exit HOBOware Pro if you need to update the computer's clock first.)</span>&#160;</p>
+        <p class="bodyindent"><span style="font-weight: bold;">Important:</span><i><![CDATA[ ]]></i>If the difference between the shuttle's clock and the computer's clock 
+ is more than 59 minutes, the <span style="font-weight: normal;font-style: italic;">Set Shuttle 
+ Clock</span> button is not available. You must launch 
+ the shuttle to correct the time difference.</p>
+        <ol MadCap:continue="true">
+            <li value="5"><a name="kanchor108"></a>Launch Shuttle</li>
+        </ol>
+        <p class="bodyindent">Click this button to Launch the shuttle. Launching the shuttle will delete all datafiles and reset the shuttle's clock.</p>
+        <p>Re-Launching the shuttle also repairs a <a href="Data Files/restore_header.htm">corrupted 
+ header</a>.</p>
+        <ol MadCap:continue="true">
+            <li value="6">Offload Checked</li>
+        </ol>
+        <p class="bodyindent">Click this button to offload all checked files to the computer.</p>
+        <p class="bodyindent">&#160;</p>
+        <p>&#160;</p>
+        <script type="text/javascript" src="SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

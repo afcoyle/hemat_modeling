@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:lastBlockDepth="5" MadCap:lastHeight="1981" MadCap:lastWidth="737" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Modules FlexSmart/ports de capteur analogiques (HOBOware Pro seulement)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Configuration de l'alimentation d'excitation</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Configuration de l'alimentation d'excitation</h1>
+        <p><b>REMARQUE</b>:&#160;La configuration du port du capteur analogique est uniquement disponible avec HOBOware Pro.</p>
+        <h2>Description</h2>
+        <p><span style="font-weight: bold;"></span>Vous pouvez configurer l'alimentation d'excitation et le préchauffage du capteur sur les Ports de capteur analogique. L'excitation du capteur est une sortie de tension fournie par l'enregistreur HOBO U30 Station Logger pour alimenter un capteur branché dessus. Cette alimentation pourra être nécessaire, parce que le capteur n'est pas auto-alimenté ou que la capacité d'alimentation du capteur ne peut pas prendre en charge un long déploiement.</p>
+        <p>Quand l'excitation du capteur est requise, l'enregistreur peut fournir une tension d'excitation de capteur de 12 V c.c. jusqu'à 200 mA au total pour les transducteurs exigeant une alimentation externe pour un fonctionnement correct. La tension d'excitation a un temps de préchauffage programmable et elle est commandée par le port de capteur analogique.</p>
+        <p>Le temps de préchauffage peut atteindre 120 secondes. Si le préchauffage requis dépasse 120 secondes ou si vous ne vous souciez pas de la durée de vie de la pile, 
+ vous pourrez<span style="font-weight: bold;"> sélectionner</span> l'option Continu, ce qui permettra d'alimenter le capteur pendant toute la durée du déploiement. Ensuite, cliquez<span style="font-weight: bold;"></span> sur OK pour retourner à la boîte de dialogue Configurer canal.</p>
+        <h3>Durée de vie de la pile</h3>
+        <p>En fournissant une alimentation d'excitation, l'alimentation de la pile est fortement mise à contribution. (Pour plus d'informations, consultez le manuel de l'enregistreur.) Pour économiser l'alimentation de la pile, vous pouvez spécifier le temps minimum nécessaire pour alimenter le capteur avant de prendre une mesure. Par exemple, si vous spécifiez<span style="font-weight: bold;"> un Préchauffage</span> d'une seconde et définissez l'intervalle d'enregistrement à u ne minute, l'enregistreur alimentera le capteur externe pendant une seconde, enregistrera les données, puis coupera l'alimentation d'excitation au cours de 59 secondes suivantes.</p>
+        <p>Activez toujours le canal de pile interne de l'enregistreur lorsque vous enregistrez avec l'alimentation d'excitation. Si la charge de la pile est trop faible pour fournir une alimentation d'excitation, l'alimentation d'excitation est coupée, mais l'enregistrement se poursuit tant que la pile peut encore alimenter l'enregistreur. Les relevés suivants sur ce canal seront toutefois faussés par cette faible alimentation. Si vous enregistrez le canal de pile interne quand ce problème survient, un événement Excitation désactivée apparaîtra dans votre fichier de données pour marquer le point auquel l'alimentation d'excitation a été désactivée.</p>
+        <h2>Configuration
+</h2>
+        <p>L'alimentation d'excitation est configurée dans la boîte de dialogue
+Configurer canal.</p>
+        <ol>
+            <li value="1">Cliquez sur le bouton Définir l'alimentation d'excitation pour ouvrir la boîte de dialogue Alimentation d'excitation.</li>
+        </ol>
+        <ol MadCap:continue="true">
+            <li value="2">Désélectionnez la case Alimentation d'excitation utilisée.</li>
+            <li value="3">Sélectionnez le mode.</li>
+        </ol>
+        <blockquote>
+            <ol style="list-style-type: lower-alpha;">
+                <li value="1">Si le mode est Préchauffage, sélectionnez le temps de préchauffage en secondes.</li>
+            </ol>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li value="4">Cliquez sur
+OK.</li>
+        </ol>
+        <h2>Modes</h2>
+        <h3>Préchauffage</h3>
+        <p>En mode Préchauffage, l'enregistreur fournit l'alimentation d'excitation pendant une brève période programmable par l'utilisateur avant chaque mesure. Ce mode vous permet de sélectionner le temps de préchauffage minimum nécessaire pour permettre la stabilisation du capteur, tout en économisant la pile.</p>
+        <p>Par exemple, si vous spécifiez un préchauffage d'une seconde et définissez l'intervalle d'enregistrement à une minute, l'enregistreur HOBO U30 Station Logger alimentera le capteur externe pendant une seconde, enregistrera une mesure, puis coupera l'alimentation d'excitation au cours des 59 secondes suivantes. Le temps de préchauffage peut atteindre 120 secondes.</p>
+        <p>Si le temps de préchauffage sélectionné est supérieur à l'intervalle d'enregistrement sélectionné, l'enregistreur interprétera le mode d'excitation comme étant continu.</p>
+        <h3>Continu</h3>
+        <p>En mode Continu, l'enregistreur fournit une alimentation d'excitation constante au capteur pendant toute la durée du déploiement. Ce mode raccourcit la vie de la pile. Le mode Continu est requis si le capteur a besoin de plus de deux minutes de temps de préchauffage.</p>
+        <p>Les ports de capteur analogiques commencent à fonctionner quand l'enregistrement débute. Quand les ports fonctionnent correctement, le voyant Active du port clignote une fois par intervalle d'enregistrement pour indiquer qu'une mesure a abouti. Le voyant Ex. On
+s'allume également une fois l'excitation activée.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

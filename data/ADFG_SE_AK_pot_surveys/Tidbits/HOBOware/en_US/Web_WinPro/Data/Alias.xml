@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CatapultAliasFile Version="1" DefaultSkinName="HOBOware">
+    <Map Name="LaunchU12" Link="Reference/launch_params_usb.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="2" />
+    <Map Name="LaunchStation" Link="Reference/launch_params_station.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="3" />
+    <Map Name="Status" Link="status_window.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="4" />
+    <Map Name="PlotSetup" Link="plot_setup_window.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="5" />
+    <Map Name="Prefs" Link="Setting_preferences.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="6" />
+    <Map Name="Units" Link="Miscellaneous_plot_controls.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="7" />
+    <Map Name="Filter" Link="filter.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="8" />
+    <Map Name="Export" Link="export_points.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="9" />
+    <Map Name="AlarmPend" Link="General/config-alarms.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="11" />
+    <Map Name="LinScaleU12" Link="scaling.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="12" />
+    <Map Name="PrintPrev" Link="print_graph.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="10" />
+    <Map Name="Shuttle" Link="Shuttle/wkng-shuttle.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="17" />
+    <Map Name="FlexLoad" Link="Load_reset_flexconfig.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="16" />
+    <Map Name="FlexSelect" Link="select_module.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="14" />
+    <Map Name="FlexDialog" Link="Modules/creare-config.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="15" />
+    <Map Name="ImportText" Link="importing_text_files.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="20" />
+    <Map Name="PropAxis" Link="Graphs/props_axis.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="1000" />
+    <Map Name="PropLabel" Link="Graphs/props_label.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="1001" />
+    <Map Name="PropSeries" Link="Graphs/props_series.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="1003" />
+    <Map Name="PropStats" Link="Graphs/view_sub-stats.htm" Skin="SkinHOBOware/Skin.xml" ResolvedId="1004" />
+</CatapultAliasFile>

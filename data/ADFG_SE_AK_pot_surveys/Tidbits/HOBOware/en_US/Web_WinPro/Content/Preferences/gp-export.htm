@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" class="" MadCap:lastBlockDepth="7" MadCap:lastHeight="2571" MadCap:lastWidth="993" MadCap:tocPath="Setting HOBOware Preferences" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Export Settings</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor125"></a><b>Export Settings</b>
+        </h1>
+        <p>Use this dialog to customize how your data is formatted when you export a data file.</p>
+        <p>
+            <img src="../Resources/Images/Export.png" />
+        </p>
+        <p>
+        </p>
+        <ol>
+            <li value="1"><i>Use default Boxcar Pro export settings</i> <![CDATA[ ]]></li>
+            <p class="bodyindent">Click this button to export data using the default settings for Onset's Boxcar Pro software, which are listed <a name="kanchor126"></a>below.</p>
+            <li value="2"><span style="font-weight: normal;">Export table 
+ data column separator</span>
+            </li>
+        </ol>
+        <p class="bodyindent">Select the desired separator. </p>
+        <p class="bodyindent">When <span style="font-weight: bold;">Comma</span> 
+ is selected as the column separator, the default file type is .csv, which 
+ can be imported automatically into Microsoft Excel. </p>
+        <p class="bodyindent">When <span style="font-weight: bold;">Tab</span> 
+ or <span style="font-weight: bold;">Semicolon</span> is selected for the 
+ column separator, the default file type changes to .txt instead of .csv.</p>
+        <blockquote>
+            <p>Other options: Select or deselect options as desired.</p>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Include line number column</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <p class="bodyindent">By default, exported files include line numbers. Uncheck this box if you do not want line numbers included in the file (for example, to export in Onset's BoxCar-like format)</p>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Include plot title in header<p>Deselect this option if you do not want the plot title included in the header. This option is primarily for compatibility with Onset's BoxCar Pro software format.</p></li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Always show fractional seconds<p>Select this option for compatibility with Onset's BoxCar Pro software format. </p></li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Separate date and time into two columns</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <p class="bodyindent"> This setting controls how the columns in 
+ the Points table are separated in the export file.  By default, date and time are 
+ exported as a single column to facilitate graphing in spreadsheet programs. 
+ If enabled, this setting splits the date and time into two columns.</p>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li value="3">Column header</li>
+        </ol>
+        <blockquote>
+            <ul>
+                <li value="1">No quotes or commas in headings, properties in parenthesis<p>Select this option for compatibility with Onset's BoxCar Pro software format.</p></li>
+                <li value="2">Include logger serial number</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <blockquote>
+                <p>This setting adds the logger's serial number to each column header when 
+ you export the Points table. This is especially useful if you are exporting 
+ series that were copied and pasted from plots that came from different 
+ loggers.</p>
+            </blockquote>
+        </blockquote>
+        <blockquote>
+            <ul>
+                <li value="1">Include location string or sensor serial number (if available) (HOBOware Pro only)</li>
+            </ul>
+        </blockquote>
+        <blockquote>
+            <blockquote>
+                <p>If this option is selected, the sensor's serial number (if available) is added to each column header when you export the Points 
+ pane. This is especially useful if you are exporting data that includes 
+ similarly-named series that were recorded on different sensors; for example, 
+ a HOBO Weather Station datafile with data from three temperature sensors. </p>
+                <p>If <i>No quotes or commas in headings, properties in parenthes</i> is selected, the location string, if available, will be added instead of the sensor serial number.</p>
+                <p><b>NOTE</b>:&#160;In order to export the location string, you must also select <b>Include sensor Location (if available) in points table and details pane</b> in the <a href="prefs-plotting.htm">Plotting Preferences</a> pane .</p>
+            </blockquote>
+        </blockquote>
+        <p />
+        <ol MadCap:continue="true">
+            <li MadCap:conditions="" value="4">Formats</li>
+        </ol>
+        <blockquote>
+            <ul>
+                <li value="1">Date Format - Select the format in which you want the date to be shown.</li>
+                <li value="2">Time Format - Select whether you want  HOBOware to show the time in a 12-hour or 
+ 24-hour format. The default is <span style="font-weight: normal;">12-Hour</span>. 
+ </li>
+                <li value="3">Positive Number Format - Select the desired format for positive numbers</li>
+                <li value="4">Negative Number Format - Select the desired format for negative numbers</li>
+            </ul>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li MadCap:conditions="" value="5">Automatically export table data upon reading out of a logger</li>
+        </ol>
+        <p class="bodyindent">Enable this setting if you want the data
+to be exported to a separate text file every time a logger is readout and you plot the data by clicking <b>Plot</b> in the <b>Plot Setup</b> dialog. An export file is saved in addition to the standard data file.</p>
+        <ol MadCap:continue="true">
+            <li value="6">Bypass Multi-file Export</li>
+        </ol>
+        <p class="bodyindent">By default, the data will be exported to a single text file with the same prefix and in the same location as the datafile. To export multiple files, uncheck this option.</p>
+        <ol MadCap:continue="true">
+            <li value="7">Show multi-file export Dialog</li>
+        </ol>
+        <p class="bodyindent">Select this option to save the exported data to multiple files, which may be helpful if the datafile is very large.</p>
+        <h2>Boxcar Settings</h2>
+        <p>The following graphic shows the settings if you select <i>Use default BoxCar Pro export settings</i>.</p>
+        <p>
+            <img src="../Resources/Images/Boxcar-format.png" />
+        </p>
+        <p MadCap:conditions="">
+            <p>&#160;</p>
+        </p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

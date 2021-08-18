@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:lastBlockDepth="4" MadCap:lastHeight="651" MadCap:lastWidth="787" MadCap:tocPath="Conformité à 21 CFR Partie 11" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Problèmes de mode de sécurité</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Problèmes de mode de<a name="kanchor96"></a><a name="kanchor97"></a> sécurité</h1>
+        <p>Des problèmes sont possibles si vous n'utilisez pas toujours HOBOware Pro en<a href="secure_mode.htm">&#160;mode Sécurité</a>, si vous utilisez parfois HOBOware Lite ou si vous utilisez parfois une version de HOBOware antérieure à 2.3.0. </p>
+        <p>Selon le type d'enregistreur, la version de HOBOware qui a lancé l'enregistreur et la version de HOBOware 
+ qui lit l'enregistreur, le fichier de données résultant risque de ne pas être compatible 
+ avec des versions de HOBOware antérieures à 2.3.0, ou vous risquez de ne pas pouvoir lire du tout l'enregistreur.</p>
+        <ul style="list-style: disc;" type="disc">
+            <li class="sp_bull" value="1"><span style="font-weight: bold;">Lancement non sécurisé 
+ (toute version de HOBOware)<br /></span>Lecture non sécurisée (toute version de HOBOware)Un fichier de données rétrocompatible (.hobo ou .dtf) est créé.</li>
+            <li class="sp_bull" value="2"><span style="font-weight: bold;">Lancement non sécurisé 
+ (toute version de HOBOware)<br /></span>Lecture en mode Sécurité Un fichier sécurisé (.hsec ou .dsec) est créé avec une piste d'audit qui recense l'auteur de la lecture, mais pas l'auteur du lancement. Secure files are not 
+ backward-compatible.</li>
+            <li class="sp_bull" value="3"><span style="font-weight: bold;">Lancement en 
+ mode Sécurité ;<br /> Lecture dans une version pré-2.3 de HOBOware<br style="font-style: italic;" /><i>La plupart des enregistreurs série U </i></span>: l'enregistreur<br /><i> ne peut pas</i> être lu. Enregistreurs du type station : un fichier de données rétrocompatible (.dtf) est créé.</li>
+            <li class="sp_bull" value="4"><span style="font-weight: bold;">Lancement en mode Sécurité ;<br /> Lecture non sécurisée dans HOBOware 2.3<br /><i>La plupart des enregistreurs série U : </i></span> un fichier de données (.hobo) est créé, mais<br /><i> il n'est pas rétrocompatible</i>.Enregistreurs du type station : un fichier de données rétrocompatible (.dtf) est créé.</li>
+            <li class="sp_bull" value="5"><span style="font-weight: bold;">Lancement en mode Sécurité ;<br />Lecture en mode Sécurité<br /></span>Un fichier sécurisé (.hsec ou .dsec) est créé avec une piste d'audit complète.Les fichiers sécurisés ne sont pas rétrocompatibles. </li>
+        </ul>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

@@ -58,7 +58,7 @@ str(crabdat)
 
 ## Check for correlation
 
-Prior to modeling anything, we're going to run checks on combinatinos of variables to see if any are correlated
+Prior to modeling anything, we're going to run checks on combinations of variables to see if any are correlated
 
 #### Correlation between continuous variables
 

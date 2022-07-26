@@ -1,2 +1,0 @@
-Date	Time	Temperature  (*C)
-07/12/06	11:35:26	18.23

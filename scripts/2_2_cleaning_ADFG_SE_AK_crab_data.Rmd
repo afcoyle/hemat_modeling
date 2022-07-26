@@ -42,7 +42,7 @@ Now, let's look at the column names of each
 colnames(crabdat)
 
 crabdat <- crabdat %>%
-  rename(Year = "ï..Year")
+  dplyr::rename(Year = "ï..Year")
 
 # We can start by removing several columns.
 
@@ -58,7 +58,7 @@ crabdat <- crabdat %>%
 # Tag.Event.Code: Event under which each crab was tagged is irrelevant
 
 crabdat <- crabdat %>%
-  select(-c(Specimen.No, Number.Of.Specimens, Length.Millimeters,
+  dplyr::select(-c(Specimen.No, Number.Of.Specimens, Length.Millimeters,
             Width.Spines.Millimeters, Tag.No,
             Tag.Event.Code))
 ```
@@ -131,7 +131,7 @@ table(crabdat$Pot.No, useNA = "ifany")
 table(crabdat$Species, useNA = "ifany")
 
 # Since they're all Tanner crab, this column contains no useful info and can be removed
-crabdat <- select(crabdat, -Species)
+crabdat <- dplyr::select(crabdat, -Species)
 ```
 
 ### Sex
@@ -205,7 +205,7 @@ plot(crabdat$Weight.Grams, crabdat$Width.Millimeters)
 
 # As expected, width and weight are pretty dang tightly correlated
 # Since only around 5% have weight measurements, we'll remove the column
-crabdat <- select(crabdat, -Weight.Grams)
+crabdat <- dplyr::select(crabdat, -Weight.Grams)
 ```
 
 ### Chela.Height.Millimeters
@@ -414,7 +414,7 @@ We'll just directly remove this table. Tanner crabs have very small spines, and 
 # Check just in case there's a tonnnn of info here
 table(crabdat$Legal.Size, useNA = "ifany")
 # Nope, let's remove
-crabdat <- select(crabdat, -Legal.Size)
+crabdat <- dplyr::select(crabdat, -Legal.Size)
 ```
 
 ### Leatherback
@@ -427,7 +427,7 @@ It is not present in Tanners, therefore this column can be removed
 # Just double check here
 table(crabdat$Leatherback, useNA = "ifany")
 # Yep, remove
-crabdat <- select(crabdat, -Leatherback)
+crabdat <- dplyr::select(crabdat, -Leatherback)
 ```
 
 ### Parasite
@@ -491,7 +491,7 @@ crabdat[grep("legal_size_code edited from 00", crabdat$Specimen.Comments, ignore
 # Looked through all remaining comments, and found zero interesting enough to change another column's value
 
 # Therefore, remove the column
-crabdat <- select(crabdat, -Specimen.Comments)
+crabdat <- dplyr::select(crabdat, -Specimen.Comments)
 ```
 
 
@@ -555,7 +555,7 @@ crabdat <- crabdat %>%
   filter(Parasite == "" | Parasite == "Bitter crab" | Parasite == "None present")
 
 # We'll now change the column name from Parasite to Bitter
-crabdat <- rename(crabdat, Bitter = Parasite)
+crabdat <- dplyr::rename(crabdat, Bitter = Parasite)
 
 # We'll also recode all blanks or uninfected crab as 0 and all infected crab as 1
 crabdat <- crabdat %>%
@@ -573,6 +573,9 @@ BM.crabdat <- crabdat
 BCS.crabdat <- crabdat[crabdat$Year >= 1997 & !is.na(crabdat$Year), ]
 
 # Bummer, there goes a lot of our data. Ah well, nothing we can do about it!
+
+ggplot(BCS.crabdat, aes(fill = Bitter, x = Year)) +
+  geom_bar(position = "fill")
 ```
 
 ### Writing out data

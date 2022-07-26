@@ -1,0 +1,2 @@
+Date	Time	Temperature  (*C)
+06/19/07	11:14:33	24.89

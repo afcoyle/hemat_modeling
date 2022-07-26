@@ -59,7 +59,7 @@ all_equal(new_data, full_data, ignore_col_order = FALSE)
 
 # Appears that the differences are solely in formatting (Chela -> chela and STATIONID -> STATION ID). Let's fix those so the 2015 data match the 2014 data
 new_data <- new_data %>%
-  rename(
+  dplyr::rename(
     Chela = chela,
     STATIONID = "STATION ID"
   )
@@ -81,7 +81,7 @@ all_equal(new_data, full_data, ignore_col_order = FALSE)
 
 # Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
 new_data <- new_data %>%
-  rename(
+  dplyr::rename(
     Chela = chela,
     "PCR result" = "PCR Result",
     "Host_Tissue" = "Host Tissue"
@@ -111,7 +111,7 @@ all_equal(new_data, full_data, ignore_col_order = FALSE)
 
 # Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
 new_data <- new_data %>%
-  rename(
+  dplyr::rename(
     Chela = chela,
     "Host_Tissue" = "Host Tissue"
   )
@@ -143,7 +143,7 @@ all_equal(full_data, new_data)
 
 # Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
 new_data <- new_data %>%
-  rename(
+  dplyr::rename(
     Chela = chela,
     "Host_Tissue" = "Host Tissue"
   )
@@ -175,7 +175,7 @@ all_equal(full_data, new_data)
 
 # Again, appears that the mismatches in column names are simple differences in name formatting, not overall sheet organization. Therefore we can simply rename our columns
 new_data <- new_data %>%
-  rename(
+  dplyr::rename(
     Chela = chela,
     "Host_Tissue" = "Host Tissue",
     VESSEL = Vessel,
@@ -579,5 +579,23 @@ write.csv(all_crabs[all_crabs$Species == "Chionoecetes bairdi", ],
 write.csv(all_crabs[all_crabs$Species == "Chionoecetes opilio", ],
           file = "../output/NOAA_EBS_trawl_survey/modified_data/cleaned_opilio.csv",
           row.names = FALSE)
+```
+
+
+Addendum: Creating a quick graph of PCR positive results among all crabs
+
+```{r}
+crab.sum <- all_crabs %>%
+  group_by(Year, Species) %>%
+  summarise(
+    pct_inf = mean(PCR_Result)
+  )
+
+ggplot(data = crab.sum,
+       aes(x = Year, y = pct_inf, fill = Species)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_brewer(palette = "Set1") +
+  ylab("% Infected By Hematodinium (PCR)")
+   
 ```
 

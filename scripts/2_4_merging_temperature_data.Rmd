@@ -1,0 +1,76 @@
+---
+title: "2_4_merging_temperature_data"
+author: "Aidan Coyle"
+date: "7/25/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In the previous script, we fixed file structure issues in our temperature data. Now, we'll incorporate the temperature data, which is included in .txt files. This is going to be a pain, so buckle up. Main issues are as follows:
+
+- Temperature data is directly from data loggers that were in the pots. This means that they include both time at the bottom and time on deck.
+
+- In some years, data loggers are identified by the filename (T7 = Tidbit 7; Tidbit = data logger) in the temp data. In others, they're identified by survey number.
+
+- Tidbit number may shift from year to year
+
+- File structures differ substantially by year.
+
+- Best file to examine differs from year to year! Sometimes Tidbit files are individually numbered, other times they're already amalgamated into a master sheet
+
+Gameplan will be as follows:
+- Go through each year individually due to differences in file structure
+- Create master sheet of all 
+
+Summary of file structures is as follows. Note: this is approximate, as some years have different structures for the two surveys (one may be Tanner -> LegNum.txt, the other may be RKC -> Leg -> num.txt)
+
+Year -> Crab -> Leg -> num.txt
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+
+Year -> CrabLeg -> num.txt
+2006
+2007
+2008
+2009
+2010
+2017
+
+
+Year -> num,date.txt
+2005
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "readxl", "lubridate", "rnaturalearth", "rnaturalearthdata", "sf", "rgeos")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+
+
+
+
+

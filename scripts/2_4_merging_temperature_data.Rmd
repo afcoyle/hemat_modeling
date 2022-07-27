@@ -11,46 +11,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-In the previous script, we fixed file structure issues in our temperature data. Now, we'll incorporate the temperature data, which is included in .txt files. This is going to be a pain, so buckle up. Main issues are as follows:
+In the previous script, we fixed file structure issues in our temperature data. Now, we'll incorporate the temperature data, which is included in .txt (and occasionally .csv) files. This is going to be a pain, so buckle up. Main issues are as follows:
 
 - Temperature data is directly from data loggers that were in the pots. This means that they include both time at the bottom and time on deck.
 
-- In some years, data loggers are identified by the filename (T7 = Tidbit 7; Tidbit = data logger) in the temp data. In others, they're identified by survey number.
+- Data loggers are identified by the number in the filename
 
-- Tidbit number may shift from year to year
+- In some surveys, data loggers were downloaded once (at the end of all legs). More commonly, they were downloaded at the end of each survey.
 
-- File structures differ substantially by year.
+- Number of tidbits shift from year to year
 
 - Best file to examine differs from year to year! Sometimes Tidbit files are individually numbered, other times they're already amalgamated into a master sheet
 
 Gameplan will be as follows:
 - Go through each year individually due to differences in file structure
 - Create master sheet of all 
-
-Summary of file structures is as follows. Note: this is approximate, as some years have different structures for the two surveys (one may be Tanner -> LegNum.txt, the other may be RKC -> Leg -> num.txt)
-
-Year -> Crab -> Leg -> num.txt
-2011
-2012
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-
-Year -> CrabLeg -> num.txt
-2006
-2007
-2008
-2009
-2010
-2017
-
-
-Year -> num,date.txt
-2005
 
 #### Load libraries (and install if necessary)
 
@@ -69,6 +44,113 @@ lapply(list.of.packages, FUN = function(X) {
 })
 ```
 
+
+#### Correcting pot set data
+
+Our first job is to get all our pot set data set up
+
+### 2005
+
+Examined the merged skipper_tidbit file, but it's not high-quality. Each pot is listed as having a bunch of tidbits in it simultaneously. Therefore, we need to start from scratch. 
+
+```{r}
+data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1/10.txt"
+
+tidbit_data <- read.delim(file = data_path)
+
+# We need to extract two pieces of data from this filepath - the year and the Tidbit ID
+
+# First, extract year
+get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
+# While we're at it, get survey and leg
+get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
+get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
+# Finish getting year
+get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
+
+# Now extract ID
+get_id <- unlist(strsplit(data_path, split = "Leg_"))[2]
+get_id <- unlist(strsplit(get_id, split = "/"))[2]
+get_id <- str_remove(get_id, ".txt")
+
+# Add year, survey, leg, and ID to the tidbit data column
+tidbit_data$year <- get_year
+tidbit_data$survey <- get_survey
+tidbit_data$leg <- get_leg
+tidbit_data$tidbit_id <- get_id
+```
+
+
+```{r}
+# Get path to folder with all .txt files in it
+data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1"
+
+# List all files in folder
+tidbits <- list.files(data_path)
+
+# Starting at 2 here because we already read in the first file (10.txt)
+for (i in 2:length(tidbits)){
+  print(tidbits[i])
+  # Read in tidbit file
+  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
+  # Extract year from filename
+  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
+  # Quickly get survey and leg, then get year
+  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
+  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
+  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
+  # Extract ID from name of Tidbit file
+  get_id <- str_remove(tidbits[i], ".txt")
+  
+  # Add year, survey, and ID to the tidbit data column
+  new_tidbit$year <- get_year
+  new_tidbit$survey <- get_survey
+  new_tidbit$leg <- get_leg
+  new_tidbit$tidbit_id <- get_id
+  
+  # Join new Tidbit info to full Tidbit dataframe
+  tidbit_data <- rbind(tidbit_data, new_tidbit)
+}
+
+# Do the same for Leg 2 of the survey
+data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
+
+# List all files in folder
+tidbits <- list.files(data_path)
+
+# Starting at 2 here because we already read in the first file (10.txt)
+for (i in 1:length(tidbits)){
+  print(tidbits[i])
+  # Read in tidbit file
+  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
+  # Extract year from filename
+  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
+  # Quickly get survey and leg, then get year
+  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
+  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
+  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
+  # Extract ID from name of Tidbit file
+  get_id <- str_remove(tidbits[i], ".txt")
+  
+  # Add year, survey, and ID to the tidbit data column
+  new_tidbit$year <- get_year
+  new_tidbit$survey <- get_survey
+  new_tidbit$leg <- get_leg
+  new_tidbit$tidbit_id <- get_id
+  
+  # Join new Tidbit info to full Tidbit dataframe
+  tidbit_data <- rbind(tidbit_data, new_tidbit)
+}
+```
+
+Alright, we've now finished with 2005! That was an easy one since we've only got one survey with two legs. However, in the future, we'll have a lot more. We'll try to make things more efficient by adding an additional for loop for all legs of the survey.  
+
+
+### 2006
+
+```{r}
+RKC_data <- read_excel("../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/RKC_survey/skipper_tidbit_data.xls")
+```
 
 
 

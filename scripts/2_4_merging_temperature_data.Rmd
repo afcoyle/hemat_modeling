@@ -31,7 +31,7 @@ Gameplan will be as follows:
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "readxl", "lubridate", "rnaturalearth", "rnaturalearthdata", "sf", "rgeos")
+list.of.packages <- c("tidyverse", "readxl", "lubridate")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -43,11 +43,6 @@ lapply(list.of.packages, FUN = function(X) {
   do.call("require", list(X))
 })
 ```
-
-
-#### Correcting pot set data
-
-Our first job is to get all our pot set data set up
 
 ### 2005
 
@@ -78,8 +73,20 @@ tidbit_data$year <- get_year
 tidbit_data$survey <- get_survey
 tidbit_data$leg <- get_leg
 tidbit_data$tidbit_id <- get_id
+
+# Create datetime column from existing columns
+# Change Date and Time columns to correct object type
+tidbit_data$Date <- mdy(tidbit_data$Date, tz = "US/Alaska")
+tidbit_data$Time <- parse_time(tidbit_data$Time, "%H:%M:%S")
+# Paste date and time columns together
+tidbit_data$tidbit_datetime <- paste(tidbit_data$Date, tidbit_data$Time)
+
+# Remove date and time columns
+tidbit_data <- tidbit_data %>%
+  select(-c(Date, Time))
 ```
 
+We'll do the same basic process to append all data from tidbit files. To do this efficiently, we'll use a for loop.
 
 ```{r}
 # Get path to folder with all .txt files in it
@@ -87,6 +94,212 @@ data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1"
 
 # List all files in folder
 tidbits <- list.files(data_path)
+
+# Starting at 2 here because we already read in the first file (10.txt)
+for (i in 2:length(tidbits)){
+  print(tidbits[i])
+  # Read in tidbit file
+  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
+  # Extract year from filename
+  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
+  # Quickly get survey and leg, then get year
+  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
+  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
+  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
+  # Extract ID from name of Tidbit file
+  get_id <- str_remove(tidbits[i], ".txt")
+  
+  # Add year, survey, and ID to the tidbit data column
+  new_tidbit$year <- get_year
+  new_tidbit$survey <- get_survey
+  new_tidbit$leg <- get_leg
+  new_tidbit$tidbit_id <- get_id
+  
+  # Create datetime column from existing columns
+  # Change Date and Time columns to correct object type
+  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
+  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
+  # Paste date and time columns together
+  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
+  
+  # Remove date and time columns
+  new_tidbit <- new_tidbit %>%
+    select(-c(Date, Time))
+  
+  # Join new Tidbit info to full Tidbit dataframe
+  tidbit_data <- rbind(tidbit_data, new_tidbit)
+}
+
+# Do the same for Leg 2 of the survey
+data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
+
+# List all files in folder
+tidbits <- list.files(data_path)
+
+# Starting at 2 here because we already read in the first file (10.txt)
+for (i in 1:length(tidbits)){
+  print(tidbits[i])
+  # Read in tidbit file
+  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
+  # Extract year from filename
+  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
+  # Quickly get survey and leg, then get year
+  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
+  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
+  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
+  # Extract ID from name of Tidbit file
+  get_id <- str_remove(tidbits[i], ".txt")
+  
+  # Add year, survey, and ID to the tidbit data column
+  new_tidbit$year <- get_year
+  new_tidbit$survey <- get_survey
+  new_tidbit$leg <- get_leg
+  new_tidbit$tidbit_id <- get_id
+  
+  # Create datetime column from existing columns
+  # Change Date and Time columns to correct object type
+  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
+  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
+  # Paste date and time columns together
+  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
+  
+  # Remove date and time columns
+  new_tidbit <- new_tidbit %>%
+    select(-c(Date, Time))
+  
+  # Join new Tidbit info to full Tidbit dataframe
+  tidbit_data <- rbind(tidbit_data, new_tidbit)
+}
+
+# Set the temperature column to numeric
+tidbit_data$Temperature....C. <- as.numeric(tidbit_data$Temperature....C.)
+```
+
+To avoid dealing with an unmanageably large dataset, we'll now merge the Tidbit data with the pot data from 2005.
+
+```{r}
+# Read in the pot data from all years
+pot_data <- read_delim(file = "../data/ADFG_SE_AK_pot_surveys/Pot_Set_Data_for_Tanner_and_RKC_surveys.csv")
+
+# Clean up the pot data a bit
+
+# Remove spaces from column names
+names(pot_data) <- make.names(names(pot_data), unique = TRUE)
+
+# Eliminate columns we don't care about
+pot_data <- pot_data %>%
+  select(-c(Pot.Dimension.Feet, Pot.Escape.Device, Bait.Method, Weight.Of.Pot.Pounds,
+            Pot.Type, Substrate.Type, Debris.Type))
+
+# Change name of Tidbit ID column to match the one in use for tidbit_data
+pot_data <- rename(pot_data, tidbit_id = Tidbit.No)
+
+# Convert format of time columns from character to date
+pot_data$Time.Hauled <- mdy_hm(pot_data$Time.Hauled, tz = "US/Alaska")
+pot_data$Time.Set <- mdy_hm(pot_data$Time.Set, tz = "US/Alaska")
+
+# Filter pot data to only include info from 2005 Tanner survey
+ohfive_pot_data <- pot_data %>%
+  filter(Year == "2005" & Project == "Tanner Crab Survey")
+
+# Alright, issue here - Tidbit info isn't in the Tidbit column. It's kept in the comments. Ahhh, this will take a long, long time
+tidbit_pots <- ohfive_pot_data %>%
+  filter(grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
+
+# Check we got all tidbit pots by looking at comments that don't match
+non_tidbit_pots <- ohfive_pot_data %>%
+  filter(!grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
+
+# Yep, looks like tidbit_pots contains all 2005 tidbit pots!
+# Now we need to extract the tidbit number
+# In most, it's after a #
+
+# Get all from single-digit tidbits 
+tidbit_pots$tidbit_id <- str_extract(tidbit_pots$Pot.Comment, "#.")
+
+# Overwrite single-digits that should be double-digits without adding NAs
+# (prev. command read, say, #12 as #1)
+new_dig <- str_extract(tidbit_pots$Pot.Comment, "#.\\d")
+for (i in 1:length(new_dig)){
+  if (!is.na(new_dig[i])){
+    tidbit_pots$tidbit_id[i] <- new_dig[i]
+  }
+  else{}
+}
+
+# Remove the # from the column
+tidbit_pots$tidbit_id <- gsub("#", "", tidbit_pots$tidbit_id)
+
+# We still have a few left, but we can just add these manually
+tidbit_pots[grep("5 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "5"
+  
+tidbit_pots[grep("11 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "11"
+
+tidbit_pots[grep("10 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "10"
+
+tidbit_pots[grep("7 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "7"
+
+tidbit_pots[tidbit_pots$Pot.Comment == "Tidbit # 10 on this pot.", ]$tidbit_id <- "10"
+
+tidbit_pots[tidbit_pots$Pot.Comment == "Tidbit 11 on this pot.", ]$tidbit_id <- "11"
+
+# Alright, verify we did a good job here
+any(is.na(tidbit_pots$tidbit_id))
+table(tidbit_pots$tidbit_id)
+# Looks great!
+
+# Now we'll remerge the tidbit and non-tidbit pots to recreate the full 2005 dataset. It'll look the same, just with the Tidbit info added from the comments
+ohfive_pot_data <- rbind(tidbit_pots, non_tidbit_pots)
+
+
+# Now we'll merge the tidbit data with the 2005 pot data based on Tidbit number. This will create a HUGE number of false entries, as each Tidbit entry will match to every deployment. 
+full_data <- inner_join(ohfive_pot_data, tidbit_data, by = "tidbit_id")
+
+# Select only true entries by only choosing rows where the data point is from 2 minutes before the time hauled (to allow for small timekeeping errors) or 5 minutes after the pot was set (to allow it to fall to the bottom)
+# 2 min before time hauled
+
+# Create new column calculating difference between tidbit time and haul time, then filter
+full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Hauled, tz = "US/Alaska", units = "mins")
+full_data <- full_data %>%
+  filter(change_time < -2)
+# Change column to difference between tidbit time and set time, then filter
+full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Set, tz = "US/Alaska", units = "mins")
+full_data <- full_data %>%
+  filter(change_time > 5)
+# Remove column
+full_data <- full_data %>%
+  select(-change_time)
+
+# Calculate average temperature, adding a new column in the database for it
+full_data <- full_data %>%
+  group_by(Time.Hauled) %>%
+  mutate(mean_temp = mean(Temperature....C.)) %>%
+  ungroup
+
+# Remove duplicate IDs for Time.Hauled. This leaves us with one row per haul. That eliminates temp (the specific measurements), date, time, and DateTime, but
+# we don't care about that. It keeps average temperature of the pot, which is what we care about!
+
+full_data <- full_data[!duplicated(full_data$Time.Hauled), ]
+
+# Rename this to complete_data
+complete_data <- full_data
+
+```
+
+
+
+### 2006
+
+```{r}
+# Get path to folder with all .txt files in it
+data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006"
+
+# List all files in folder
+tidbits <- list.files(data_path, recursive = TRUE)
+
+# Remove all non-text files (our summary files are in .xls)
+
+i
 
 # Starting at 2 here because we already read in the first file (10.txt)
 for (i in 2:length(tidbits)){
@@ -143,16 +356,114 @@ for (i in 1:length(tidbits)){
 }
 ```
 
-Alright, we've now finished with 2005! That was an easy one since we've only got one survey with two legs. However, in the future, we'll have a lot more. We'll try to make things more efficient by adding an additional for loop for all legs of the survey.  
 
 
-### 2006
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 2006 Alt
+
+The RKC data has already been assembled! It's not averaged out over time, but we have one row for each Tidbit timepoint, filtered to only include timepoints in which the Tidbit was in the water. We can just read that directly in as a new dataframe, which we'll call cleaned_tidbit_data
+
+Same situation for the Tanner crab data, which we'll follow the same protocol with and then combine the data frames
 
 ```{r}
-RKC_data <- read_excel("../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/RKC_survey/skipper_tidbit_data.xls")
+## RKC Data
+
+# Read in data
+cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/RKC_survey/skipper_tidbit_data.xls")
+
+# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
+cleaned_tidbit_data <- cleaned_tidbit_data %>%
+  filter(DateTime < TIME_HAULED & DateTime > (TIME_SET + 5))
+
+# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
+cleaned_tidbit_data <- cleaned_tidbit_data %>%
+  group_by(TIME_HAULED) %>%
+  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
+  ungroup
+
+# Remove duplicate IDs for TIME_HAULED. This leaves us with one row per haul that includes average temp. We lose temp (as in specific measurement), date, time, and DateTime, but we don't care about that
+cleaned_tidbit_data <- cleaned_tidbit_data[!duplicated(cleaned_tidbit_data$TIME_HAULED), ]
+
+# TANNER CRAB DATA
+
+# Read in data
+new_cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/Tanner_survey/skipper_tidbit_data.xls")
+
+# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
+new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
+  filter(Datetime < TIME_HAULED & Datetime > (TIME_SET + 5))
+
+# We'll also remove any rows with an NA temperature, NA tidbit ID, or NA time hauled
+new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
+  drop_na(c(`Temperature  (*C)`, `Tidbit #`, TIME_HAULED))
+
+# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
+new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
+  group_by(TIME_HAULED) %>%
+  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
+  ungroup
+
+# Remove duplicate IDs for TIME_HAULED. Now that we have avg temp, we just need one row. Plus, it's almost all identical anyways (except for temp, date, time, and DateTime).
+new_cleaned_tidbit_data <- new_cleaned_tidbit_data[!duplicated(new_cleaned_tidbit_data$TIME_HAULED), ]
+
+# Check if names match between data frames
+all_equal(cleaned_tidbit_data, new_cleaned_tidbit_data, ignore_col_order = FALSE)
+
+# Nope, we've got one extra column! Find it
+new_cleaned_tidbit_data %>% select(which(!colnames(new_cleaned_tidbit_data) %in% colnames(cleaned_tidbit_data)))
+
+cleaned_tidbit_data %>% select(which(!colnames(cleaned_tidbit_data) %in% colnames(new_cleaned_tidbit_data)))
+
+# New data has Datetime, Set Date, and ID
+# Old data has DateTime and Tidbit_NO.
+
+# Change name of Datetime to DateTime
+# Remove Set Date (info captured in TIME_SET)
+# Remove ID (irrelevant)
+# Remove Tidbit_NO. (already have a "Tidbit #" column)
+
+# Change name of Datetime in new data
+new_cleaned_tidbit_data <- rename(new_cleaned_tidbit_data, DateTime = Datetime)
+
+# Drop columns from each dataset
+new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
+  select(-c("Set Date", "ID"))
+
+cleaned_tidbit_data <- cleaned_tidbit_data %>%
+  select(-Tidbit_NO.)
+
+# Merge two datasets
+cleaned_tidbit_data <- rbind(cleaned_tidbit_data, new_cleaned_tidbit_data)
 ```
 
 
+### 2007
+
+2007 RKC is the same as 2006, already conveniently filtered and assembled! Just need to get the averages and do some slight cleaning.
+
+2007 Tanners are not - instead, we'll just pull out the 
+
+```{r}
+
+```
 
 
 

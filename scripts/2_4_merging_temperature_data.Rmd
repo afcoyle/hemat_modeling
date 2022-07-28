@@ -23,11 +23,7 @@ In the previous script, we fixed file structure issues in our temperature data. 
 
 - Best file to examine differs from year to year! Sometimes Tidbit files are individually numbered, other times they're already amalgamated into a master sheet
 
-Gameplan will be as follows:
-- Go through each year individually due to differences in file structure
-- Create master sheet of all 
-
-#### Load libraries (and install if necessary)
+#### Load libraries (and install if necessary), and load packages
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
@@ -42,7 +38,19 @@ if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, FUN = function(X) {
   do.call("require", list(X))
 })
+
+# Load custom functions
+source("hemat_modeling_functions.R")
 ```
+
+# Try to read in tidbit data for all years
+
+```{r}
+test_dat <- read_tidbit_data(data_path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007",
+                        data_type = ".txt")
+```
+
+
 
 ### 2005
 
@@ -298,8 +306,6 @@ data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006"
 tidbits <- list.files(data_path, recursive = TRUE)
 
 # Remove all non-text files (our summary files are in .xls)
-
-i
 
 # Starting at 2 here because we already read in the first file (10.txt)
 for (i in 2:length(tidbits)){

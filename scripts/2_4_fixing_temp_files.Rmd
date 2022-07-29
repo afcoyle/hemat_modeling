@@ -11,17 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-In the previous script, we fixed file structure issues in our temperature data. Now, we'll incorporate the temperature data, which is included in .txt (and occasionally .csv) files. This is going to be a pain, so buckle up. Main issues are as follows:
-
-- Temperature data is directly from data loggers that were in the pots. This means that they include both time at the bottom and time on deck.
-
-- Data loggers are identified by the number in the filename
-
-- In some surveys, data loggers were downloaded once (at the end of all legs). More commonly, they were downloaded at the end of each survey.
-
-- Number of tidbits shift from year to year
-
-- Best file to examine differs from year to year! Sometimes Tidbit files are individually numbered, other times they're already amalgamated into a master sheet
+In this script, we'll fix some of the errors within specific Tidbit files. This will only address the ones with unique issues that make using the function we created (and use in the following script) extremely difficult
 
 #### Load libraries (and install if necessary), and load packages
 
@@ -43,12 +33,107 @@ lapply(list.of.packages, FUN = function(X) {
 source("hemat_modeling_functions.R")
 ```
 
-# Try to read in tidbit data for all years
+#### 2007
 
 ```{r}
-test_dat <- read_tidbit_data(data_path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007",
-                        data_type = ".txt")
+## RKC Survey, Leg 3, Tidbit #7
+# Issue: for half, the columns are separated by tabs. At row 128 and below, the first two columns (Date and Time) are separated by spaces. This messes with how the file reads in
+
+issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/7.TXT", row.names = NULL)
+# Rename columns
+names(issue) <- c("Date", "Time", "Temperature")
+
+# Move Time column at rows 128+ to Temperature
+issue[-(1:127), ]$Temperature <- issue[-(1:127), ]$Time
+
+# Split Date column at rows 128+, move latter half to Time
+issue[-(1:127), ]$Time <- gsub("^.*? ", "", issue[-(1:127), ]$Date)
+
+# Remove second half of Date column at rows 128+
+issue[-(1:127), ]$Date <- gsub(" .*$", "", issue[-(1:127), ]$Date)
+
+# Done! Now we'll just write this out as a text file
+write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/7.TXT",
+            sep = "\t",
+            row.names = FALSE)
+
+## RKC Survey, Leg 3, Tidbit #13
+# Same issue as RKC Leg 3, Tidbit #7 above
+# Only difference: it's reading in as two columns the whole way down
+
+issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/13.TXT", row.names = NULL)
+
+# Split first column into two
+issue <- issue %>%
+  separate(Date.Time, c("Date", "Time"), sep = " ")
+
+# Done! Now we'll just write this out as a text file
+write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/13.TXT",
+            sep = "\t",
+            row.names = FALSE)
+
+## RKC Survey, Leg 1, Tidbit 21
+# Exact same issue as RKC Leg 3, Tidbit #13 above
+issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_1/21.TXT", row.names = NULL)
+
+# Split first column into two
+issue <- issue %>%
+  separate(Date.Time, c("Date", "Time"), sep = " ")
+
+# Done! Now we'll just write this out as a text file
+write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_1/21.TXT",
+            sep = "\t",
+            row.names = FALSE)
+
+
 ```
+
+#### 2008
+
+Most (if not all) of the 2008 Tanner survey on Leg 1 has a messed-up header. We'll change these by using the shell! We'll create a for loop that just replaces the headers of each line.
+
+```{bash}
+header="Date 	Time 	Temp"
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2008/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+
+```
+
+
+#### 2009
+
+Same deal as 2008, some of the headers for Leg 2 of the Tanner survey are messed up. We'll just standardize them all
+
+```{bash}
+header="Date 	Time 	Temp"
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+
+# For a few more, like Tidbit #14, the header takes up the first two lines
+# We've already changed the first header, so we'll simply remove the second
+# We'll remove the fourth too (now the third) as it's got an extra column 
+
+sed -i  2d "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
+sed -i  3d sed -i "1s/.*/$header/"
+
+# Tidbit #14 is really messed up, the tails need to be fixed too.
+# Remove the last 3 lines
+head -n -3 ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt > ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/test.txt
+
+mv ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/test.txt ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt
+
+# Tidbit 14 also has several extra columns, which we'll name now, so we can read them into R and then remove them
+fourteen_head="Row 	Date 	Time 	Temp 	Unknown"
+sed -i "1s/.*/$fourteen_head/" ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt
+```
+
+Tidbit #14 also has rownames, so we'll switch back to R to remove those
+
+```{r}
+issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt", row.names = NULL)
+
+```
+
 
 
 

@@ -1,1 +1,1 @@
-Date	Time	Temperature  (*C)
+Date 	Time 	Temp

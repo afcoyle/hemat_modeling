@@ -14,7 +14,7 @@
 read_tidbit_data  <- function(data_path, data_type) {
 
 # Get full path to all containing files
-tidbits <- list.files(data_path, full.names = TRUE, recursive = TRUE)
+tidbits <- list.files(path = data_path, full.names = TRUE, recursive = TRUE)
 
 # Remove all non-Tidbit files. All non-tidbit files end with "_data.xls" (or "_data.xlsx")
 tidbits <- tidbits[-grep("_data", tidbits, fixed = TRUE)]

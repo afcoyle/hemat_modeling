@@ -114,7 +114,7 @@ for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/*; d
 # We'll remove the fourth too (now the third) as it's got an extra column 
 
 sed -i  2d "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
-sed -i  3d sed -i "1s/.*/$header/"
+sed -i  3d "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
 
 # Tidbit #14 is really messed up, the tails need to be fixed too.
 # Remove the last 3 lines
@@ -123,29 +123,104 @@ head -n -3 ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.tx
 mv ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/test.txt ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt
 
 # Tidbit 14 also has several extra columns, which we'll name now, so we can read them into R and then remove them
-fourteen_head="Row 	Date 	Time 	Temp 	Unknown"
-sed -i "1s/.*/$fourteen_head/" ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt
+fourteen_head="Row 	Date 	Time 	Temp 	Unknown 	Unknown"
+sed -i "1s/.*/$fourteen_head/" "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
 ```
 
-Tidbit #14 also has rownames, so we'll switch back to R to remove those
+```{r}
+# Read in Tidbit 14
+issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt",
+                    col.names = c("Row", "Date", "Temp", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"))
+
+# Select only columns with useful info
+issue <- issue %>%
+  select(c("Date", "Temp"))
+
+# We now just need to split the Date column into Date and Time
+issue <- issue %>%
+  separate(Date, c("Date", "Time"), sep = " ")
+
+# Finally done! Write it out
+write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt",
+            sep = "\t",
+            row.names = FALSE)
+```
+
+Back to Bash. Tidbit #20 from Tanner crab leg 2 has no data at all, so we'll remove
+
+```{bash}
+rm ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/20.txt
+```
+
+
+### 2013
+
+# In 2013, have a periodic issue where the file will be mostly comma-separated, but with some spaces and unneeded column (specifically one of Fahrenheit temp values)
 
 ```{r}
-issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt", row.names = NULL)
+source("hemat_modeling_functions.R")
+
+# Fix 2013 RKC, Leg 2, Tidbit #1
+fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/1.txt")
+
+# Same for RKC, Leg 2, Tidbit 15
+fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/15.txt")
+
+#Also RKC, Leg 2, Tidbit 26 
+fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/26.txt")
+
+
+# RKC, Leg 2, Tidbit 27
+fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/27.txt")
+
+# RKC, Leg 2, Tidbit 9
+fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/9.txt")
+
+### We also need to fix some tables in which the first column is date while the second is time,temp (connected by a comma). Let's fix those:
+
+fix_timetemp_comma(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/26.txt")
+
+fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/1.txt")
+
+fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/15.txt")
+
+fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/9.txt")
+
+
+
+# We also have some longer, more elaborate fixes for 2013. Let's address them below:
+
+
+# RKC, Leg 3, Tidbit 27
+# Issue: all variables are together in a single column
+filepath <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/27.txt"
+
+issue <- read.delim(file = filepath)
+
+# Split the combined column apart using the space
+issue <- issue %>%
+  separate(Date.Time.Temperature....C., c("Date", "TimeTemp"), sep = " ")
+
+# Split the time/temp column apart using the comma
+issue <- issue %>%
+  separate(TimeTemp, c("Time", "Temp"), sep = ",")
+
+# Done! Write it out
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
 
 ```
 
 
 
 
-### 2005
 
-Examined the merged skipper_tidbit file, but it's not high-quality. Each pot is listed as having a bunch of tidbits in it simultaneously. Therefore, we need to start from scratch. 
+
+
+### Junk
 
 ```{r}
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1/10.txt"
-
-tidbit_data <- read.delim(file = data_path)
-
 # We need to extract two pieces of data from this filepath - the year and the Tidbit ID
 
 # First, extract year

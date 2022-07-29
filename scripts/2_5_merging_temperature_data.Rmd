@@ -46,8 +46,8 @@ source("hemat_modeling_functions.R")
 # Try to read in tidbit data for all years
 
 ```{r}
-test_dat <- read_tidbit_data(data_path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009",
-                        data_type = ".txt")
+test_dat <- read_tidbit_data(data_path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016",
+                        data_type = ".xls")
 ```
 
 

@@ -1,6 +1,5 @@
-﻿"Date"	"Time, GMT-08:00"	"Temp, °C"	"Coupler Detached"	"Coupler Attached"	"Host Connected"	"Stopped"	"End Of File"
+DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk
 10/10/18	08:01:08 AM	18.390					
-10/10/18	08:01:11 AM		Logged				
 10/10/18	09:01:08 AM	17.915					
 10/10/18	10:01:08 AM	18.057					
 10/10/18	11:01:08 AM	18.438					
@@ -150,5 +149,3 @@
 10/16/18	11:01:08 AM	8.916					
 10/16/18	12:01:08 PM	9.460					
 10/16/18	01:01:08 PM	9.361					
-10/16/18	01:11:41 PM			Logged	Logged		
-10/16/18	01:11:47 PM					Logged	Logged

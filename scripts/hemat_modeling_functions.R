@@ -8,16 +8,22 @@
 #### read_tidbit_data(): Reads in all Tidbit data within a folder 
 
 # Takes the following inputs:
-#     data_path: Path to data folder for that specific survey. Don't include the last /
-#     data_type: Either .txt or .xls
+#     data_path: Path to data folder for that specific survey or year. Don't include the last /
 
-read_tidbit_data  <- function(data_path, data_type) {
+read_tidbit_data  <- function(data_path) {
+  # Load all required libraries
+  require(tidyverse)
+  require(readxl)
+  require(tools)
   
   # Get full path to all containing files
   tidbits <- list.files(path = data_path, full.names = TRUE, recursive = TRUE)
   
-  # Remove all non-Tidbit files. All non-tidbit files end with "_data.xls" (or "_data.xlsx")
-  tidbits <- tidbits[-grep("_data", tidbits, fixed = TRUE)]
+  # See if any non-Tidbit files in there. All non-Tidbit files have "_data" somewhere in the name
+  if (any(grepl("_data", tidbits, fixed = TRUE)) == TRUE) {
+    # If so, remove the non-Tidbit files
+    tidbits <- tidbits[-grep("_data", tidbits, fixed = TRUE)]
+  }
   
   # Extract year of survey
   get_year <- unlist(strsplit(data_path, split = '/', fixed = TRUE))[5]
@@ -28,9 +34,12 @@ read_tidbit_data  <- function(data_path, data_type) {
   for (i in 1:length(tidbits)) {
     print(tidbits[i])
     print(i)
-
-    # If data type is .xls, read in as excel
-    if(data_type == ".xls") {
+    
+    #ID the file extension
+    file_type <- file_ext(tidbits[i])
+    
+    # If file type is xls or xlsx, read in as excel
+    if (file_type == "xls" | file_type == "xlsx") {
       new_tidbit <- read_excel(path = tidbits[i], col_names = TRUE, skip = 1)
       # Remove all columns aside from 2 and 3 (1 is rownames)
       new_tidbit <- new_tidbit %>%
@@ -38,13 +47,35 @@ read_tidbit_data  <- function(data_path, data_type) {
       # Rename columns
       names(new_tidbit) <- c("DateTime", "Temp")
       # Split DateTime column
-      new_tidbit <- new_tidbit %>%
+      suppressWarnings(
+        new_tidbit <- new_tidbit %>%
         separate(DateTime, into = c("Date", "Time"), sep = " ")
+      )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
-    } else {
       
+    } else if (file_type == "txt") {
       new_tidbit <- read.delim(file = tidbits[i], row.names = NULL)
+      
+    } else if (file_type == "csv") {
+      # Find max number of columns in file
+      max_cols <- max(count.fields(tidbits[i], sep = ","))
+      # Read in file, prefilling col names
+      new_tidbit <- read.csv(file = tidbits[i], col.names = c("Row", "DateTime", "Temp", rep("Trash", times = max_cols - 3)), skip = 2)
+      # Remove all columns aside from 2 and 3 (1 is rownames)
+      new_tidbit <- new_tidbit %>%
+        select(c("DateTime", "Temp"))
+      # Split DateTime column
+      suppressWarnings(
+        new_tidbit <- new_tidbit %>%
+        separate(DateTime, into = c("Date", "Time"), sep = " ")
+      )
+      # Drop rows with NAs
+      new_tidbit <- na.omit(new_tidbit)
+      
+    } else {
+      print("Aidan says unknown file type!")
+      break
     }
     
     # If first column was interpreted as the names of a row (thanks to misplaced spacing), edit
@@ -56,6 +87,12 @@ read_tidbit_data  <- function(data_path, data_type) {
     # If last column was interpreted as two separate columns (thanks to misplaced spacing), remove last one
     # Remove all columns with only NAs
     new_tidbit <- new_tidbit[colSums(!is.na(new_tidbit)) > 0]
+    # Remove all columns listed as "Junk"
+    if ("Junk" %in% names(new_tidbit)) {
+      new_tidbit <- new_tidbit %>%
+        select(-Junk)
+    }
+    
     
     # If we have two columns, they're "DateTime" and "Temp"
     # If we have three, they're "Date", "Time", and "Temp"
@@ -78,16 +115,9 @@ read_tidbit_data  <- function(data_path, data_type) {
     # Get name of survey
     get_survey <- unlist(strsplit(tidbits[i], split = "/", fixed = TRUE))[6]
     
-    # Extract ID from name of Tidbit file, removing .csv or .txt as needed
+    # Extract ID from name of Tidbit file, removing ending
     get_id <- tail(strsplit(tidbits[i], split = "/", fixed = TRUE)[[1]], n = 1)
-    if (data_type == ".txt") {
-      get_id <- str_remove(get_id, "(?i).txt")
-    } else if (data_type == ".xls") {
-      get_id <- str_remove(get_id, "(?i).xls")
-    } else {
-      print ("Aidan says invalid data type")
-      break
-    }
+    get_id <- str_remove(get_id, paste0(".", file_type))
     
     # Add year, survey, and ID to the tidbit data column
     new_tidbit$year <- get_year
@@ -180,3 +210,32 @@ fix_timetemp_comma <- function(filepath) {
               sep = "\t",
               row.names = FALSE)
 }
+
+# This quick function is meant to fix issues in the 2016 data 
+# in which .txt files are reading in with too many columns
+
+fix_longhead_txt <- function(filepath) {
+  # Get maximum number of columns in file
+  max_cols <- max(count.fields(filepath, sep = "\t"))
+  
+  # Read in file, prefilling column names
+  issue <- read.delim(file = filepath, col.names = c("DateTime", "Temp", rep("Trash", times = max_cols - 2)))
+  
+  # Remove all columns aside from 1 and 2
+  issue <- issue %>%
+    select(c("DateTime", "Temp"))
+  
+  # Split the DateTime column
+  suppressWarnings(
+    issue <- issue %>%
+    separate(DateTime, into = c("Date", "Time"), sep = " ")
+  )
+  
+  # Write out file
+  write.table(issue, file = filepath,
+              sep = "\t",
+              row.names = FALSE)
+  
+}
+
+

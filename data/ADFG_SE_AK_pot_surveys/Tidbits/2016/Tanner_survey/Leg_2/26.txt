@@ -1,6 +1,5 @@
-﻿"Date Time, GMT-08:00"	"Temp, °C (LGR S/N: 10325635, SEN S/N: 10325635)"	"Coupler Detached (LGR S/N: 10325635)"	"Coupler Attached (LGR S/N: 10325635)"	"Host Connected (LGR S/N: 10325635)"	"Stopped (LGR S/N: 10325635)"	"End Of File (LGR S/N: 10325635)"
+DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk
 10/25/16 09:21:27 AM	18.033					
-10/25/16 09:21:30 AM		Logged				
 10/25/16 10:21:27 AM	17.534					
 10/25/16 11:21:27 AM	17.558					
 10/25/16 12:21:27 PM	17.463					
@@ -102,5 +101,3 @@
 10/29/16 12:21:27 PM	7.569					
 10/29/16 01:21:27 PM	7.569					
 10/29/16 02:21:27 PM	12.751					
-10/29/16 02:36:06 PM			Logged	Logged		
-10/29/16 02:36:14 PM					Logged	Logged

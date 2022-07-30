@@ -213,11 +213,181 @@ write.table(issue, file = filepath,
 ```
 
 
+### 2016
+
+Tanner surveys have messed-up headers, we'll remove them. We've gotta add in two extra because the .csv files accidentally made 5 rows in some
+
+The bottom 2-3 rows are also junk (just say "Logged") and are throwing off our data file, so we'll remove all lines saying "Logged"
 
 
+```{bash}
+header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
+
+# Fix headers in Leg 1
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+
+# Fix headers in Leg 2
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
+```
+
+Tanner surveys still have some issues, we need to standardize column size
+
+Built a custom function to fix it up
+
+```{r}
+source("hemat_modeling_functions.R")
+# Leg 1
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/18.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/19.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/26.txt")
+
+# Leg 2
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/18.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/9.txt")
+```
 
 
+### 2017
 
+Again, surveys have messed-up headers. This time, it's all surveys. Let's fix them!
+
+Like before, we have some lines that say "Logged" that are throwing off our data, so we'll remove all lines with "Logged"
+
+```{bash}
+header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
+
+### RKC Survey
+
+# Fix headers in Leg 1
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+
+# Fix headers in Leg 2
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
+
+# Fix headers in Leg 3
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/*; do sed -i '/Logged/d' $FILE; done
+
+### Tanner Survey
+# Fix headers in Leg 1
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+
+```
+
+
+We also continue to have issues with Tidbit #18. Looks like it just records data differently than the others. 
+
+Additionally, we'll fix a few others
+
+```{r}
+# RKC Leg 1
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/18.txt")
+
+# RKC Leg 2
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/18.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/22.txt")
+
+# RKC Leg 3
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/12.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/18.txt")
+
+# Tanner Leg 1
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/12.txt")
+
+```
+
+### 2018
+
+Same issue as 2016 and 2017, need to edit headers and remove lines with "Logger"
+
+
+```{bash}
+header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
+
+### RKC Survey
+
+# Fix headers
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+
+### Tanner Survey
+# Fix headers
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/Tanner_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/Tanner_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+
+```
+
+
+Again, we have a few Tidbits that we need to individually fix
+
+```{r}
+# RKC Leg 1
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_1/26.txt")
+
+# RKC Leg 2
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_2/26.txt")
+
+# RKC Leg 3
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/13.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/26.txt")
+
+
+```
+
+
+### 2019
+
+Same issue as 2017 and 2018, need to edit headers and remove lines with "Logger". Hey, looks like they finally standardized things (mostly)!
+
+
+```{bash}
+header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
+
+### RKC Survey
+
+# Fix headers
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+
+
+```
+
+
+Again, we have a few Tidbits that we need to individually fix
+
+```{r}
+# RKC Leg 1
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_1/26.txt")
+
+# RKC Leg 2
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_2/26.txt")
+
+# RKC Leg 3
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/13.txt")
+
+fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/26.txt")
+
+```
 ### Junk
 
 ```{r}

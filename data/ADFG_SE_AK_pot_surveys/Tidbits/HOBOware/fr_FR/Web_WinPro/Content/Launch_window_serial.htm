@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:lastBlockDepth="6" MadCap:lastHeight="2035" MadCap:lastWidth="746" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Lancement d'un périphérique|Lancement d'un enregistreur de station" MadCap:PathToHelpSystem="../" MadCap:SearchType="Stem">
+    <head><title>Fenêtre de lancement pour les enregistreurs de station </title>
+        <link href="Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="SkinSupport/MadCapBody.js">
+        </script>
+        <script src="SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Fenêtre de lancement pour les enregistreurs de station </h1>
+        <p>Cette rubrique décrit la fenêtre de lancement pour les enregistreurs de station suivants :</p>
+        <ul>
+            <li value="1">Station météo HOBO Weather (U21-01)</li>
+            <li value="2">Micro-station HOBO (U21-02)</li>
+            <li value="3">Station d'énergie HOBO (H-22)</li>
+            <li value="4">Station HOBO U30 (pour plus d'informations, voir <a href="Device/u30-station.htm">« Utilisation de la station HOBO U30 »,   </a>)</li>
+        </ul>
+        <p>Pour des détails, voir   <a href="Reference/launch_params_station.htm">Paramètres de lancement pour enregistreurs de station</a>.</p>
+        <p>
+            <img src="Resources/Images/Lnch-station.png" />
+        </p>
+        <ol>
+            <li value="1">Informations sur l'enregistreur : Type d'enregistreur, Numéro de série, Numéro de déploiement et Niveau de charge pile.</li>
+            <li value="2">Description : description que vous entrez pour le lancement.</li>
+            <li value="3">Canaux à enregistrer :
+Voir   <a href="Device/chnls-to-log-st.htm">« Directives concernant les canaux à enregistrer pour les enregistreurs de station Station Logger »</a>.</li>
+            <li value="4">En boucle une fois pleine : vous pouvez permettre aux enregistreurs du type station de fonctionner en boucle et de continuer à enregistrer après la saturation de la mémoire. Les nouvelles informations enregistrées écraseront les plus anciennes informations enregistrées. Cochez cette case si vous voulez que l'enregistreur 
+ continue à enregistrer, en écrasant les données les plus anciennes, au lieu de s'arrêter dès que la mémoire est saturée.</li>
+            <li value="5">Intervalle d'enregistrement : fréquence à laquelle l'enregistreur enregistre les données issues des capteurs.</li>
+            <li value="6">Intervalle d'échantillonnage : l'intervalle d'échantillonnage vous permet de prendre plusieurs mesures dans l'intervalle d'enregistrement, puis d'en calculer la moyenne pour créer une mesure enregistrée.</li>
+            <li value="7">Durée d'enregistrement : temps approximatif qu'il faudrait à la mémoire de l'enregistreur pour se remplir, en fonction de l'intervalle d'enregistrement et des capteurs actuellement branchés et activés, le cas échéant.</li>
+            <li value="8">Options de lancement : sélectionnez quand lancer l'enregistreur.</li>
+            <li value="9">Bouton Aide : cliquez dessus pour lancer l'aide en ligne de la fenêtre de lancement.</li>
+            <li value="10">Utilitaires (HOBOware Pro seulement) : selon l'enregistreur et les capteurs connectés, divers utilitaires sont disponibles. </li>
+            <li value="11">Assistants de données (HOBOware Pro seulement)</li>
+            <p class="bodyindent">Les assistants de données HOBOware Pro vous permettent de créer de nouvelles séries de données en combinant les données enregistrés par l'enregistreur et des données supplémentaires. Lorsque vous utilisez un assistant de données à partir de la fenêtre de   <b>lancement</b>, le jeu de paramètres est enregistré et appliqué aux données à chaque fois que vous lisez un enregistreur. Les données dérivées s'affichent également quand vous vérifiez les derniers relevés dans la fenêtre   <b>d'état</b>.</p>
+            <p class="bodyindent">Vous pouvez utiliser les assistants de données suivants à partir de la fenêtre de <b>lancement</b> les autres peuvent uniquement être utilisés à partir de la fenêtre   <a href="plot_setup_window.htm">Configuration de tracé</a>) : Mise à l'échelle d'impulsions, Mise à l'échelle linéaire et kWh. Cette fonction est disponible pour les enregistreurs HOBO U30, HOBO H21 (station météo et micro-station) et HOBO H22 (Energy Logger Pro).</p>
+            <p class="bodyindent">Cliquez sur le bouton   <b>Assistants de données </b> pour accéder à la boîte de<a href="psda_management.htm"> dialogue Assistants de données</a>. Sélectionnez l'assistant souhaité et cliquez sur le bouton   <b>Créer</b> pour exécuter l'assistant sélectionné. Une fois les valeurs entrées, cliquez sur   <b>Enregistrer jeu de paramètres</b>. </p>
+            <p class="bodyindent">Pour plus d'informations, voir   <a href="Data Files/Data_assistants.htm">« Assistants de données HOBOware Pro »</a>. Pour plus d'informations sur un assistant spécifique, reportez-vous à l'aide en ligne ou au guide d'utilisation de l'assistant.</p>
+            <li value="12">Alarmes</li>
+        </ol>
+        <p class="bodyindent">Si votre enregistreur a des alarmes, le bouton   <b>Alarmes</b> sera actif. Cliquez sur le bouton   <b>Alarmes</b> pour accéder à la boîte de dialogue <b>Configuration des alarmes</b>.</p>
+        <ol MadCap:continue="true">
+            <li value="13">Notes utilisateur : Vous pouvez entrer jusqu'à 2 000 caractères d'informations sur le déploiement.Ce texte s'affiche dans le volet Détails après la lecture de l'enregistreur et l'affichage des données.</li>
+            <li value="14">Ignorer la fenêtre de lancement la fois suivante : cochez cette case si vous voulez contourner cette fenêtre au prochain lancement d'un périphérique.</li>
+            <li value="15">Bouton Lancer : cliquez sur ce bouton pour lancer le périphérique.</li>
+        </ol>
+        <p>&#160;</p>
+        <script type="text/javascript" src="SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

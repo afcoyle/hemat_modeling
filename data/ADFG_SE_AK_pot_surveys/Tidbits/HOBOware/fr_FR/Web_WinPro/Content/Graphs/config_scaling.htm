@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:id="Linear_scaling" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" class="" MadCap:lastBlockDepth="4" MadCap:lastHeight="1334" MadCap:lastWidth="732" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Configuration de la mise à l'échelle linéaire</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor137"></a>Configuration de la mise à l'échelle linéaire </h1>
+        <h2>Introduction&#160;</h2>
+        <p>La mise à l'échelle linéraire vous permet de convertir les données d'enregistreur enregistrées en une autre mesure en entrant de nouvelles valeurs qui correspondent aux valeurs enregistrées. La conversion doit être basée sur une relation linéaire. Si la relation est basée sur une courbe, la mise à l'échelle linéaire ne donnera pas de résultats précis. </p>
+        <p><b>REMARQUE </b>:&#160;Cette fonction est disponible        <u>uniquement sur les enregistreurs U12</u> dotés de canaux externes pouvant enregistrer la tension ou 4-20 mA. Si votre enregistreur prend en charge la mise à l'échelle, vous verrez un bouton Mise à l'échelle dans la fenêtre de lancement de l'enregistreur. </p>
+        <p>Pour des informations sur la mise à l'échelle linéaire des modules FlexSmart ou des ports de capteur analogique  ((missing or bad snippet) uniquement), reportez-vous    <a href="select_module.htm">Configuration de modules/ports, </a>. <br /><br />Pour des informations sur l'Assistant de données de mise à l'échelle linéaire ((missing or bad snippet) uniquement), reportez-vous au     <span style="font-style: italic;"></span><i>Guide d'utilisation de l'Assistant de données de mise à l'échelle linéaire<span style="font-style: italic;">.</span></i></p>
+        <h2>Boîte de dialogue Mise à l'échelle linéaire</h2>
+        <p>Pour accéder à la boîte de dialogue Mise à l'échelle linéraire, à partir de la fenêtre de lancement, sélectionnez un canal et cliquez sur le bouotn Mise à l'échelle linéraire. </p>
+        <p>
+            <img src="../Resources/Images/Scaling.png" />
+        </p>
+        <h2>Procédure</h2>
+        <ol style="list-style: decimal;list-style-type: decimal;" MadCap:continue="true">
+            <li class="sp_bull" value="1">Sélectionnez un nom de canal sur la liste <span style="font-weight: bold;">Canal.</span></li>
+            <li class="sp_bull" value="2">Cochez la case     <span style="font-weight: bold;">Mettre canal </span>à l'échelle pour activer la mise à l'échelle de ce canal.</li>
+            <li class="sp_bull" value="3">Entrez un nom descriptif pour le nouveau canal mis à l'échelle<span style="font-weight: bold;"> dans le champNom de</span> canal mis à l'échelle.</li>
+            <li class="sp_bull" value="4">Dans la section <b>Paramètres </b>, <span style="font-weight: bold;"></span>entrez le nom d'unité pour la série mise à l'échelle, puis entrez les valeurs mises à l'échelle dans la colonne <span style="font-weight: bold;">Mis</span> à l'échelle pour qu'elles correspondent aux nombres de la colonne <span style="font-weight: bold;">Brut</span>. Ces valeurs permettent d'établir une relation linéaire entre les valeurs brutes et mises à l'échelle.<br /><br />Les valeurs par<span style="font-weight: bold;"> défaut</span> dans la colonne Brut 
+ sont basées sur les valeurs minimum et maximum prises en charge par le câble d'entrée, mais vous pouvez utiliser différentes valeurs, à condition que ces valeurs se situent dans la plage du câble. </li>
+            <li class="sp_bull" value="5">Pour configurer la mise à l'échelle linéaire pour un autre canal, reprenez à partir de l'étape 3 ou cliquez sur    <b>OK&#160;</b>si vous avez terminé, pour retourner à la fenêtre de lancement.</li>
+        </ol>
+        <p>La petite icône<img src="../Resources/Images/linscaleon.gif" />  à côté du nom du câble d'entrée sera désormais verte pour 
+ indiquer que la mise à l'échelle linéaire a été configurée.</p>
+        <p>Lorsque vous lisez l'enregistreur, la nouvelle série mise à l'échelle apparaîtra<a href="Plot_setup_window.htm"> dans la boîte de</a> dialogueConfiguration de tracé, avec tout autre canal enregistré.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

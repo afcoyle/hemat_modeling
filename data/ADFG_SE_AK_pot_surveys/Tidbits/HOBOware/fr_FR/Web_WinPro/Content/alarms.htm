@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:lastBlockDepth="5" MadCap:lastHeight="1582" MadCap:lastWidth="1007" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Lancement d'un périphérique|Utilitaires de lancement" MadCap:PathToHelpSystem="../" MadCap:SearchType="Stem">
+    <head><title>La boîte de dialogue Alarmes</title>
+        <link href="Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="SkinSupport/MadCapBody.js">
+        </script>
+        <script src="SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>La boîte de dialogue Alarmes</h1>
+        <p>Cette rubrique documente la boîte de dialogue Alarmes pour l'enregistreur de données d'alarme/température HOBO® (modèle UA-001). Pour les autres enregistreurs, reportez-vous aux informations sur les alarmes dans le manuel d'utilisation de l'enregistreur.</p>
+        <p>Utilisez la fonction Alarme pour faire clignoter un avertissement sur l'écran si le capteur surveillé se situe en dehors des limites sélectionnables. Si le relevé mesuré par l'enregistreur se situe en dehors de la limite haute ou basse sélectionnée, le mot « Alerte », un symbole d'alerte et le relevé qui a dépassé les limites clignoteront. </p>
+        <p>Si vous exigez une notification à distance ou secondaire d'un état d'alarme, vous pouvez brancher une alarme sonore distante et/ou un composeur automatique sur la fermeture du contact.</p>
+        <p>Vous pouvez accéder à la boîte de dialogue <b>Alarmes </b>à partir de la fenêtre de <b>lancement</b>. </p>
+        <p>Voir aussi    <a href="General/config-alarms.htm">Configuration des alarmes, </a>.</p>
+        <h2>Boîte de dialogue Alarme</h2>
+        <p>&#160;</p>
+        <p>
+            <img src="Resources/Images/Alarm-window.png" />
+        </p>
+        <p>&#160;</p>
+        <ol>
+            <li value="1">Canal</li>
+        </ol>
+        <p class="bodyindent">Sélectionner le capteur souhaité.</p>
+        <ol MadCap:continue="true">
+            <li value="2">Activation des alarmes</li>
+        </ol>
+        <p class="bodyindent">Cochez la case Alarme haute et/ou Alarme basse. Entrez une valeur pour définir le seuil d'alarme. Vous pouvez entrer une valeur dans le champ ou utiliser les curseurs. (Si vous entrez les valeurs manuellement, le logiciel pourra les ajuster légèrement aux valeurs les plus proches compatibles avec l'enregistreur.)</p>
+        <ol MadCap:continue="true">
+            <li value="3">Échantillons</li>
+        </ol>
+        <p class="bodyindent">Définissez le nombre d'échantillons (30 secondes par échantillon) qui doit s'afficher avant le déclenchement de l'alarme. Échantillons
+Pour éviter l'activation intempestive du contact de relais, définissez le nombre d'échantillons de sorte à permettre les violations anticipées du seuil d'alarme. Si l'alarme se déclenche et que le nombre d'échantillons est supérieur à 1, l'écran indiquera Alerte retardée.  Si la mesure est toujours hors norme lorsque le nombre d'échantillons est atteint, le contact de relais s'active. Voir Prévention d'une activation de relais intempestive</p>
+        <ol MadCap:continue="true">
+            <li value="4">Contacts de relais</li>
+        </ol>
+        <p class="bodyindent">Si vous utilisez un périphérique externe qui sera déclenché par une alarme (alarme à distance ou composeur automatique), définissez l'état du contact de relais par défaut souhaité.</p>
+        <blockquote>
+            <ul>
+                <li value="1">Normalement fermé (par défaut) - Le relais s'ouvre durant un état d'alarme.</li>
+                <li value="2">Normalement ouvert - Le relais se ferme durant un état d'alarme.</li>
+            </ul>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li value="5">Maintenir l'alarme jusqu'à</li>
+        </ol>
+        <p class="bodyindent">Vous pouvez sélectionner à quel moment l'alarme sera désactivée :</p>
+        <blockquote>
+            <ul>
+                <li value="1">L'hôte a relancé l'enregistreur</li>
+                <li value="2">Le relevé du capteur est à nouveau dans les limites Réglage du contact du relais</li>
+            </ul>
+        </blockquote>
+        <ol MadCap:continue="true">
+            <li value="6">Alarme de pile</li>
+        </ol>
+        <p class="bodyindent">Cochez la case Alarme de pile pour activer cette alarme, qui se déclenchera si la charge de la pile descend à 0.</p>
+        <p class="bodyindent">&#160;</p>
+        <script type="text/javascript" src="SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

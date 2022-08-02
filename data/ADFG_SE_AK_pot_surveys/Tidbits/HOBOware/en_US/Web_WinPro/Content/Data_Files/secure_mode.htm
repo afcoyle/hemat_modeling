@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:tocPath="21 CFR Part 11 Compliance" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Secure mode</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1>Working in Secure Mode<a name="kanchor93"></a><a name="kanchor94"></a></h1>
+        <h2>Overview</h2>
+        <p>You can create secure files in HOBOware Pro to comply with <a href="http://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/CFRSearch.cfm?CFRPart=11&amp;showfr=1">21 CFR Part 11</a>, or simply to add a level of security when working with datafiles. When Secure Mode is enabled, HOBOware Pro begins an audit trail in the logger when 
+ you launch it, and adds an encoded digital signature to the new datafile 
+ when you read it out.&#160;</p>
+        <p>A digitally signed file, or "secure file," has a filename extension of .hsec (for most U-Series loggers) or .dsec (for 
+ station-type loggers). </p>
+        <p><b>NOTE</b>:&#160;You can <u>open</u> .dsec  files in HOBOware Lite but you can only create secure files in HOBOware Pro.<a href="http://www.onsetcomp.com/solutions/products/software/docs/HWPro2_3-21cfr.pdf"></a></p>
+        <p MadCap:conditions=""><b>NOTE</b>:&#160;Issues 
+ may arise if you do not always use HOBOware Pro in the Secure Mode, if you 
+ sometimes use HOBOware Lite, or if you sometimes use a version of HOBOware 
+ prior to 2.3.0. See <a href="secure_md-issues.htm">Security Mode Issues</a>.</p>
+        <h3 MadCap:conditions="">Related Topics</h3>
+        <p MadCap:conditions=""><a href="http://www.onsetcomp.com/solutions/products/software/docs/HWPro2_3-21cfr.pdf">Using HOBOware Pro as part of 21 CFR&#160;Part II&#160;Systems (external .pdf)</a>
+        </p>
+        <h2 MadCap:conditions="">Enabling Secure Mode (HOBOware Pro Only)&#160;</h2>
+        <p>Secure Mode must be enabled to create a secure file.</p>
+        <p><b>NOTE</b>:&#160;Project (.hproj) 
+ and export files are not secure, even if you 
+ create them from secure files.</p>
+        <p><a name="kanchor95"></a>To enable Secure mode:</p>
+        <ol>
+            <li value="1">Go to <b style="font-weight: normal;font-style: italic;">Preferences </b>&gt;&#160;<span style="font-weight: normal;font-style: italic;">General</span>.</li>
+            <li value="2">Select <span style="font-weight: normal;font-style: italic;">Enable Secure Mode</span>. </li>
+        </ol>
+        <p>When Secure mode 
+ is enabled, a padlock icon <img src="../Resources/Images/lock-small.gif" /> appears in the lower right corner 
+ of the main HOBOware Pro window.</p>
+        <h2>Opening a Secure File</h2>
+        <p>Secure files can be opened with HOBOware Pro 2.3.0 or greater. You can open .hsec files only with HOBOware Lite 2.3.0 or greater.</p>
+        <p>Every time you open a secure file – even when you are not in Secure 
+ mode – HOBOware verifies 
+ the encoded digital signature to detect whether the 
+ file has been corrupted or tampered with. If even one bit of the data 
+ has changed since readout, a warning message will appear when you open 
+ the file, and none of the series will be marked as verified.</p>
+        <p>The padlock icon <img src="../Resources/Images/lock-small.gif" /> appears 
+ in the <a href="../Graphs/overview-graph.htm">legend</a> next to the series 
+ that were verified as original data. </p>
+        <p>In the <a href="../Reference/details.htm">Details</a> pane, audit trail information 
+ is displayed under the Data Verification node for each series. HOBOware 
+ Pro automatically obtains the <span style="font-weight: bold;">Launch 
+ User</span> and <span style="font-weight: bold;">Readout User</span> names 
+ from your computer's operating system. To save the <span style="font-weight: bold;">Launch 
+ User</span> name, you must have Secure Mode enabled when you launch the 
+ logger.</p>
+        <h3>Verification</h3>
+        <ul style="list-style: disc;" type="disc">
+            <li class="sp_bull" value="1">Series that were created by <a href="../filter.htm">filtering</a> 
+ are not verified.</li>
+            <li class="sp_bull" value="2">Series that were created as a result of user input 
+ after readout, such as running a <a href="Data_assistants.htm">data assistant</a> 
+ or entering a constant temperature value for pressure or humidity, are 
+ not verified.</li>
+            <li class="sp_bull" value="3">Series retain their verification status (and padlock 
+ icon) when <a href="../Graphs/copy_series.htm">copied and pasted</a> into other 
+ plots.</li>
+        </ul>
+        <h3>Verification Failure&#160;</h3>
+        <p>If HOBOware cannot verify the digital 
+ signature when you open a file, it will display a message that verification has failed. This 
+ means that the file has been altered or become corrupted since it was 
+ originally saved. It will offer to display the plot if possible, but will 
+ not display the padlock icon in the legend or provide signing details 
+ in the Details pane. You will still be able to perform 
+ typical HOBOware functions on the file.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

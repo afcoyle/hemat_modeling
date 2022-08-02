@@ -17,7 +17,7 @@ In this script, we'll fix some of the errors within specific Tidbit files. This 
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "readxl", "lubridate")
+list.of.packages <- c("tidyverse", "readxl", "writexl", "lubridate")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -39,7 +39,7 @@ source("hemat_modeling_functions.R")
 ## RKC Survey, Leg 3, Tidbit #7
 # Issue: for half, the columns are separated by tabs. At row 128 and below, the first two columns (Date and Time) are separated by spaces. This messes with how the file reads in
 
-issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/7.TXT", row.names = NULL)
+issue <- read.delim(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_3/7.TXT", row.names = NULL)
 # Rename columns
 names(issue) <- c("Date", "Time", "Temperature")
 
@@ -53,7 +53,7 @@ issue[-(1:127), ]$Time <- gsub("^.*? ", "", issue[-(1:127), ]$Date)
 issue[-(1:127), ]$Date <- gsub(" .*$", "", issue[-(1:127), ]$Date)
 
 # Done! Now we'll just write this out as a text file
-write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/7.TXT",
+write.table(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_3/7.TXT",
             sep = "\t",
             row.names = FALSE)
 
@@ -61,27 +61,27 @@ write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_surve
 # Same issue as RKC Leg 3, Tidbit #7 above
 # Only difference: it's reading in as two columns the whole way down
 
-issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/13.TXT", row.names = NULL)
+issue <- read.delim(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_3/13.TXT", row.names = NULL)
 
 # Split first column into two
 issue <- issue %>%
   separate(Date.Time, c("Date", "Time"), sep = " ")
 
 # Done! Now we'll just write this out as a text file
-write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_3/13.TXT",
+write.table(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_3/13.TXT",
             sep = "\t",
             row.names = FALSE)
 
 ## RKC Survey, Leg 1, Tidbit 21
 # Exact same issue as RKC Leg 3, Tidbit #13 above
-issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_1/21.TXT", row.names = NULL)
+issue <- read.delim(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_1/21.TXT", row.names = NULL)
 
 # Split first column into two
 issue <- issue %>%
   separate(Date.Time, c("Date", "Time"), sep = " ")
 
 # Done! Now we'll just write this out as a text file
-write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_survey/Leg_1/21.TXT",
+write.table(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2007/RKC_survey/Leg_1/21.TXT",
             sep = "\t",
             row.names = FALSE)
 
@@ -90,12 +90,86 @@ write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2007/RKC_surve
 
 #### 2008
 
+The dates are messed up unless we fix the formatting, so we'll solve this
+
+
+```{r}
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2008/RKC_survey/Leg_1", full.names = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read.delim(file = leg_files[i], header = TRUE,
+                      sep = "\t")
+  # Standardize table size
+  # If 2 columns, they're datetime and temp
+  # If 3, they're date, time, and temp
+  if ("Date.Time" %in% names(issue)) {
+    issue <- issue %>%
+      separate(Date.Time, into = c("Date", "Time"), sep = " ")
+  }
+  # Rename columns
+  names(issue) <- c("date", "time", "temp")
+  
+  # Write out file
+  write_delim(issue, file = leg_files[i], delim ="\t")
+}
+
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2008/RKC_survey/Leg_2", full.names = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read.delim(file = leg_files[i], header = TRUE,
+                      sep = "\t")
+  # Standardize table size
+  # If 2 columns, they're datetime and temp
+  # If 3, they're date, time, and temp
+  if ("Date.Time" %in% names(issue)) {
+    issue <- issue %>%
+      separate(Date.Time, into = c("Date", "Time"), sep = " ")
+  }
+  # Rename columns
+  names(issue) <- c("date", "time", "temp")
+  
+  # Write out file
+  write_delim(issue, file = leg_files[i], delim ="\t")
+}
+
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2008/RKC_survey/Leg_3", full.names = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read.delim(file = leg_files[i], header = TRUE,
+                      sep = "\t")
+  # Standardize table size
+  # If 2 columns, they're datetime and temp
+  # If 3, they're date, time, and temp
+  if ("Date.Time" %in% names(issue)) {
+    issue <- issue %>%
+      separate(Date.Time, into = c("Date", "Time"), sep = " ")
+  }
+  # Rename columns
+  names(issue) <- c("date", "time", "temp")
+  
+  # Write out file
+  write_delim(issue, file = leg_files[i], delim ="\t")
+}
+
+
+
+```
+
 Most (if not all) of the 2008 Tanner survey on Leg 1 has a messed-up header. We'll change these by using the shell! We'll create a for loop that just replaces the headers of each line.
 
 ```{bash}
 header="Date 	Time 	Temp"
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2008/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2008/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
 
 ```
 
@@ -107,29 +181,29 @@ Same deal as 2008, some of the headers for Leg 2 of the Tanner survey are messed
 ```{bash}
 header="Date 	Time 	Temp"
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
 
 # For a few more, like Tidbit #14, the header takes up the first two lines
 # We've already changed the first header, so we'll simply remove the second
 # We'll remove the fourth too (now the third) as it's got an extra column 
 
-sed -i  2d "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
-sed -i  3d "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
+sed -i  2d "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt"
+sed -i  3d "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt"
 
 # Tidbit #14 is really messed up, the tails need to be fixed too.
 # Remove the last 3 lines
-head -n -3 ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt > ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/test.txt
+head -n -3 ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt > ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/test.txt
 
-mv ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/test.txt ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt
+mv ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/test.txt ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt
 
 # Tidbit 14 also has several extra columns, which we'll name now, so we can read them into R and then remove them
 fourteen_head="Row 	Date 	Time 	Temp 	Unknown 	Unknown"
-sed -i "1s/.*/$fourteen_head/" "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt"
+sed -i "1s/.*/$fourteen_head/" "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt"
 ```
 
 ```{r}
 # Read in Tidbit 14
-issue <- read.delim(file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt",
+issue <- read.delim(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt",
                     col.names = c("Row", "Date", "Temp", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"))
 
 # Select only columns with useful info
@@ -140,8 +214,8 @@ issue <- issue %>%
 issue <- issue %>%
   separate(Date, c("Date", "Time"), sep = " ")
 
-# Finally done! Write it out
-write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/14.txt",
+# Done! Write it out
+write.table(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/14.txt",
             sep = "\t",
             row.names = FALSE)
 ```
@@ -149,8 +223,27 @@ write.table(issue, file = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_su
 Back to Bash. Tidbit #20 from Tanner crab leg 2 has no data at all, so we'll remove
 
 ```{bash}
-rm ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/20.txt
+rm ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2009/Tanner_survey/Leg_2/20.txt
 ```
+
+### 2012
+```{r}
+issue <- read.delim(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2012/RKC_survey/Leg_1/21.TXT",
+                    col.names = c("DateTime", "Temp"))
+
+
+# We now just need to split the DateTime column into Date and Time
+issue <- issue %>%
+  separate(DateTime, c("Date", "Time"), sep = " ")
+
+# Perfect, now just write it out
+write.table(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2012/RKC_survey/Leg_1/21.TXT",
+            sep = "\t",
+            row.names = FALSE)
+
+```
+
+
 
 
 ### 2013
@@ -161,30 +254,30 @@ rm ../data/ADFG_SE_AK_pot_surveys/Tidbits/2009/Tanner_survey/Leg_2/20.txt
 source("hemat_modeling_functions.R")
 
 # Fix 2013 RKC, Leg 2, Tidbit #1
-fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/1.txt")
+fix_long_csvs("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_2/1.txt")
 
 # Same for RKC, Leg 2, Tidbit 15
-fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/15.txt")
+fix_long_csvs("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_2/15.txt")
 
 #Also RKC, Leg 2, Tidbit 26 
-fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/26.txt")
+fix_long_csvs("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_2/26.txt")
 
 
 # RKC, Leg 2, Tidbit 27
-fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/27.txt")
+fix_long_csvs("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_2/27.txt")
 
 # RKC, Leg 2, Tidbit 9
-fix_long_csvs("../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_2/9.txt")
+fix_long_csvs("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_2/9.txt")
 
 ### We also need to fix some tables in which the first column is date while the second is time,temp (connected by a comma). Let's fix those:
 
-fix_timetemp_comma(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/26.txt")
+fix_timetemp_comma(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_3/26.txt")
 
-fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/1.txt")
+fix_timetemp_comma(filepath =  "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_3/1.txt")
 
-fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/15.txt")
+fix_timetemp_comma(filepath =  "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_3/15.txt")
 
-fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/9.txt")
+fix_timetemp_comma(filepath =  "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_3/9.txt")
 
 
 
@@ -193,7 +286,7 @@ fix_timetemp_comma(filepath =  "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_
 
 # RKC, Leg 3, Tidbit 27
 # Issue: all variables are together in a single column
-filepath <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2013/RKC_survey/Leg_3/27.txt"
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2013/RKC_survey/Leg_3/27.txt"
 
 issue <- read.delim(file = filepath)
 
@@ -215,6 +308,131 @@ write.table(issue, file = filepath,
 
 ### 2016
 
+For the RKC survey, Legs 1 and 3 have their temperatures entered in Fahrenheit. Leg 2 is in Celsius. We also have some weird issues with Tidbit 17 in Legs 2 and 3 - the times aren't reading in correctly. We'll remedy that first, then move on to fixing temperature readings
+
+```{r}
+#### Tidbit 17
+
+# Leg 2
+issue <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_2/17.csv",
+                  skip = 2, header = FALSE)
+#Select columns 2 and 3 (datetime and temp)
+issue <- issue[, 2:3]
+# Rename columns
+names(issue) <- c("datetime", "temp")
+# Split datetime column
+issue <- issue %>%
+    separate(datetime, c("date", "time"), sep = "16 ", extra = "merge")
+# Paste 16 onto the end of the date column
+issue$date <- paste0(issue$date, "16")
+# Eliminate rows with NAs
+issue <- na.omit(issue)
+# Write out file as .txt
+write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_2/17.txt")
+
+# Leg 3
+issue <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.csv",
+                  skip = 2, header = FALSE)
+#Select columns 2 and 3 (datetime and temp)
+issue <- issue[, 2:3]
+# Rename columns
+names(issue) <- c("datetime", "temp")
+# Split datetime column
+issue <- issue %>%
+    separate(datetime, c("date", "time"), sep = "16 ", extra = "merge")
+# Paste 16 onto the end of the date column
+issue$date <- paste0(issue$date, "16")
+# Eliminate rows with NAs
+issue <- na.omit(issue)
+# Write out file
+write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt")
+
+
+
+#### Temperature Conversions
+# Leg 1
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_1/", full.names = TRUE, recursive = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read_excel(path = leg_files[i], col_names = FALSE, skip = 2)
+  # Give column names
+  suppressWarnings(names(issue) <- c("rows", "datetime", "temp_f"))
+  # Select only those columns
+  issue <- issue %>%
+    select(datetime, temp_f)
+  # Convert temperature from F to C
+  issue$temp_f <- (as.numeric(issue$temp_f) - 32)*(5/9)
+  # Split datetime column
+  issue <- issue %>%
+    separate(datetime, c("date", "time"), sep = "16 ", extra = "merge")
+  # Rename column to signify the change to C
+  names(issue) <- c("date", "time", "temp")
+  # Paste 16 onto the end of the date column
+  issue$date <- paste0(issue$date, "16")
+  # Eliminate rows with NAs
+  issue <- na.omit(issue)
+  # Remove extension from file, replace with .txt
+  leg_files[i] <- leg_files[i] %>%
+    str_replace(file_ext(leg_files[i]), "txt")
+  # Write out file
+  write_delim(issue, file = leg_files[i], 
+              delim = "\t")
+}
+
+# Leg 3
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/", full.names = TRUE, recursive = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  # Skip if it's Tidbit 17, we already fixed it
+  if (leg_files[i] == "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt") {
+  } else {
+    print(i)
+    # Read in file
+    issue <- read.csv(file = leg_files[i], header = FALSE, skip = 2)
+    # Give column names
+    suppressWarnings(names(issue) <- c("row", "datetime", "temp_f"))
+    # Select only those columns
+    issue <- issue %>%
+      select(datetime, temp_f)
+    # Convert temperature from F to C
+    issue$temp_f <- (as.numeric(issue$temp_f) - 32)*(5/9)
+    # Split the datetime column
+    issue <- issue %>%
+      separate(datetime, c("date", "time"), sep = "16 ", extra = "merge")
+    # Rename column to signify the change to C
+    names(issue) <- c("date", "time", "temp")
+    # Paste 16 onto the end of the date column
+    issue$date <- paste0(issue$date, "16")
+    # Eliminate rows with NAs
+    issue <- na.omit(issue)
+    # Change to a .txt file
+    leg_files[i] <- leg_files[i] %>%
+      str_replace(file_ext(leg_files[i]), "txt")
+    # Write out file
+    write_delim(issue, file = leg_files[i], 
+                delim = "\t")
+  }
+}
+```
+
+Now that we've changed all .xls files to .txt, we'll eliminate the .xls files in Leg 1 of the RKC survey and the .csv files in Leg 3 of the RKC survey. We'll also remove the .csv files in Leg 2 for Tidbit 17.
+
+```{bash}
+rm ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_1/*.xls
+
+rm ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/*.csv
+
+rm ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_2/17.csv
+
+```
+
+
+
+
 Tanner surveys have messed-up headers, we'll remove them. We've gotta add in two extra because the .csv files accidentally made 5 rows in some
 
 The bottom 2-3 rows are also junk (just say "Logged") and are throwing off our data file, so we'll remove all lines saying "Logged"
@@ -224,14 +442,14 @@ The bottom 2-3 rows are also junk (just say "Logged") and are throwing off our d
 header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
 
 # Fix headers in Leg 1
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
 
 # Fix headers in Leg 2
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
 ```
 
 Tanner surveys still have some issues, we need to standardize column size
@@ -240,17 +458,89 @@ Built a custom function to fix it up
 
 ```{r}
 source("hemat_modeling_functions.R")
+
+# Fix errors in overly long column names
+
 # Leg 1
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/18.txt")
+fix_longhead_txt(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/18.txt")
 
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/19.txt")
+fix_longhead_txt(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/19.txt")
 
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_1/26.txt")
+fix_longhead_txt(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/26.txt")
 
 # Leg 2
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/18.txt")
+fix_longhead_txt(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_2/18.txt")
 
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2016/Tanner_survey/Leg_2/9.txt")
+# Standardize columns so our dates read in correctly
+
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_1/", full.names = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read.delim(file = leg_files[i], header = TRUE)
+  # Remove all columns with only NAs
+  issue <- issue[, colSums(is.na(issue)) < nrow(issue)]
+  
+  # If 2 columns, split. Otherwise, leave.
+  if (length(names(issue)) == 2) {
+    # Name columns
+    names(issue) <- c("datetime", "temp")
+    # Split datetime column
+    issue <- issue %>%
+      separate(datetime, c("date", "time"), sep = "16 ")
+    # Paste 16 onto the end of the date column
+    issue$date <- paste0(issue$date, "16")
+    # Remove rows with just NAs
+    issue <- na.omit(issue)
+  } else {
+    # Give column names
+    suppressWarnings(names(issue) <- c("date", "time", "temp"))
+    # Eliminate rows with just NAs
+    issue <- na.omit(issue)
+  }
+  
+  # Write out file
+  write_delim(issue, file = leg_files[i], 
+              delim = "\t")
+}
+  
+leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/Tanner_survey/Leg_2/", full.names = TRUE)
+
+for (i in 1:length(leg_files)) {
+  print(leg_files[i])
+  print(i)
+  # Read in file
+  issue <- read.delim(file = leg_files[i], header = TRUE)
+  # Remove all columns with only NAs
+  issue <- issue[, colSums(is.na(issue)) < nrow(issue)]
+  
+  # If 2 columns, split. Otherwise, leave.
+  if (length(names(issue)) == 2) {
+    # Name columns
+    names(issue) <- c("datetime", "temp")
+    # Split datetime column
+    issue <- issue %>%
+      separate(datetime, c("date", "time"), sep = "16 ")
+    # Paste 16 onto the end of the date column
+    issue$date <- paste0(issue$date, "16")
+    # Remove rows with just NAs
+    issue <- na.omit(issue)
+  } else {
+    # Give column names
+    suppressWarnings(names(issue) <- c("date", "time", "temp"))
+    # Eliminate rows with just NAs
+    issue <- na.omit(issue)
+  }
+  
+  # Write out file
+  write_delim(issue, file = leg_files[i], 
+              delim = "\t")
+}
+  
+  
+  
 ```
 
 
@@ -266,26 +556,33 @@ header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
 ### RKC Survey
 
 # Fix headers in Leg 1
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
 
 # Fix headers in Leg 2
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_2/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_2/*; do sed -i '/Logged/d' $FILE; done
 
 # Fix headers in Leg 3
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_3/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_3/*; do sed -i '/Logged/d' $FILE; done
 
 ### Tanner Survey
 # Fix headers in Leg 1
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
 
+```
+
+```{bash}
+# Fix headers in Leg 3
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/Tanner_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
+
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/Tanner_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
 ```
 
 
@@ -294,21 +591,81 @@ We also continue to have issues with Tidbit #18. Looks like it just records data
 Additionally, we'll fix a few others
 
 ```{r}
-# RKC Leg 1
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_1/18.txt")
+####  RKC Leg 1
 
-# RKC Leg 2
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/18.txt")
+# 18
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_1/18.txt"
 
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_2/22.txt")
+count.fields(filepath, sep = "\t")
 
-# RKC Leg 3
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/12.txt")
+issue <- read.delim(file = filepath, col.names = c("Date", "Time", "Temp", rep("Trash", times = 7)))
 
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/RKC_survey/Leg_3/18.txt")
+issue <- issue %>%
+  select(Date, Time, Temp)
 
-# Tanner Leg 1
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2017/Tanner_survey/Leg_1/12.txt")
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
+
+#### RKC Leg 2
+
+# 18
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_2/18.txt"
+
+count.fields(filepath, sep = "\t")
+
+issue <- read.delim(file = filepath, col.names = c("Date", "Time", "Temp", rep("Trash", times = 7)))
+
+issue <- issue %>%
+  select(Date, Time, Temp)
+
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
+
+# 22
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_2/22.txt"
+
+count.fields(filepath, sep = "\t")
+
+issue <- read.delim(file = filepath, col.names = c("Date", "Time", "Temp", rep("Trash", times = 7)))
+
+issue <- issue %>%
+  select(Date, Time, Temp)
+
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
+
+### RKC Leg 3
+
+# 12
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_3/12.txt"
+
+count.fields(filepath, sep = "\t")
+
+issue <- read.delim(file = filepath, col.names = c("Date", "Time", "Temp", rep("Trash", times = 7)))
+
+issue <- issue %>%
+  select(Date, Time, Temp)
+
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
+
+# 18
+filepath <- "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2017/RKC_survey/Leg_3/18.txt"
+
+count.fields(filepath, sep = "\t")
+
+issue <- read.delim(file = filepath, col.names = c("Date", "Time", "Temp", rep("Trash", times = 7)))
+
+issue <- issue %>%
+  select(Date, Time, Temp)
+
+write.table(issue, file = filepath,
+            sep = "\t",
+            row.names = FALSE)
 
 ```
 
@@ -323,15 +680,15 @@ header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
 ### RKC Survey
 
 # Fix headers
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
 
 ### Tanner Survey
 # Fix headers
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/Tanner_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/Tanner_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/Tanner_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/Tanner_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
 
 ```
 
@@ -340,17 +697,18 @@ Again, we have a few Tidbits that we need to individually fix
 
 ```{r}
 # RKC Leg 1
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_1/26.txt")
+# 26
+fix_txt_headers(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_1/26.txt")
 
 # RKC Leg 2
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_2/26.txt")
+# 26
+fix_txt_headers(filepath =  "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_2/26.txt")
 
 # RKC Leg 3
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/13.txt")
-
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/26.txt")
-
-
+# 13
+fix_txt_headers(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_3/13.txt")
+# 26
+fix_txt_headers(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2018/RKC_survey/Leg_3/26.txt")
 ```
 
 
@@ -363,443 +721,57 @@ Same issue as 2017 and 2018, need to edit headers and remove lines with "Logger"
 header="DateTime 	Temp 	Junk 	Junk 	Junk 	Junk 	Junk"
 
 ### RKC Survey
-
+# Note: Just need to fix 1 and 3 using this script. We'll fix all .csv files (which is Leg 2) below.
 # Fix headers
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_*/*; do sed -i "1s/.*/$header/" $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_1/*; do sed -i "1s/.*/$header/" $FILE; done
 
-for FILE in ../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_*/*; do sed -i '/Logged/d' $FILE; done
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_1/*; do sed -i '/Logged/d' $FILE; done
 
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_3/*; do sed -i "1s/.*/$header/" $FILE; done
 
-```
-
-
-Again, we have a few Tidbits that we need to individually fix
-
-```{r}
-# RKC Leg 1
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2019/RKC_survey/Leg_1/26.txt")
-
-# RKC Leg 2
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_2/26.txt")
-
-# RKC Leg 3
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/13.txt")
-
-fix_longhead_txt(filepath = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2018/RKC_survey/Leg_3/26.txt")
-
-```
-### Junk
-
-```{r}
-# We need to extract two pieces of data from this filepath - the year and the Tidbit ID
-
-# First, extract year
-get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-# While we're at it, get survey and leg
-get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-# Finish getting year
-get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-
-# Now extract ID
-get_id <- unlist(strsplit(data_path, split = "Leg_"))[2]
-get_id <- unlist(strsplit(get_id, split = "/"))[2]
-get_id <- str_remove(get_id, ".txt")
-
-# Add year, survey, leg, and ID to the tidbit data column
-tidbit_data$year <- get_year
-tidbit_data$survey <- get_survey
-tidbit_data$leg <- get_leg
-tidbit_data$tidbit_id <- get_id
-
-# Create datetime column from existing columns
-# Change Date and Time columns to correct object type
-tidbit_data$Date <- mdy(tidbit_data$Date, tz = "US/Alaska")
-tidbit_data$Time <- parse_time(tidbit_data$Time, "%H:%M:%S")
-# Paste date and time columns together
-tidbit_data$tidbit_datetime <- paste(tidbit_data$Date, tidbit_data$Time)
-
-# Remove date and time columns
-tidbit_data <- tidbit_data %>%
-  select(-c(Date, Time))
-```
-
-We'll do the same basic process to append all data from tidbit files. To do this efficiently, we'll use a for loop.
-
-```{r}
-# Get path to folder with all .txt files in it
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1"
-
-# List all files in folder
-tidbits <- list.files(data_path)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 2:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Create datetime column from existing columns
-  # Change Date and Time columns to correct object type
-  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
-  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
-  # Paste date and time columns together
-  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
-  
-  # Remove date and time columns
-  new_tidbit <- new_tidbit %>%
-    select(-c(Date, Time))
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-
-# Do the same for Leg 2 of the survey
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
-
-# List all files in folder
-tidbits <- list.files(data_path)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 1:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Create datetime column from existing columns
-  # Change Date and Time columns to correct object type
-  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
-  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
-  # Paste date and time columns together
-  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
-  
-  # Remove date and time columns
-  new_tidbit <- new_tidbit %>%
-    select(-c(Date, Time))
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-
-# Set the temperature column to numeric
-tidbit_data$Temperature....C. <- as.numeric(tidbit_data$Temperature....C.)
-```
-
-To avoid dealing with an unmanageably large dataset, we'll now merge the Tidbit data with the pot data from 2005.
-
-```{r}
-# Read in the pot data from all years
-pot_data <- read_delim(file = "../data/ADFG_SE_AK_pot_surveys/Pot_Set_Data_for_Tanner_and_RKC_surveys.csv")
-
-# Clean up the pot data a bit
-
-# Remove spaces from column names
-names(pot_data) <- make.names(names(pot_data), unique = TRUE)
-
-# Eliminate columns we don't care about
-pot_data <- pot_data %>%
-  select(-c(Pot.Dimension.Feet, Pot.Escape.Device, Bait.Method, Weight.Of.Pot.Pounds,
-            Pot.Type, Substrate.Type, Debris.Type))
-
-# Change name of Tidbit ID column to match the one in use for tidbit_data
-pot_data <- rename(pot_data, tidbit_id = Tidbit.No)
-
-# Convert format of time columns from character to date
-pot_data$Time.Hauled <- mdy_hm(pot_data$Time.Hauled, tz = "US/Alaska")
-pot_data$Time.Set <- mdy_hm(pot_data$Time.Set, tz = "US/Alaska")
-
-# Filter pot data to only include info from 2005 Tanner survey
-ohfive_pot_data <- pot_data %>%
-  filter(Year == "2005" & Project == "Tanner Crab Survey")
-
-# Alright, issue here - Tidbit info isn't in the Tidbit column. It's kept in the comments. Ahhh, this will take a long, long time
-tidbit_pots <- ohfive_pot_data %>%
-  filter(grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
-
-# Check we got all tidbit pots by looking at comments that don't match
-non_tidbit_pots <- ohfive_pot_data %>%
-  filter(!grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
-
-# Yep, looks like tidbit_pots contains all 2005 tidbit pots!
-# Now we need to extract the tidbit number
-# In most, it's after a #
-
-# Get all from single-digit tidbits 
-tidbit_pots$tidbit_id <- str_extract(tidbit_pots$Pot.Comment, "#.")
-
-# Overwrite single-digits that should be double-digits without adding NAs
-# (prev. command read, say, #12 as #1)
-new_dig <- str_extract(tidbit_pots$Pot.Comment, "#.\\d")
-for (i in 1:length(new_dig)){
-  if (!is.na(new_dig[i])){
-    tidbit_pots$tidbit_id[i] <- new_dig[i]
-  }
-  else{}
-}
-
-# Remove the # from the column
-tidbit_pots$tidbit_id <- gsub("#", "", tidbit_pots$tidbit_id)
-
-# We still have a few left, but we can just add these manually
-tidbit_pots[grep("5 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "5"
-  
-tidbit_pots[grep("11 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "11"
-
-tidbit_pots[grep("10 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "10"
-
-tidbit_pots[grep("7 Tidbit", tidbit_pots$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "7"
-
-tidbit_pots[tidbit_pots$Pot.Comment == "Tidbit # 10 on this pot.", ]$tidbit_id <- "10"
-
-tidbit_pots[tidbit_pots$Pot.Comment == "Tidbit 11 on this pot.", ]$tidbit_id <- "11"
-
-# Alright, verify we did a good job here
-any(is.na(tidbit_pots$tidbit_id))
-table(tidbit_pots$tidbit_id)
-# Looks great!
-
-# Now we'll remerge the tidbit and non-tidbit pots to recreate the full 2005 dataset. It'll look the same, just with the Tidbit info added from the comments
-ohfive_pot_data <- rbind(tidbit_pots, non_tidbit_pots)
-
-
-# Now we'll merge the tidbit data with the 2005 pot data based on Tidbit number. This will create a HUGE number of false entries, as each Tidbit entry will match to every deployment. 
-full_data <- inner_join(ohfive_pot_data, tidbit_data, by = "tidbit_id")
-
-# Select only true entries by only choosing rows where the data point is from 2 minutes before the time hauled (to allow for small timekeeping errors) or 5 minutes after the pot was set (to allow it to fall to the bottom)
-# 2 min before time hauled
-
-# Create new column calculating difference between tidbit time and haul time, then filter
-full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Hauled, tz = "US/Alaska", units = "mins")
-full_data <- full_data %>%
-  filter(change_time < -2)
-# Change column to difference between tidbit time and set time, then filter
-full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Set, tz = "US/Alaska", units = "mins")
-full_data <- full_data %>%
-  filter(change_time > 5)
-# Remove column
-full_data <- full_data %>%
-  select(-change_time)
-
-# Calculate average temperature, adding a new column in the database for it
-full_data <- full_data %>%
-  group_by(Time.Hauled) %>%
-  mutate(mean_temp = mean(Temperature....C.)) %>%
-  ungroup
-
-# Remove duplicate IDs for Time.Hauled. This leaves us with one row per haul. That eliminates temp (the specific measurements), date, time, and DateTime, but
-# we don't care about that. It keeps average temperature of the pot, which is what we care about!
-
-full_data <- full_data[!duplicated(full_data$Time.Hauled), ]
-
-# Rename this to complete_data
-complete_data <- full_data
+for FILE in ../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_3/*; do sed -i '/Logged/d' $FILE; done
 
 ```
 
-
-
-### 2006
+We also have a few files we need to fix up for Legs 1 and 3 while we're at it (non-csv files are being grouped together here)
 
 ```{r}
-# Get path to folder with all .txt files in it
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006"
 
-# List all files in folder
-tidbits <- list.files(data_path, recursive = TRUE)
+#### Leg 1
+# 26
+fix_txt_headers(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_1/26.txt")
 
-# Remove all non-text files (our summary files are in .xls)
+#### Leg 3
+# 22
+fix_txt_headers(filepath = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_3/22.txt")
+```
 
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 2:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
 
-# Do the same for Leg 2 of the survey
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
+#### Fix Leg 2 files for 2019
 
-# List all files in folder
-tidbits <- list.files(data_path)
+```{r}
+leg2_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2019/RKC_survey/Leg_2/", full.names = TRUE, recursive = TRUE)
 
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 1:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
+for (i in 1:length(leg2_files)) {
+  print(leg2_files[i])
+  print(i)
+  # Read in file
+  issue <- read.csv(file = leg2_files[i], header = FALSE, skip = 2)
+  # Give column names
+  names(issue) <- c("row", "datetime", "temp_f")
+  # Select only those columns
+  issue <- issue %>%
+    select(datetime, temp_f)
+  # Split datetime column using the space
+  issue <- issue %>%
+    separate(datetime, c("date", "time"), sep = " ")
+  # Convert temperature from F to C
+  issue$temp_f <- (issue$temp_f - 32)*(5/9)
+  # Rename column to signify the change to C
+  names(issue) <- c("date", "time", "temp")
+  # Write out file
+  write.csv(issue, file = leg2_files[i],
+            row.names = FALSE)
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### 2006 Alt
-
-The RKC data has already been assembled! It's not averaged out over time, but we have one row for each Tidbit timepoint, filtered to only include timepoints in which the Tidbit was in the water. We can just read that directly in as a new dataframe, which we'll call cleaned_tidbit_data
-
-Same situation for the Tanner crab data, which we'll follow the same protocol with and then combine the data frames
-
-```{r}
-## RKC Data
-
-# Read in data
-cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/RKC_survey/skipper_tidbit_data.xls")
-
-# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  filter(DateTime < TIME_HAULED & DateTime > (TIME_SET + 5))
-
-# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  group_by(TIME_HAULED) %>%
-  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
-  ungroup
-
-# Remove duplicate IDs for TIME_HAULED. This leaves us with one row per haul that includes average temp. We lose temp (as in specific measurement), date, time, and DateTime, but we don't care about that
-cleaned_tidbit_data <- cleaned_tidbit_data[!duplicated(cleaned_tidbit_data$TIME_HAULED), ]
-
-# TANNER CRAB DATA
-
-# Read in data
-new_cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/Tanner_survey/skipper_tidbit_data.xls")
-
-# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  filter(Datetime < TIME_HAULED & Datetime > (TIME_SET + 5))
-
-# We'll also remove any rows with an NA temperature, NA tidbit ID, or NA time hauled
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  drop_na(c(`Temperature  (*C)`, `Tidbit #`, TIME_HAULED))
-
-# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  group_by(TIME_HAULED) %>%
-  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
-  ungroup
-
-# Remove duplicate IDs for TIME_HAULED. Now that we have avg temp, we just need one row. Plus, it's almost all identical anyways (except for temp, date, time, and DateTime).
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data[!duplicated(new_cleaned_tidbit_data$TIME_HAULED), ]
-
-# Check if names match between data frames
-all_equal(cleaned_tidbit_data, new_cleaned_tidbit_data, ignore_col_order = FALSE)
-
-# Nope, we've got one extra column! Find it
-new_cleaned_tidbit_data %>% select(which(!colnames(new_cleaned_tidbit_data) %in% colnames(cleaned_tidbit_data)))
-
-cleaned_tidbit_data %>% select(which(!colnames(cleaned_tidbit_data) %in% colnames(new_cleaned_tidbit_data)))
-
-# New data has Datetime, Set Date, and ID
-# Old data has DateTime and Tidbit_NO.
-
-# Change name of Datetime to DateTime
-# Remove Set Date (info captured in TIME_SET)
-# Remove ID (irrelevant)
-# Remove Tidbit_NO. (already have a "Tidbit #" column)
-
-# Change name of Datetime in new data
-new_cleaned_tidbit_data <- rename(new_cleaned_tidbit_data, DateTime = Datetime)
-
-# Drop columns from each dataset
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  select(-c("Set Date", "ID"))
-
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  select(-Tidbit_NO.)
-
-# Merge two datasets
-cleaned_tidbit_data <- rbind(cleaned_tidbit_data, new_cleaned_tidbit_data)
-```
-
-
-### 2007
-
-2007 RKC is the same as 2006, already conveniently filtered and assembled! Just need to get the averages and do some slight cleaning.
-
-2007 Tanners are not - instead, we'll just pull out the 
-
-```{r}
-
-```
-
-
 

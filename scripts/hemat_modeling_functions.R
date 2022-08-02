@@ -19,14 +19,20 @@ read_tidbit_data  <- function(data_path) {
   # Get full path to all containing files
   tidbits <- list.files(path = data_path, full.names = TRUE, recursive = TRUE)
   
-  # See if any non-Tidbit files in there. All non-Tidbit files have "_data" somewhere in the name
-  if (any(grepl("_data", tidbits, fixed = TRUE)) == TRUE) {
-    # If so, remove the non-Tidbit files
-    tidbits <- tidbits[-grep("_data", tidbits, fixed = TRUE)]
+  # See if any non-Tidbit files in there. All non-Tidbit files have "_data" somewhere in the name. If so, remove them.
+  # Unfortunately, so does our filepath, so we'll search for either files with "_data." or "_data_"
+  # And since our formatting doesn't work if none are TRUE, we gotta do it separately
+  if (any(grepl("_data.", tidbits, fixed = TRUE)) == TRUE){
+    tidbits <- tidbits[-grep("_data.", tidbits, fixed = TRUE)]
+  }
+  if (any(grepl("_data_", tidbits, fixed = TRUE)) == TRUE){
+    tidbits <- tidbits[-grep("_data_", tidbits, fixed = TRUE)]
   }
   
+  
+  
   # Extract year of survey
-  get_year <- unlist(strsplit(data_path, split = '/', fixed = TRUE))[5]
+  get_year <- unlist(strsplit(data_path, split = '/', fixed = TRUE))[6]
   
   # Initialize matrix
   tidbit_data <- matrix(nrow = 0, ncol = 4)
@@ -54,10 +60,10 @@ read_tidbit_data  <- function(data_path) {
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
       
-    } else if (file_type == "txt") {
+    } else if (file_type == "txt" | file_type == "TXT") {
       new_tidbit <- read.delim(file = tidbits[i], row.names = NULL)
       
-    } else if (file_type == "csv") {
+    } else if (file_type == "csv" &  get_year != "2019") {
       # Find max number of columns in file
       max_cols <- max(count.fields(tidbits[i], sep = ","))
       # Read in file, prefilling col names
@@ -72,7 +78,9 @@ read_tidbit_data  <- function(data_path) {
       )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
-      
+    } else if (file_type == "csv" & get_year == "2019") {
+      new_tidbit <- read.csv(file = tidbits[i])
+      new_tidbit <- na.omit(new_tidbit)
     } else {
       print("Aidan says unknown file type!")
       break
@@ -113,7 +121,7 @@ read_tidbit_data  <- function(data_path) {
     }
     
     # Get name of survey
-    get_survey <- unlist(strsplit(tidbits[i], split = "/", fixed = TRUE))[6]
+    get_survey <- unlist(strsplit(tidbits[i], split = "/", fixed = TRUE))[7]
     
     # Extract ID from name of Tidbit file, removing ending
     get_id <- tail(strsplit(tidbits[i], split = "/", fixed = TRUE)[[1]], n = 1)
@@ -170,10 +178,16 @@ read_tidbit_data  <- function(data_path) {
   # Set the temperature column to numeric
   tidbit_data$Temp <- as.numeric(tidbit_data$Temp)
   
+  # Reorder data columns for consistency
+  tidbit_data <- tidbit_data %>%
+    select(year, survey, tidbit_id, tidbit_datetime, Temp)
+  
   # Return tidbit data
   tidbit_data
 }
 
+
+#### fix_long_csvs() ---------------------------------
 
 fix_long_csvs <- function(filepath) {
 
@@ -194,6 +208,8 @@ fix_long_csvs <- function(filepath) {
   
 }
 
+#### fix_timetemp_comma() ----------------------------------
+
 # This quick function just splits apart tables
 # where format is column 1 = date, column 2 = time,temp
 
@@ -211,7 +227,9 @@ fix_timetemp_comma <- function(filepath) {
               row.names = FALSE)
 }
 
-# This quick function is meant to fix issues in the 2016 data 
+#### fix_longhead_txt() -----------------------------
+
+# This quick function is meant to fix issues in the 2016-2019 data 
 # in which .txt files are reading in with too many columns
 
 fix_longhead_txt <- function(filepath) {
@@ -236,6 +254,26 @@ fix_longhead_txt <- function(filepath) {
               sep = "\t",
               row.names = FALSE)
   
+}
+
+
+#### fix_txt_headers()------------------------
+
+#This quick function is meant to fix issues in the 2018-2019 dataset in which R misreads the columns
+
+fix_txt_headers <- function(filepath) {
+  # Read in file, skipping first line
+  issue <- read.delim(file = filepath, skip = 1, header = FALSE)
+  # Label first three columns
+  names(issue) <- c("date", "time", "temp")
+  # Select those three columns
+  issue <- issue %>%
+    select(date, time, temp)
+  
+  # Done! Write it out
+  write.table(issue, file = filepath,
+              sep = "\t",
+              row.names = FALSE)
 }
 
 

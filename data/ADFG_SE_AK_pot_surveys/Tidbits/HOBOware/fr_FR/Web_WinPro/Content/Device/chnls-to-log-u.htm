@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:lastBlockDepth="3" MadCap:lastHeight="1190" MadCap:lastWidth="750" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:tocPath="Lancement d'un périphérique|Lancement d'un périphérique série U" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Canaux à enregistrer pour les enregistreurs série</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <p>
+            <h1>Canaux à enregistrer pour les enregistreurs série</h1>
+            <p>Sélectionnez les canaux de données, le cas échéant, que vous voulez voir enregistrés par l'enregistreur.&#160;</p>
+            <p MadCap:conditions="">Seuls les capteurs actuellement branchés ou intégrés à l'enregistreur apparaissent. Si vous ajoutez ou retirez des capteurs, cliquez<span style="font-weight: bold;"> sur</span> le bouton sur Rafraîchir pour vous assurer que vos modifications sont observées par l'enregistreur.&#160;</p>
+            <p MadCap:conditions="">Même s'il est utile de voir les capteurs connectés lors de la configuration du lancement, il est inutile de connecter les capteurs durant la configuration du lancement (mais ils doivent l'être si vous voulez définir les emplacements ou configurer des modules FlexSmart ou des prises de capteur analogique). Vous pourrez configurer le lancement pour obtenir un démarrage différé ou déclenché, puis connecter les capteurs par la suite, avant le commencement de l'enregistrement.</p>
+            <p MadCap:conditions=""><b>Important</b> : 
+ Les capteurs connectés après l'enregistrement n'enregistreront aucune donnée.</p>
+        </p>
+        <h2 MadCap:conditions="">Directives</h2>
+        <h3>HR/Pression</h3>
+        <p>Certains enregistreurs avec capteurs de pression ou HR exigent aussi la sélection du canal de température interne pour enregistrer l'humidité
+ relative ou la pression. Pour des informations supplémentaires, reportez-vous au manuel de l'enregistreur.</p>
+        <h3>Point de rosée</h3>
+        <p>Quand les canaux internes de température et HR sont tous deux sélectionnés, le point de rosée est automatiquement calculé.</p>
+        <h3>Canaux externes</h3>
+        <p>Pour les enregistreurs à canaux externes, vous devez également sélectionner le numéro de référence du capteur qui est attaché pour garantir la précision des données en cours d'enregistrement. Ce numéro apparaît sur le tube thermorétrécissable du câble du capteur ; assurez-vous qu'il correspond au numéro de référence correspond à celui que vous sélectionnez.</p>
+        <p>Si vous sélectionnez un canal externe, mais que vous ne branchez pas le capteur, des données fausses seront enregistrées pour ce canal.</p>
+        <h3>Canaux d'événement et d'état <span style="font-style: italic;">(pas sur tous les enregistreurs</span>)</h3>
+        <p MadCap:conditions="">Si votre enregistreur prend en charge les événements et/ou les états externes, vous pouvez entrer des noms pour identifier les canaux d'événement et d'état qui sont utilisés.  Vous pouvez aussi renommer les descriptions Ouvert et Fermé pour chaque état et entrer des
+ incréments et des unités pour chaque canal d'événement.</p>
+        <h3>Utilitaires</h3>
+        <p>Le cas échéant, sélectionnez un canal et cliquez sur<a href="../scaling.htm"> le bouton</a><a href="../General/config-alarms.htm"> Mise à</a> l'échelle 
+ ou Alarmes de la sectionUtilitaires pour configurer la mise à l'échelle ou les alarmes.</p>
+        <h3>Canal de pile</h3>
+        <p>Vous pouvez sélectionner le canal de pile interne de l'enregistreur.La tension de la pile de l'enregistreur est enregistrée à chaque heure d'échantillon. </p>
+        <p><span style="font-weight: bold;"></span>Comme les autres canaux de données, l'enregistrement du canal de pile interne consomme la mémoire de l'enregistreur. Sauf si vous suspectez une performance anormale de la pile, vous n'avez probablement pas besoin d'enregistrer la tension de la pile. Un enregistreur série U (sauf un HOBO U30 Station Logger)
+ enregistre les événements de pile défectueuse, même s'il n'enregistre pas le canal de pile.</p>
+        <p>&#160;</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

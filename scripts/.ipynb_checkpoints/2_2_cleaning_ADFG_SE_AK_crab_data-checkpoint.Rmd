@@ -1,0 +1,644 @@
+---
+title: "2_2_cleaning_ADFG_SE_AK_crab_data"
+author: "Aidan Coyle"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In the previous script, we merged several files together to create a single file of all Tanner crab survey data. In this script, we will clean that data
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "readxl", "lubridate", "rnaturalearth", "rnaturalearthdata", "sf", "rgeos")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+Now, read in data
+
+```{r}
+crabdat <- read.csv(file = "../data/ADFG_SE_AK_pot_surveys/TC_survey_specimen_data_all_years.csv")
+```
+
+Now, let's look at the column names of each
+
+```{r}
+colnames(crabdat)
+
+crabdat <- crabdat %>%
+  dplyr::rename(Year = "ï..Year")
+
+# We can start by removing several columns.
+
+# Project, Trip Number, and Pot Number are likely to be useful in the future to match skipper data to survey data.
+
+# However, we can remove the following columns:
+
+# Specimen.No: We don't particularly care about this - it seems to be its spot on the page
+# Number.Of.Specimens: Indicates the degree of subsampling, which we also don't care about
+# Length.Millimeters: Tanner crab size is measured via width, not length (king crabs, which were kept in the same database, are measured with length)
+# Width.Spines.Millimeters: Also not used for Tanner crab size, column likely only for Dungeness crabs
+# Tag.No: Crab number of each crab is irrelevant
+# Tag.Event.Code: Event under which each crab was tagged is irrelevant
+
+crabdat <- crabdat %>%
+  dplyr::select(-c(Specimen.No, Number.Of.Specimens, Length.Millimeters,
+            Width.Spines.Millimeters, Tag.No,
+            Tag.Event.Code))
+```
+
+We can now begin cleaning our data. First, we'll examine our variables in order to look for outliers and see if any categories should be removed.
+
+**We'll first go through all non-disease regular columns in order, then Specimen.Comments, then our two disease columns (Parasite and Blackmat)**
+
+### Year
+
+```{r}
+# First variable - year
+plot(table(crabdat$Year))
+
+# Looks like there were no surveys carried out in 1990 or 1992! Let's confirm this by looking at this in table form 
+table(crabdat$Year)
+```
+
+Interesting! It appears that there were no surveys in either 1990 or 1992, but surveys in all other years. Furthermore, there has been a definitive rise in the number of crab measured on each survey over the past two decades. This could be either due to an overall rise in population or an increase in the size of the survey. Still, interesting to note!
+
+No apparent outliers, and we should keep data from all surveys - even ones with low overall counts.
+
+### Project
+
+```{r}
+# Looking at Project column
+table(crabdat$Project, useNA = "ifany")
+
+# Unsurprisingly, we have data from both the RKC and Tanner surveys. Interestingly, a lot more Tanners have been measured on the RKC surveys. Let's look at how this changes over time
+ggplot(as.data.frame(table(crabdat$Year, crabdat$Project)),
+       aes(x = Var1, y = Freq, fill = Var2)) +
+  geom_bar(stat = "identity")
+
+# Interesting - so initially, all Tanner crabs caught were on the RKC survey, and the Tanner crab survey is newer. 
+# Let's see the first survey that included Tanner crabs
+min(crabdat[crabdat$Project == "Tanner Crab Survey", 'Year'])
+```
+
+Appears that Tanner crab surveys only began in 1997! This is important to note, as the location (both on a macro scale and a local scale) could be different for RKC and Tanner crab surveys
+
+### Trip Number
+```{r}
+table(crabdat$Trip.No, useNA = "ifany")
+
+# Looks like surveys were a maximum of 3 legs, with 1 error code (999). Let's change that 999 to an NA
+crabdat <- crabdat %>%
+  mutate(Trip.No = na_if(Trip.No, 999))
+
+# Verify we did it correctly
+table(crabdat$Trip.No, useNA = "ifany")
+```
+
+### Location
+```{r}
+table(crabdat$Location, useNA = "ifany")
+
+# All these look alright to me!
+```
+
+### Pot Number
+
+```{r}
+table(crabdat$Pot.No, useNA = "ifany")
+# No NAs or clear error codes, all good!
+```
+
+### Species
+
+```{r}
+table(crabdat$Species, useNA = "ifany")
+
+# Since they're all Tanner crab, this column contains no useful info and can be removed
+crabdat <- dplyr::select(crabdat, -Species)
+```
+
+### Sex
+
+```{r}
+table(crabdat$Sex, useNA = "ifany")
+
+# Alright, looks like we have 7525 with no sex listed. Let's change those to NA
+crabdat <-  crabdat %>%
+  mutate(Sex = na_if(Sex, ""))
+
+# Check we did it right 
+table(crabdat$Sex, useNA = "ifany")
+
+# Let's also check at sex ratio for each year
+ggplot(crabdat, aes(fill = Sex, x = as.factor(Year))) +
+  geom_bar(position = "fill")
+# Huh, some overall variance, but overall getting lots more females
+# Also seems like a pronounced drop in females in the last few years. What's up with that?
+```
+
+### Carapace Width
+
+
+```{r}
+# Check 10 highest values quickly
+crabdat %>%
+  arrange(desc(Width.Millimeters)) %>%
+  slice(1:10)
+
+# Alright, we can maaaybe accept a 224-mm crab. That's immense, but not impossible.
+# There is absolutely no way they have a crab with a carapace width of nearly 2 meters (at least I hope not)
+# We'll turn everything with a CW > 400 to NA
+crabdat[crabdat$Width.Millimeters > 400 & !is.na(crabdat$Width.Millimeters), ]$Width.Millimeters <- NA
+
+# We'll also look at females separately \
+crabdat[crabdat$Sex == "Female", ] %>%
+  arrange(desc(Width.Millimeters)) %>%
+  slice(1:20)
+# Those are definitely big females, but not unreasonably so
+
+# Check 10 lowest values too
+crabdat %>%
+  arrange(Width.Millimeters) %>%
+  slice(1:20)
+# These aren't unreasonably small, but they do show some crab with a chela height greater than their width
+# We'll keep that in mind for later
+
+# Create some histograms
+# All crab
+hist(crabdat$Width.Millimeters)
+# Male crab
+hist(crabdat[crabdat$Sex == "Male", ]$Width.Millimeters)
+# Female crab
+hist(crabdat[crabdat$Sex == "Female", ]$Width.Millimeters)
+
+# Let's also check how many crabs we have without a measurement for Width
+sum(is.na(crabdat$Width.Millimeters))
+# 7800 sounds like a lot, but that's just under 5%
+```
+
+### Weight.Grams
+
+```{r}
+# Check how many have a weight measurement
+sum(!is.na(crabdat$Weight.Grams))
+# That's a really negligible number
+
+# Let's quickly check the correlation of weight and carapace width
+plot(crabdat$Weight.Grams, crabdat$Width.Millimeters)
+
+# As expected, width and weight are pretty dang tightly correlated
+# Since only around 5% have weight measurements, we'll remove the column
+crabdat <- dplyr::select(crabdat, -Weight.Grams)
+```
+
+### Chela.Height.Millimeters
+
+```{r}
+# Again, check how many have a measurement
+sum(!is.na(crabdat$Chela.Height.Millimeters))
+# Around 10% or so of the crabs have a measured chela height
+
+# Check max and min values
+crabdat %>%
+  arrange(desc(Chela.Height.Millimeters)) %>%
+  slice(1:20)
+
+# Most of these are totally unrealistic. Eliminate every chela height over 80 mm and try again
+crabdat[crabdat$Chela.Height.Millimeters > 80 & !is.na(crabdat$Chela.Height.Millimeters), ]$Chela.Height.Millimeters <- NA
+
+# Check max and min values
+crabdat %>%
+  arrange(desc(Chela.Height.Millimeters)) %>%
+  slice(1:20)
+# Alright, no obvious chela heights that are extremely wrong
+
+# Let's see all rows with a chela height greater than or equal to the carapace width
+crabdat %>%
+  filter(Chela.Height.Millimeters >= Width.Millimeters)
+
+# We only have 5, all of which have a CW below 20.
+# Realistically any crab with a carapace width below 20 mm is too small to get any sort of reliable chela height from
+# Remove the chela height of all crabs with a CW below 20
+crabdat[crabdat$Width.Millimeters <= 20 & !is.na(crabdat$Width.Millimeters), ]$Chela.Height.Millimeters <- NA
+
+# Histogram
+hist(crabdat$Chela.Height.Millimeters)
+# Alright, looks solid
+
+# Check what year chela height measurements began
+min(crabdat[!is.na(crabdat$Chela.Height.Millimeters), ]$Year)
+# Hmm, 1998. Good to know. Not enough to remove either the column or all pre-98 data, but worth knowing.
+```
+### Recruit Status
+
+```{r}
+table(crabdat$Recruit.Status, useNA = "ifany")
+# Hmm, interesting that some are labeled with sex. Let's look at those further
+table(crabdat$Recruit.Status, crabdat$Sex, useNA = "ifany")
+
+# Alright, all crabs with an NA for sex also have a blank for recruit status, which is a point in favor of the removal of those rows
+# For now, let's just leave them be
+# However, we'll convert those blanks to NAs
+crabdat <-  crabdat %>%
+  mutate(Recruit.Status = na_if(Recruit.Status, ""))
+
+# Check everything worked properly
+table(crabdat$Recruit.Status, useNA = "ifany")
+
+# Check recruit status was checked in all years
+table(crabdat$Year, crabdat$Recruit.Status, useNA = "ifany")
+# Looks good, moving on
+
+```
+
+
+
+
+### Shell Condition
+
+```{r}
+table(crabdat$Shell.Condition, useNA = "ifany")
+
+# Alright, we'll first change all blanks to NAs
+crabdat <-  crabdat %>%
+  mutate(Shell.Condition = na_if(Shell.Condition, ""))
+
+# We also want to change the codes from "Light", "New', "Old"... to numerical codes
+# Official ADFG codes are available in the ROPs in ../data/ADFG_SE_AK_pot_surveys/survey_information/
+# Soft = 1
+# Light = 2
+# New = 3
+# Old = 4
+# Very Old = 5
+crabdat$Shell.Condition <- recode(crabdat$Shell.Condition, "Soft" = "1",
+                                                       "Light" = "2",
+                                                       "New" = "3",
+                                                       "Old" = "4",
+                                                       "Very Old" = "5")
+# Check it worked
+table(crabdat$Shell.Condition, useNA = "ifany")
+# Great! Looks fantastic
+
+# It'd be a huge shocker if shell condition wasn't checked in all years, but let's be safe
+table(crabdat$Shell.Condition, crabdat$Year)
+# Yep! Moving on 
+```
+
+### Egg Condition
+
+```{r}
+table(crabdat$Egg.Condition, useNA = "ifany")
+
+# We have a lot of blanks, let's change those to NAs
+crabdat <- crabdat %>%
+  mutate(Egg.Condition = na_if(Egg.Condition, ""))
+
+# We'll simplify these variable names somewhat
+crabdat$Egg.Condition <- recode(crabdat$Egg.Condition, "Normal Eggs" = "Normal",
+                                                       "Dead Eggs < 20%" = "Dead_eggs_under_20pct",
+                                                       "Dead Eggs > 20%" = "Dead_eggs_over_20pct",
+                                                       'Barren With Clean "Silky" Setae' = "Barren_Clean",
+                                                       'Barren With "Matted" Setae, Empty Egg Cases' = "Barren_Matted")
+# Check that we did it right
+table(crabdat$Egg.Condition, useNA = "ifany")
+
+# Check egg condition was used in all years
+table(crabdat$Egg.Condition, crabdat$Year)
+# Realistically, looks like it wasn't truly checked prior to '86. Good to keep in mind. Let's continue:
+```
+
+### Egg.Development
+
+```{r}
+table(crabdat$Egg.Development, useNA = "ifany")
+
+# Again, let's change all those blanks to NAs
+crabdat <- crabdat %>%
+  mutate(Egg.Development = na_if(Egg.Development, ""))
+# Like before, we'll also change some of the variable names to play a little easier in R
+crabdat$Egg.Development <- recode(crabdat$Egg.Development, "Eyed eggs" = "Eyed", 
+                                  "No eggs" = "Barren",
+                                  "Uneyed eggs" = "Uneyed")
+# Let's cross-reference the Egg Development and Egg Condition tables
+table(crabdat$Egg.Condition, crabdat$Egg.Development, useNA = "ifany")
+
+# Okay, we have some eyebrow-raisers
+# First, the 9 Barren Clean crab with an NA in Egg Development, and the 2 Barren Matted crab with the same
+# We know they're barren, so we'll assign them an Egg.Development of "Barren"
+crabdat[crabdat$Egg.Condition == "Barren_Clean" & !is.na(crabdat$Egg.Condition) & is.na(crabdat$Egg.Development),]$Egg.Development <- "Barren"
+crabdat[crabdat$Egg.Condition == "Barren_Matted" & !is.na(crabdat$Egg.Condition) & is.na(crabdat$Egg.Development),]$Egg.Development <- "Barren"
+
+# Next, the crab with over 20% dead eggs that's also barren
+# First, change the egg development to something arbitrary (like "REMOVE") to mark it
+crabdat[crabdat$Egg.Condition == "Dead_eggs_over_20pct" & !is.na(crabdat$Egg.Condition) & crabdat$Egg.Development == "Barren" & !is.na(crabdat$Egg.Development), ]$Egg.Condition <- "REMOVE"
+# Now change that crab's egg development to NA
+crabdat[crabdat$Egg.Condition == "REMOVE" & !is.na(crabdat$Egg.Condition), ]$Egg.Development <- NA
+# Finally change the egg condition to NA as well
+crabdat[crabdat$Egg.Condition == "REMOVE" & !is.na(crabdat$Egg.Condition), ]$Egg.Condition <- NA
+
+# Do the same for the 8 crab with Normal egg condition and Barren egg development
+crabdat[crabdat$Egg.Condition == "Normal" & !is.na(crabdat$Egg.Condition) & crabdat$Egg.Development == "Barren" & !is.na(crabdat$Egg.Development), ]$Egg.Condition <- "REMOVE"
+# Change those crab egg developments to NA
+crabdat[crabdat$Egg.Condition == "REMOVE" & !is.na(crabdat$Egg.Condition), ]$Egg.Development <- NA
+# Finally change the egg condition to NA as well
+crabdat[crabdat$Egg.Condition == "REMOVE" & !is.na(crabdat$Egg.Condition), ]$Egg.Condition <- NA
+
+# Finally, juveniles definitionally can't have eggs. 
+# The 94 normals probably were described as "normal juveniles" and the 43 barren juveniles are redundant
+# Therefore, for all juveniles, change egg condition to NA
+crabdat[crabdat$Egg.Development == "Juvenile" & !is.na(crabdat$Egg.Development), ]$Egg.Condition <- NA
+
+# Let's also check what years egg development was tracked too
+table(crabdat$Egg.Development, crabdat$Year)
+# Oh wow, all years! Nice. Continuing
+
+```
+
+
+### Leg.Condition
+
+```{r}
+table(crabdat$Leg.Condition, useNA = "ifany")
+
+# First, change all blanks to NAs
+crabdat <- crabdat %>%
+  mutate(Leg.Condition = na_if(Leg.Condition, ""))
+# Also change all "Not Observed" to NAs
+crabdat <- crabdat %>%
+  mutate(Leg.Condition = na_if(Leg.Condition, "Not Observed"))
+
+# Change to ADFG codes, as these roughly correspond to the severity of the injury
+# From the same ROP described above (found in this repo):
+# 1 = No legs missing or regenerated
+# 2 = 1 leg missing or regenerated
+# 3 = 2+ legs missing or regenerated
+# 4 = carapace damage
+# 5 = combination of conditions
+crabdat$Leg.Condition <- recode(crabdat$Leg.Condition, "Normal" = "1",
+                                "One leg or claw missing or regenerated" = "2",
+                                "Two or more legs/claws missing or regenerated" = "3",
+                                "Abnormal carapace" = "4",
+                                "Combination of conditions" = "5")
+
+# Check we did it right
+table(crabdat$Leg.Condition, useNA = "ifany")
+
+# Check what years leg condition was noted
+table(crabdat$Leg.Condition, crabdat$Year)
+# Wasn't checked before 1997. Good to know - let's continue.
+```
+
+### Legal.Size
+
+We'll just directly remove this table. Tanner crabs have very small spines, and the only difference between the biological Carapace Width measurement and the legality measurement is that when examining legality, you include the spines. Variance between crab is maybe a millimeter or two at most.
+
+
+```{r}
+# Check just in case there's a tonnnn of info here
+table(crabdat$Legal.Size, useNA = "ifany")
+# Nope, let's remove
+crabdat <- dplyr::select(crabdat, -Legal.Size)
+```
+
+### Leatherback
+
+Leatherback is a condition that only king crab have, in which the carapace is leathery or rubbery. 
+
+It is not present in Tanners, therefore this column can be removed
+
+```{r}
+# Just double check here
+table(crabdat$Leatherback, useNA = "ifany")
+# Yep, remove
+crabdat <- dplyr::select(crabdat, -Leatherback)
+```
+
+### Parasite
+
+We'll skip Parasite for now, and will address it at the end to ensure we've eliminated all other problems
+
+### Egg Percent
+
+```{r}
+# See how many non-NAs we have
+sum(!is.na(crabdat$Egg.Percent))
+# Hmm, just under 50k. Let's see when they began to track it
+min(crabdat[!is.na(crabdat$Egg.Percent), ]$Year)
+# Alright, 1997 at earliest - our original start date. 
+
+# What values do we have?
+table(crabdat$Egg.Percent, useNA = "ifany")
+# Hmm, alright it's not exactly ideal. But if we treat it as a continuous variable, it should be all OK.
+```
+
+### Specimen Comments
+
+Alright, we've finished all our non-disease columns! Let's see if we have any interesting comments we can work with
+
+```{r}
+# See if we have any semicolons. In ADFG-speak, semicolons separate comments
+crabdat[grep(";", crabdat$Specimen.Comments), ]
+# Check if commas were used too for the same purpose. Sometimes done on older surveys
+crabdat[grep(",", crabdat$Specimen.Comments), ]
+# No crab have a common, boring comment tagged on to an interesting comment.
+# e.g. lots of boring comments say "NMFS [tag_no]". We can therefore remove all crabs with that comment, as
+# no crab has both a common boring AND interesting comment.
+
+# Remove all comments with a variation of "NMFS" in them
+crabdat[grep("nmfs", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with "ws ###" in them. Refers to size with spines
+crabdat[grep("^ws ???", crabdat$Specimen.Comments, ignore.case = TRUE),]$Specimen.Comments <- NA
+# Remove all comments with "with spines" in them. Also refers to size with spines
+crabdat[grep("with spines", crabdat$Specimen.Comments, ignore.case = TRUE),]$Specimen.Comments <- NA
+# Remove all comments with "w/s" in them. Also refers to size with spines
+crabdat[grep("w/s", crabdat$Specimen.Comments, ignore.case = TRUE),]$Specimen.Comments <- NA
+# Remove all comments with "w/ sp" in them. Also refers to size with spines
+crabdat[grep("w/ sp", crabdat$Specimen.Comments, ignore.case = TRUE),]$Specimen.Comments <- NA
+# Remove all comments with "Spines:" in them. Also refers to size with spines
+crabdat[grep("spines:", crabdat$Specimen.Comments, ignore.case = TRUE),]$Specimen.Comments <- NA
+# Remove all comments with TG #### in them
+crabdat[grep("^TG ????", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with Tag ### in them
+crabdat[grep("^Tag????", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with Slide in them
+crabdat[grep("Slide", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with PME in them
+crabdat[grep("PME", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with NF #### in them
+crabdat[grep("NF ????", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with N #### in them
+crabdat[grep("N ????", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+# Remove all comments with (legal_size_code edited from 00) in them
+crabdat[grep("legal_size_code edited from 00", crabdat$Specimen.Comments, ignore.case = TRUE), ]$Specimen.Comments <- NA
+
+# Looked through all remaining comments, and found zero interesting enough to change another column's value
+
+# Therefore, remove the column
+crabdat <- dplyr::select(crabdat, -Specimen.Comments)
+```
+
+
+
+### Black Mat
+
+```{r}
+table(crabdat$Blackmat)
+# Check when they began checking for Black Mat on each survey
+table(crabdat$Blackmat, crabdat$Project, crabdat$Year)
+# No big differences between surveys - both were checking by '97
+
+# Alright, we'll do the same as before - change Black Mat to a 0/1 column. 
+# 1 = observed, 0 = "" or "None Observed
+crabdat <- crabdat %>%
+  mutate(Blackmat = if_else(Blackmat == "Observed", "1", "0"))
+
+# Alright let's check we didn't mess up
+table(crabdat$Blackmat)
+
+# Let's also look at the Black Mat infection rate by year
+ggplot(crabdat, aes(x = Year, fill = Blackmat)) +
+  geom_bar(position = "fill")
+# Seems like there was a wave in the mid-2000s that's since decreased somewhat
+
+# Also looks like Black Mat wasn't checked for prior to the early '80s. We may want to remove those rows, just in case we want to do a future analysis of Black Mat's causes
+# First, let's check the earliest year that Black Mat was checked for
+min(crabdat[crabdat$Blackmat == "1", ]$Year)
+# Alright, it's 1982. Was BCS checked for before then? (I did a more in-depth dive earlier, and the answer is "no" - they weren't checked for before 1997 systematically.)
+min(crabdat[crabdat$Parasite == "Bitter crab", ]$Year)
+
+# Alright, we'll eliminate all crab from before 1982
+crabdat <- crabdat[crabdat$Year >= 1982, ]
+```
+
+### Parasite
+
+```{r}
+table(crabdat$Parasite, useNA = "ifany")
+
+# Some entries with parasites are blanks, others are "None present"
+# We want to see if the ones with blanks were actually checked
+# This would likely be determined by the year in which the survey took place - early years may not have checked for parasites
+# Let's graph parasite status by year to determine
+ggplot(crabdat, aes(fill = Parasite, x = Year)) +
+  geom_bar(position = "fill")
+# Okay yeah, earlier surveys didn't check for parasites. This is bad news - surveys from early years aren't useful to us, as the presence of Hematodinium wasn't checked. Let's see the earliest crab that had a parasite noted
+min(crabdat[crabdat$Parasite != "" & !is.na(crabdat$Parasite), ]$Year)
+
+table(crabdat$Year, crabdat$Parasite)
+
+# Alright, so the crabs definitely weren't checked for parasites prior to 1993. Between 1993-1997, it's uncertain, as there are zero bitter crab from '94-96. It's possible they didn't encounter any diseased crab, but the column header is "", not None Present (which begin to appear in '97).
+
+# Check that it's not related to a difference in survey protocol
+table(crabdat$Year, crabdat$Parasite, crabdat$Project)
+# Nope, looks all good. Also looks like the "" vs "None Present" distinction isn't a survey thing either.
+# Okay, later we'll eliminate some rows
+
+# Alright, we only have around 65 rows with a parasite other than Hematodinium. Let's remove those rows, as it's quite possible the survey guidelines only allowed for one parasite to be noted at once
+crabdat <- crabdat %>%
+  filter(Parasite == "" | Parasite == "Bitter crab" | Parasite == "None present")
+
+# We'll now change the column name from Parasite to Bitter
+crabdat <- dplyr::rename(crabdat, Bitter = Parasite)
+
+# We'll also recode all blanks or uninfected crab as 0 and all infected crab as 1
+crabdat <- crabdat %>%
+  mutate(Bitter = if_else(Bitter == "Bitter crab", "1", "0"))
+
+table(crabdat$Bitter)
+
+# Alright, time to remove some rows
+# Since we might want to model Black Mat infection status (and have already removed years from before Black Mat was noted), we'll make a copy of the current data table for that purpose.
+# BM = Black Mat
+BM.crabdat <- crabdat
+
+# To be conservative, we'll assume that all crabs were checked for parasites beginning in '97. Therefore, we'll remove all data prior to '97
+# To be clear that it's BCS-specific, we'll give it a new name
+BCS.crabdat <- crabdat[crabdat$Year >= 1997 & !is.na(crabdat$Year), ]
+
+# Bummer, there goes a lot of our data. Ah well, nothing we can do about it!
+
+ggplot(BCS.crabdat, aes(fill = Bitter, x = Year)) +
+  geom_bar(position = "fill")
+```
+
+### Writing out data
+
+NOTE: This is NOT the actual data that will be used inside each model. It includes a whole lot of lines with NA values, for instance. Instead, it is the FULL data that CAN be used in each model. Before actually creating the model, we'll filter out NAs as desired. However, all codes should be accurate.
+
+```{r}
+# Black Mat data
+write.csv(BM.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/all_rows/black_mat_cleaned.csv", row.names = FALSE)
+
+# Bitter Crab Syndrome data
+write.csv(BCS.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/all_rows/BCS_cleaned.csv", row.names = FALSE)
+
+```
+
+# END OF SCRIPT
+
+However, just for fun, we can also make some quick graphs to look at how our key variable (Hematodinium infection status) varies with our other variables
+
+
+``` {r} 
+# Let's look a bit further at how infection status changes with a few other variables
+ggplot(crabdat, aes(fill = Bitter, x = Location)) +
+  geom_bar(position = "fill")
+# Definitely a ton of change in different locations
+ggplot(crabdat, aes(fill = Bitter, x = Sex)) +
+  geom_bar(position = "fill")
+# Sex doesn't actually seem to be too different!
+ggplot(crabdat, aes(x = Bitter, y = Width.Millimeters)) +
+  geom_violin()
+# Also not much overlap - perhaps infected crab are slightly larger
+ggplot(crabdat, aes(fill = Bitter, x = Shell.Condition)) +
+  geom_bar(position = "fill")
+# Definitely an effect of shell condition going on here
+ggplot(crabdat, aes(fill = Bitter, x = Egg.Condition)) +
+  geom_bar(position = "fill")
+# The disparity between Barren_Clean and Barren_Matted is interesting
+ggplot(crabdat, aes(fill = Bitter, x = Egg.Development)) +
+  geom_bar(position = "fill")
+# We don't have many eyed eggs, so it's interesting to see that big gap between that and everything else
+ggplot(crabdat, aes(fill = Bitter, x = Leg.Condition)) +
+  geom_bar(position = "fill")
+# Huh, looks like infection rates actually decrease as injury level increases. Weird!
+ggplot(crabdat, aes(fill = Bitter, x = Egg.Development)) +
+  geom_bar(position = "fill")
+ggplot(crabdat, aes(fill = Bitter, x = Egg.Percent)) +
+  geom_bar(position = "fill")
+ggplot(crabdat, )
+
+```
+
+
+
+
+```{r}
+colnames(crabdat)
+```
+
+
+
+
+
+
+
+
+

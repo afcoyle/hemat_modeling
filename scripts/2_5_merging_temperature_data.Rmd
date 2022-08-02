@@ -46,8 +46,61 @@ source("hemat_modeling_functions.R")
 # Try to read in tidbit data for all years
 
 ```{r}
-test_dat <- read_tidbit_data(data_path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2019")
+# For the sake of formatting, don't put a trailing / at the end of the path
+full_dat <- read_tidbit_data(data_path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2005")
+
+years <- as.character(2006:2019)
+
+for (i in 1:length(years)) {
+  temp_dat <- read_tidbit_data(data_path = paste0("../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/", years[i]))
+  
+  full_dat <- rbind(full_dat, temp_dat)
+}
+
+
+colSums(is.na(full_dat))
+
+# Heck yes, no NA values!
+
+# Now we'll check for weird values in all columns
+table(full_dat$year)
+table(full_dat$survey)
+table(full_dat$tidbit_id)
+head(sort(full_dat$tidbit_datetime))
+head(sort(full_dat$tidbit_datetime, decreasing = TRUE))
+head(sort(full_dat$Temp))
+head(sort(full_dat$Temp, decreasing = TRUE))
+
+# Max and min values all look good
+
+# Convert formats to correct ones
+full_dat$year <- as.numeric(full_dat$year)
+full_dat$tidbit_datetime <- as_datetime(full_dat$tidbit_datetime, tz = "US/Alaska")
+
+# To ensure all date/times were converted directly, check the hours for each year/survey combo
+full_dat$hour <- hour(full_dat$tidbit_datetime)
+table(full_dat$hour, full_dat$year)
+
+# Everything looks great - no year has any sort of bias for pre-12pm, and values are typically within a few tens per hour.
+full_dat <- full_dat %>%
+  select(-hour)
+
+# We'll double check that times weren't rounded by examining the distribution of minutes. Looking for odd numbers of :00
+full_dat$min <- minute(full_dat$tidbit_datetime)
+
+table(full_dat$min, full_dat$year)
+
+# Okay, 2016 Tidbits luckily captured seconds as well. Let's check on those
+min_dat$sec <- second(min_dat$tidbit_datetime)
+
+table(min_dat$sec, min_dat$survey)
+
+# Looks good!!! (The excitement is because the first 20+ renditions were less successful).
+
+# We can now drop the 
 ```
+
+
 
 
 

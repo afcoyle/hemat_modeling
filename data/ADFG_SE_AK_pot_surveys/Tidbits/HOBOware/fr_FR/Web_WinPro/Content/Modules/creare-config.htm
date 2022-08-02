@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:id="Creating_and_saving_a_configuration" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" xml:lang="fr-fr" MadCap:segmented="False" MadCap:translationStatus="completed" MadCap:lastBlockDepth="4" MadCap:lastHeight="1511" MadCap:lastWidth="794" MadCap:tocPath="" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Création d'une configuration de port/module</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor138"></a>Création d'une configuration de port/module analogique</h1>
+        <p><b>REMARQUE</b> La configuration d'un port de capteur analogique est uniquement prise en charge avec HOBOware ProHOBOware Pro.</p>
+        <p>Cette rubrique décrit comment configurer un port de capteur analogique dans l'enregistreur HOBO U30 Station ou un module FlexSmart dans le HOBO Energy Logger Pro.</p>
+        <h2>Procédure</h2>
+        <ol>
+            <li value="1">Branchez le périphérique sur l'ordinateur. </li>
+        </ol>
+        <p class="bodyindent">(Reportez-vous aux manuels fournis avec votre enregistreur, votre module et vos capteurs pour y lire des instructions plus spécifiques sur la manière de configurer le matériel de l'enregistreur.)</p>
+        <ol MadCap:continue="true">
+            <li value="2">Dans le menu<b> Périphérique</b>, choisissez<b> Configurer modules</b>/ports. </li>
+        </ol>
+        <p class="bodyindent">Si l'enregistreur enregistre déjà, vous serez averti de l'arrêter dans un premier temps. </p>
+        <p>La boîte de dialogue    <b>Sélectionner le canal</b> à configurer s'affiche. Seuls les modules configurables apparaissent dans cette boîte de dialogue.</p>
+        <p><b>REMARQUE</b>:&#160;Si vous utilisez l'enregistreur HOBO Energy Logger Pro, vous pouvez brancher des modules supplémentaires durant l'affichage de cette boîte de dialogue. Une fois que vous aurez terminé, cliquez sur    <b>Rafraîchir </b>pour mettre à jour la liste des modules.  </p>
+        <ol MadCap:continue="true">
+            <li value="3">Cliquez deux fois sur un nom de module/port pour afficher la liste des canaux disponibles. Chaque canal du module/port est défini par son numéro de canal (ordre physique dans le module/port), le nom de canal configuré et tout emplacement (assigné au lancement) défini pour ce canal dans l'enregistreur.</li>
+            <li value="4">Cliquez sur un nom de canal pour le sélectionner.</li>
+            <li value="5">Cliquez sur <b>Configurer</b> pour afficher la boîte de dialogue de    <b>Channel Configuration</b> configuration correspondant à ce canal. </li>
+        </ol>
+        <p class="bodyindent"><b>REMARQUE</b>:&#160;Vous pouvez également accéder à la boîte de dialogue de configuration à partir de la fenêtre de lancement. Cliquez deux fois sur le nom de module/port pour le développer, cliquez sur le nom de canal pour le sélectionner, puis cliquez sur le bouton Configurer.</p>
+        <ol MadCap:continue="true">
+            <li value="6">Lorsque la<b><a href="../configure_module.htm"><b> boîte de dialogue</b></a></b> Configurer canal s'affiche, modifiez tous les paramètres configurables pertinents :
+<p>- Sélectionnez (ou définissez) un Nom de canal</p><p>- Réglez l'Alimentation d'excitation, le cas échéant.
+</p><p>-	Sélectionnez (ou définissez) le Type de mesure, le cas échéant.</p><p>-	Définissez les paramètres de mise à l'échelle, y compris les Unités mises à l'échelle, le cas échéant. Pour des détails sur chacun de ces paramètres, reportez-vous à « Paramètres de configuration d'un module ».</p></li>
+            <li value="7">Enregistrez la configuration (facultatif).  Voir ci-dessous.</li>
+            <li value="8">Pour envoyer la configuration actuellement affichée sur le module/port, cliquez<b> sur</b> Configurer. </li>
+        </ol>
+        <p>Le module restera dans cette configuration jusqu'à ce que vous lui envoyiez une configuration différente.</p>
+        <h2>Enregistrement de la configuration</h2>
+        <p>Inutile d'enregistrer la configuration si vous allez l'envoyer immédiatement au module/port, mais vous pourrez trouver commode d'enregistrer la configuration pour une utilisation ultérieure, surtout si vous avez défini des paramètres de capteur personnalisés.</p>
+        <p>Pour enregistrer cette configuration pour une utilisation future avec tout module/port du même type :</p>
+        <ol>
+            <li value="1">Cliquez sur Enregistrer. </li>
+            <li value="2">Entrez un nom pour le fichier et cliquez sur Enregistrer.</li>
+        </ol>
+        <p>Par défaut, le fichier est enregistré à l'emplacement suivant avec l'extension .hcfg.</p>
+        <p class="bodyindent">Windows: Mes Documents\HOBOware\Configs</p>
+        <p class="bodyindent">Mac: Finder\HOBOware\Configs </p>
+        <p>&#160;</p>
+        <ol MadCap:continue="true">
+        </ol>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

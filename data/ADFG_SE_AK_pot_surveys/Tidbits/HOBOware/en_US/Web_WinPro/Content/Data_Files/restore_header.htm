@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:id="Restoring_a_corrupted_logger_header" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" MadCap:lastBlockDepth="2" MadCap:lastHeight="430" MadCap:lastWidth="666" MadCap:tocPath="Launching a Device|Launching a U-Series Device" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Restoring a corrupted header</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor29"></a>Read Header Failed Error</h1>
+        <p MadCap:conditions="">Occasionally, when trying to launch, check status, or read out a U-Series logger (other than a HOBO U30
+Station), HOBO Waterproof Shuttle, or HOBO U Shuttle, you may receive the following error:&#160;"Read 
+ Header Failed".</p>
+        <p>These messages occur when a device's header 
+ cannot be read, usually because of a communication error or corrupted 
+ header. Disconnect the device from the computer, then reconnect it and 
+ try to launch, check status, or read out again. </p>
+        <p><a name="kanchor30"></a><a name="kanchor31"></a>If you receive the message again, the header has probably become corrupted. 
+ The most common cause of header corruption is a communication problem 
+ during launch, such as the USB cable coming loose or an optical logger 
+ slipping out of its base station/coupler while the Launching Logger progress 
+ bar is displayed. In that case, there is a possibility that valid data 
+ has been logged, but cannot be read out.</p>
+        <p MadCap:conditions="">You can restore the header by launching the logger<span MadCap:conditions=""> or </span>shuttle. This will reset the device's launch options to factory defaults. However, 
+ it will also cause any logged data or offloaded data from a shuttle to be lost. If you receive a "Read 
+ Header Failed" message and are unable to read out the logger or offload a shuttle, please contact 
+ the vendor that sold you the device. It may be possible to retrieve the 
+ logged data.</p>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" MadCap:conditions="" MadCap:id="Header/formatting_requirements_for_text_files" MadCap:timeEstimate="0" MadCap:priority="0" MadCap:status="In Progress" MadCap:lastBlockDepth="4" MadCap:lastHeight="2042" MadCap:lastWidth="782" MadCap:tocPath="Importing Data (HOBOware Pro only)" MadCap:PathToHelpSystem="../../" MadCap:SearchType="Stem">
+    <head><title>Header/formatting requirements for text files</title>
+        <link href="../Resources/Stylesheets/Styles.css" rel="stylesheet" type="text/css" />
+        <script src="../SkinSupport/MadCapUtilities.js">
+        </script>
+        <script src="../SkinSupport/MadCapBody.js">
+        </script>
+        <script src="../SkinSupport/MadCapHighlighter.js">
+        </script>
+    </head>
+    <body>
+        <h1><a name="kanchor83"></a>Import Text Files Requirements</h1>
+        <p><b>NOTE</b>:&#160;This feature is only available in HOBOware Pro.</p>
+        <p>When you import a text file, the file must meet certain requirements. 
+ You can view or edit text files in a text editor or word processor. To 
+ delete, rearrange, or reformat columns of data, you may need to use a 
+ spreadsheet program. Remember to save the corrected file in text (.txt) 
+ format.</p>
+        <h3>Serial Number</h3>
+        <p>There may be an optional header for serial number 
+ information located at the beginning of the file, before the column headings. 
+ At the beginning of the line must be the phrase "Serial Number:" 
+ followed by a space, then the serial number, then two dashes:</p>
+        <p style="margin-left: 92px;"><span class="Typethis">Serial Number: 733329 
+ --</span>
+        </p>
+        <h3>Contents</h3>
+        <p>Below the header (if any) should be the data, 
+ starting with column headings. There must be no other text in the file 
+ other than the optional header, column headings, and data. The first column 
+ must be date, the next must be time, and the rest must be data.</p>
+        <h3>Delimiters</h3>
+        <p>Valid delimiters for separating date and time 
+ are space, comma, tab, and semicolon. Valid delimiters for separating 
+ other data are comma, tab, and semicolon. The delimiter used to separate 
+ the date from the time may be different from the delimiter used to separate 
+ the data. </p>
+        <h3>Date</h3>
+        <p>The date column must have the heading, "Date" 
+ and date values should be formatted as mm/dd/yy. If they are in a different 
+ format, remember to indicate the correct format in the Edit Date/Time 
+ Format dialog when you import the file.</p>
+        <p style="margin-left: 92px;"><span class="Typethis">Date<br />12/31/04<br />12/31/04<br />01/01/05<br />01/01/05</span>
+        </p>
+        <h3>Time</h3>
+        <p>The time column must have the heading, "Time" 
+ and time values should be formatted in 24-hour format as hh:mm:ss.sss 
+ (decimals are optional). If they are in a different format, remember to 
+ indicate the correct format in the Edit Date/Time Format dialog when you 
+ import the file. UTC offset is assumed to be the same as your computer's 
+ current time zone.</p>
+        <p style="margin-left: 92px;"><span class="Typethis">Time<br />23:59:59<br />23:59:59.5<br />00:00:00<br />00:00:00.5</span>
+        </p>
+        <ul style="list-style: disc;" type="disc">
+            <li class="sp_bull" value="1">No thousands separator can be used.</li>
+            <li class="sp_bull" value="2">Rows of data must be separated with a paragraph 
+ return.</li>
+        </ul>
+        <h3>Measurements</h3>
+        <p>Data column headings must have the format "Measurement 
+ (Units)". Additional information (such as channel number or serial 
+ number) can follow, but is optional. Only spaces can be used between the 
+ end of the measurement name and the opening parenthesis. An example is 
+ "RH (%)". &#160;</p>
+        <p style="margin-left: 92px;"><span class="Typethis">RH (%)<br />38.7<br />38.9<br />39.0<br />39.0</span>
+        </p>
+        <p>If the column header and units of an imported 
+ series exactly matches the text in the table below, HOBOware will recognize 
+ the measurement and be able to perform unit conversions, apply data assistants, 
+ etc. to that series. </p>
+        <p>Measurements listed below that either have 
+ only one unit type, or can be any unit type, cannot have their units 
+ converted, but may still be used with applicable data assistants. </p>
+        <p>Measurements that are not listed in the table 
+ (or do not exactly match the text below) can be exported, but without 
+ any units conversions or use of Data Assistants.</p>
+        <table style="border-spacing: 0px;border-spacing: 0px;" cellspacing="0" width="99.917%">
+            <col style="width: 35.098%;" />
+            <col style="width: 30.208%;" />
+            <col style="width: 34.694%;" />
+            <tr valign="top">
+                <td style="border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-top-style: Solid;border-top-color: #000000;border-top-width: 1px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;font-family: Arial;">
+                    <p style="font-weight: bold;">Measurement Type </p>
+                </td>
+                <td style="border-top-style: Solid;border-top-color: #000000;border-top-width: 1px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p style="font-weight: bold;">Column Header </p>
+                </td>
+                <td style="border-top-style: Solid;border-top-color: #000000;border-top-width: 1px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p style="font-weight: bold;">Units</p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Acceleration</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">x accel, y accel, z accel</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">g, m/s2, ft/s2</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td style="border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Carbon Dioxide</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">co2</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">ppm</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td style="border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Counts</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">counts</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p style="font-style: italic;"><span class="Typethis">[any units]</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td style="border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Dew Point</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">dew point</span>
+                    </p>
+                </td>
+                <td style="border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;padding-right: 10px;padding-left: 10px;">
+                    <p><span class="Typethis">F, C</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Leaf Wetness</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;">
+                    <p><span class="Typethis">leaf wetness</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;">
+                    <p><span class="Typethis">[any units]</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Light Intensity</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">intensity</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">l</span><span class="Typethis">ux, lum/ft2</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-width: 1px;border-left-color: #000000;border-left-style: Solid;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">PAR</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;">
+                    <p><span class="Typethis">par</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-width: 1px;border-right-color: #000000;border-right-style: Solid;border-bottom-style: Solid;border-bottom-color: #000000;border-bottom-width: 1px;">
+                    <p style="font-style: italic;"><span class="Typethis">[any units]</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Pressure</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">pres</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">kPa, Pa, mbar, mm Hg, psi, in Hg</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Rain</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">rain</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">mm, in</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Relative Humidity</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">rh</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">%</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Soil Moisture</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">soil moisture</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p style="font-style: italic;"><span class="Typethis">[any units]</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Solar Radiation</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">solar rad</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">W/m2</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Sum Vector</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">sum vector</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">g, m/s2, ft/s2</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Temperature</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">temp</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">F, C</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Tilt</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">x tilt, y tilt, z tilt</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">deg, rad</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Wind Speed</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">wind speed</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">m/s, km/hr, mph, knots</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Gust Speed</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">gust speed</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">m/s, km/hr, mph, knots</span>
+                    </p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-left-style: Solid;border-left-color: #000000;border-left-width: 1px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;font-size: 11pt;font-family: Arial;">
+                    <p><span class="Typethis" style="font-family: Arial;">Wind Direction</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p><span class="Typethis">wind direction</span>
+                    </p>
+                </td>
+                <td colspan="1" rowspan="1" style="padding-right: 10px;padding-left: 10px;border-right-style: Solid;border-right-color: #000000;border-right-width: 1px;border-bottom-width: 1px;border-bottom-color: #000000;border-bottom-style: Solid;">
+                    <p style="font-style: italic;"><span class="Typethis">[any units]</span>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <script type="text/javascript" src="../SkinSupport/MadCapBodyEnd.js">
+        </script>
+    </body>
+</html>

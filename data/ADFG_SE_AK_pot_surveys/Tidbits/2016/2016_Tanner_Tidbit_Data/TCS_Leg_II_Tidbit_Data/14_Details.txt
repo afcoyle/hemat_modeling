@@ -1,0 +1,127 @@
+﻿Details
+Series: Temp, °C
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: Temperature, °C
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Logging Interval: 01 Hr 00 Min 00 Sec
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+		• Launching Program: HOBOware -3.7.8_0408_1457_Windows
+	Series Statistics
+		• Samples: 102
+		• Max: 17.867
+		• Min: 3.459
+		• Avg: 7.512
+		• Std Dev (σ): 2.251
+		• First Sample Time: 10/25/16 09:26:17 AM GMT-08:00
+		• Last Sample Time: 10/29/16 02:26:17 PM GMT-08:00
+Event Type: Coupler Detached
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: Coupler Detached
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+	Series Statistics
+		• Samples: 1
+		• First Sample Time: 10/25/16 09:26:22 AM GMT-08:00
+		• Last Sample Time: 10/25/16 09:26:22 AM GMT-08:00
+Event Type: Coupler Attached
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: Coupler Attached
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+	Series Statistics
+		• Samples: 1
+		• First Sample Time: 10/29/16 02:37:06 PM GMT-08:00
+		• Last Sample Time: 10/29/16 02:37:06 PM GMT-08:00
+Event Type: Host Connected
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: Host Connected
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+	Series Statistics
+		• Samples: 1
+		• First Sample Time: 10/29/16 02:37:06 PM GMT-08:00
+		• Last Sample Time: 10/29/16 02:37:06 PM GMT-08:00
+Event Type: Stopped
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: Stopped
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+	Series Statistics
+		• Samples: 1
+		• First Sample Time: 10/29/16 02:37:21 PM GMT-08:00
+		• Last Sample Time: 10/29/16 02:37:21 PM GMT-08:00
+Event Type: End Of File
+	Devices
+		Device Info
+			• Product: HOBO UTBI-001 TidbiT Temp
+			• Serial Number: 10518876
+			• Version Number: 1.09
+			• Manufacturer: Onset Computer Corporation
+			• Device Memory: 65536
+			• Header Created: 06/22/16 09:40:20 AM GMT-08:00
+	Deployment Info
+		• Full Series Name: End Of File
+		• Launch Name: 14
+		• Deployment Number: 7
+		• Launch Time: 10/25/16 09:26:16 AM GMT-08:00
+		• Launch GMT Offset: -8 Hr 0 Min
+		• Battery at Launch: 3.02 Volts
+	Series Statistics
+		• Samples: 1
+		• First Sample Time: 10/29/16 02:37:21 PM GMT-08:00
+		• Last Sample Time: 10/29/16 02:37:21 PM GMT-08:00

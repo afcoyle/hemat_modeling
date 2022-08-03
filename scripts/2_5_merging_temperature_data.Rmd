@@ -394,7 +394,7 @@ for (i in 1:length(new_digs)){
 # Alright, do a visual inspection. Looks good to me! We've got some overlap in tidbit names (ex: 20-07 and 2007), but we'll solve that later. 
 ```
 
-### Merging all Tidbit IDs
+### Merging all Pot Data
 
 We now have five data tables - one for each year from 2005-2008 with accurate Tidbit IDs from that year, and one from 2009-2019 which already had accurate Tidbit IDs. Merge them all.
 
@@ -449,6 +449,66 @@ pot_dat <- pot_dat %>%
   select(-Pot.Comment)
 ```
 
+# Merge Pot Data and Tidbit ID data
+
+```{r}
+# It won't work to merge both full dataframes at once (it's just too large - 400,000 rows x 10,000 rows)
+# Instead, we'll try to merge each year individually using a for loop
+
+# Initialize loop with matrix and vector of years
+test_pot_merged <- matrix(nrow = 0, ncol = 20)
+years <- 2005:2019
+
+
+for (i in 1:length(years)){
+
+  crab_year <- years[i]
+  
+  # Filter pot data and tidbit data to only include a single year
+  year_pot <- pot_dat %>%
+    filter (Year == crab_year)
+  year_tidbit <- full_dat %>%
+    filter(year == crab_year)
+  # Join pot and tidbit data by tidbit ID
+  year_dat <- inner_join(year_pot, year_tidbit, by = "tidbit_id")
+  # Select only true entries by choosing rows where the data point is:
+  #   - 2 min before time hauled (to account for small timekeeping errors)
+  #   - 5 min after pot was set (to allow it to fall to the bottom)
+  
+  # Create new column calculating difference between tidbit time and haul time
+  year_dat$change_time <- difftime(year_dat$tidbit_datetime, year_dat$Time.Hauled, tz = "US/Alaska", units = "mins")
+  # Filter to only include rows 2+ min before haul time
+  year_dat <- year_dat %>%
+    filter(change_time < -2)
+  
+  # Change column to difference between tidbit time and set time
+  year_dat$change_time <- difftime(year_dat$tidbit_datetime, year_dat$Time.Set, tz = "US/Alaska", units = "mins")
+  # Filter to only include rows 5+ min after set time
+  year_dat <- year_dat %>%
+    filter(change_time > 5)
+  
+  # Remove column
+  year_dat <- year_dat %>% 
+    select(-change_time)
+  
+  # Calculate average temperature, adding a new column in the database for it
+  year_dat <- year_dat %>%
+    group_by(Time.Hauled) %>%
+    mutate(mean_temp = mean(Temp)) %>%
+    ungroup
+  
+  # Remove duplicate IDs from Time.Hauled. This leaves us with one row per haul. That eliminates temp (the specific measurements), date, time, and DateTime, but we don't care about that. 
+  
+  # It keeps average temperature of the pot, which is what we care about!
+  
+  year_dat <- year_dat[!duplicated(year_dat$Time.Hauled), ]
+  
+  # Append this to our merged data
+  test_pot_merged <- rbind(test_pot_merged, year_dat)
+}
+
+
+```
 
 
 

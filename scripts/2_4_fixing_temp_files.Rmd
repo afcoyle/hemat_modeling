@@ -328,7 +328,7 @@ issue$date <- paste0(issue$date, "16")
 # Eliminate rows with NAs
 issue <- na.omit(issue)
 # Write out file as .txt
-write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_2/17.txt")
+write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_2/17.txt", delim = "\t")
 
 # Leg 3
 issue <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.csv",
@@ -342,10 +342,12 @@ issue <- issue %>%
     separate(datetime, c("date", "time"), sep = "16 ", extra = "merge")
 # Paste 16 onto the end of the date column
 issue$date <- paste0(issue$date, "16")
+# Convert temperature from F to C
+issue$temp <- (as.numeric(issue$temp) - 32)*(5/9)
 # Eliminate rows with NAs
 issue <- na.omit(issue)
 # Write out file
-write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt")
+write_delim(issue, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt", delim = "\t")
 
 
 
@@ -388,7 +390,8 @@ leg_files <- list.files(path = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/te
 for (i in 1:length(leg_files)) {
   print(leg_files[i])
   # Skip if it's Tidbit 17, we already fixed it
-  if (leg_files[i] == "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt") {
+  if (leg_files[i] == "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.txt" | 
+      leg_files[i] == "../output/ADFG_SE_AK_pot_surveys/cleaned_data/temperature_data/2016/RKC_survey/Leg_3/17.csv") {
   } else {
     print(i)
     # Read in file

@@ -43,7 +43,7 @@ lapply(list.of.packages, FUN = function(X) {
 source("hemat_modeling_functions.R")
 ```
 
-# Try to read in tidbit data for all years
+# Read in the Tidbit data for all years
 
 ```{r}
 # For the sake of formatting, don't put a trailing / at the end of the path
@@ -90,184 +90,84 @@ full_dat$min <- minute(full_dat$tidbit_datetime)
 
 table(full_dat$min, full_dat$year)
 
-# Okay, 2016 Tidbits luckily captured seconds as well. Let's check on those
-min_dat$sec <- second(min_dat$tidbit_datetime)
-
-table(min_dat$sec, min_dat$survey)
-
 # Looks good!!! (The excitement is because the first 20+ renditions were less successful).
+full_dat[full_dat$tidbit_id == "17" & full_dat$year == 2016, ]
 
-# We can now drop the 
+# We can now drop the min column
+full_dat <- full_dat %>%
+  select(-min)
 ```
 
+We now have an extremely long dataframe consisting entirely of the following columns:
+- year: 2005-2019
+- survey: RKC or Tanner crab
+- tidbit_id: A number unique to that year that identifies the Tidbit
+- tidbit_datetime: The date and time measured by the Tidbit
+- temp: The temperature measured by the Tidbit. 
 
+Each row is one temperature measurement by one Tidbit. We want to do the following:
 
+- Match each Tidbit with the pot it was in at the moment of measurement
+- Average out temperatures across each pot deployment
 
+To accomplish the first goal, we need to merge the Tidbit dataframe (described above) with our dataframe of pot data. However, due to the size of the Tidbit dataframe, it makes the most sense to do this on a year-by-year basis.
 
-### 2005
-
-Examined the merged skipper_tidbit file, but it's not high-quality. Each pot is listed as having a bunch of tidbits in it simultaneously. Therefore, we need to start from scratch. 
-
+# Get the pot data cleaned up
 ```{r}
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1/10.txt"
-
-tidbit_data <- read.delim(file = data_path)
-
-# We need to extract two pieces of data from this filepath - the year and the Tidbit ID
-
-# First, extract year
-get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-# While we're at it, get survey and leg
-get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-# Finish getting year
-get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-
-# Now extract ID
-get_id <- unlist(strsplit(data_path, split = "Leg_"))[2]
-get_id <- unlist(strsplit(get_id, split = "/"))[2]
-get_id <- str_remove(get_id, ".txt")
-
-# Add year, survey, leg, and ID to the tidbit data column
-tidbit_data$year <- get_year
-tidbit_data$survey <- get_survey
-tidbit_data$leg <- get_leg
-tidbit_data$tidbit_id <- get_id
-
-# Create datetime column from existing columns
-# Change Date and Time columns to correct object type
-tidbit_data$Date <- mdy(tidbit_data$Date, tz = "US/Alaska")
-tidbit_data$Time <- parse_time(tidbit_data$Time, "%H:%M:%S")
-# Paste date and time columns together
-tidbit_data$tidbit_datetime <- paste(tidbit_data$Date, tidbit_data$Time)
-
-# Remove date and time columns
-tidbit_data <- tidbit_data %>%
-  select(-c(Date, Time))
-```
-
-We'll do the same basic process to append all data from tidbit files. To do this efficiently, we'll use a for loop.
-
-```{r}
-# Get path to folder with all .txt files in it
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_1"
-
-# List all files in folder
-tidbits <- list.files(data_path)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 2:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Create datetime column from existing columns
-  # Change Date and Time columns to correct object type
-  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
-  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
-  # Paste date and time columns together
-  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
-  
-  # Remove date and time columns
-  new_tidbit <- new_tidbit %>%
-    select(-c(Date, Time))
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-
-# Do the same for Leg 2 of the survey
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
-
-# List all files in folder
-tidbits <- list.files(data_path)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 1:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Create datetime column from existing columns
-  # Change Date and Time columns to correct object type
-  new_tidbit$Date <- mdy(new_tidbit$Date, tz = "US/Alaska")
-  new_tidbit$Time <- parse_time(new_tidbit$Time, "%H:%M:%S")
-  # Paste date and time columns together
-  new_tidbit$tidbit_datetime <- paste(new_tidbit$Date, new_tidbit$Time)
-  
-  # Remove date and time columns
-  new_tidbit <- new_tidbit %>%
-    select(-c(Date, Time))
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-
-# Set the temperature column to numeric
-tidbit_data$Temperature....C. <- as.numeric(tidbit_data$Temperature....C.)
-```
-
-To avoid dealing with an unmanageably large dataset, we'll now merge the Tidbit data with the pot data from 2005.
-
-```{r}
-# Read in the pot data from all years
-pot_data <- read_delim(file = "../data/ADFG_SE_AK_pot_surveys/Pot_Set_Data_for_Tanner_and_RKC_surveys.csv")
-
-# Clean up the pot data a bit
+pot_dat <- read.csv(file = "../data/ADFG_SE_AK_pot_surveys/Pot_Set_Data_for_Tanner_and_RKC_surveys.csv")
 
 # Remove spaces from column names
-names(pot_data) <- make.names(names(pot_data), unique = TRUE)
+names(pot_dat) <- make.names(names(pot_dat), unique = TRUE)
 
 # Eliminate columns we don't care about
-pot_data <- pot_data %>%
+pot_dat <- pot_dat %>%
   select(-c(Pot.Dimension.Feet, Pot.Escape.Device, Bait.Method, Weight.Of.Pot.Pounds,
             Pot.Type, Substrate.Type, Debris.Type))
 
 # Change name of Tidbit ID column to match the one in use for tidbit_data
-pot_data <- rename(pot_data, tidbit_id = Tidbit.No)
+pot_dat <- rename(pot_dat, tidbit_id = Tidbit.No)
 
 # Convert format of time columns from character to date
-pot_data$Time.Hauled <- mdy_hm(pot_data$Time.Hauled, tz = "US/Alaska")
-pot_data$Time.Set <- mdy_hm(pot_data$Time.Set, tz = "US/Alaska")
+pot_dat$Time.Hauled <- mdy_hm(pot_dat$Time.Hauled, tz = "US/Alaska")
+pot_dat$Time.Set <- mdy_hm(pot_dat$Time.Set, tz = "US/Alaska")
 
-# Filter pot data to only include info from 2005 Tanner survey
-ohfive_pot_data <- pot_data %>%
-  filter(Year == "2005" & Project == "Tanner Crab Survey")
+# Remove years before 2005 (first year with tidbits)
+pot_dat <- pot_dat %>%
+  filter(Year >= 2005)
 
-# Alright, issue here - Tidbit info isn't in the Tidbit column. It's kept in the comments. Ahhh, this will take a long, long time
-tidbit_pots <- ohfive_pot_data %>%
+# Check on frequency of tidbits
+table(pot_dat$Year, pot_dat$tidbit_id, pot_dat$Project)
+
+```
+
+Despite having Tidbits, 2005-2007 have no tidbit_id values. After that, tidbit_id values are present for all surveys. 
+
+A check of the data shows that in this years, tidbit_id is stored in the comments for these years. Additionally, it's often only in the comments for 2008. 
+Oof, this is gonna take a while
+
+We'll go through year by year and move comments into the tidbit_id section. We'll do this as follows:
+
+1: Create new dataframe from pot_dat with post-2008 pot data
+2: Create new dataframe from pot_dat with 2005 data, convert tidbit-related comments into tidbit_id values
+3: Repeat step 2 with 2006, 2007, 2008 data
+4: Merge 2005-2008 dataframes with dataframe created in Step 1. This'll be our new pot_dat column
+
+##### 2005: Convert pot_dat comments to Tidbit IDs
+
+```{r}
+# Create version of pot_dat that only has years with tidbit_id info
+full_pot_dat <- pot_dat %>%
+  filter(Year >= 2009)
+
+# Filter pot data to only include info from 2005 surveys
+ohfive_pot_dat <- pot_dat %>%
+  filter(Year == 2005)
+
+tidbit_pots <- ohfive_pot_dat %>%
   filter(grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
 
 # Check we got all tidbit pots by looking at comments that don't match
-non_tidbit_pots <- ohfive_pot_data %>%
+non_tidbit_pots <- ohfive_pot_dat %>%
   filter(!grepl("Tidbit", Pot.Comment, ignore.case = TRUE))
 
 # Yep, looks like tidbit_pots contains all 2005 tidbit pots!
@@ -309,11 +209,258 @@ table(tidbit_pots$tidbit_id)
 # Looks great!
 
 # Now we'll remerge the tidbit and non-tidbit pots to recreate the full 2005 dataset. It'll look the same, just with the Tidbit info added from the comments
-ohfive_pot_data <- rbind(tidbit_pots, non_tidbit_pots)
+ohfive_pot_dat <- rbind(tidbit_pots, non_tidbit_pots)
+```
 
+#### 2006: Convert pot_dat comments to Tidbit IDs
+
+```{r}
+ohsix_pot_dat <- pot_dat %>%
+  filter(Year == 2006)
+
+# All pots had some sort of comment noting the presence of Tidbits, so we don't need to filter
+# out pots without tidbit references
+
+# For most, the tidbit number is after an "#", so we'll just extract that.
+ohsix_pot_dat$tidbit_id <- str_extract(ohsix_pot_dat$Pot.Comment, "#\\d{1,2}")
+
+# For others, the tidbit number is just after "Tidbit", so we'll extract that too
+new_digs <- str_extract(ohsix_pot_dat$Pot.Comment, "idbit \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohsix_pot_dat$tidbit_id[i] <- new_digs[i]
+  }
+}
+
+# For a few more, the tidbit number is after an "# " (ex: "Tidbit # 19"), so we'll extract that too
+new_digs <- str_extract(ohsix_pot_dat$Pot.Comment, "# \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohsix_pot_dat$tidbit_id[i] <- new_digs[i]
+  }
+}
+
+# We still have a few left, but we can just add these manually
+ohsix_pot_dat[grep("tidbit  20", ohsix_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "20"
+ohsix_pot_dat[grep("tidbit  13", ohsix_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "13"
+ohsix_pot_dat[grep("Tidibt 24", ohsix_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "24"
+
+
+# Alright, verify we did a good job here
+ohsix_pot_dat[is.na(ohsix_pot_dat$tidbit_id), ]
+# We have one NA, and it's a comment specifically noted as not having a tidbit. All good!
+```
+#### 2007: Convert pot_dat comments to Tidbit IDs
+
+```{r}
+ohseven_pot_dat <- pot_dat %>%
+  filter(Year == 2007)
+
+# All pots had some sort of comment noting the presence of Tidbits, so we don't need to filter
+# out pots without tidbit references
+
+# We'll add in all Tidbits after a # (no space)
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "idbit #\\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+ohseven_pot_dat$tidbit_id <- new_digs
+
+# Some Tidbit IDs didn't have the # (ex: Tidbit 19, not Tidbit #19), we'll add those too
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "idbit \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohseven_pot_dat$tidbit_id[i] <- new_digs[i]
+  }
+}
+
+# Instead of being prefaced with "Tidbit", some are prefaced with "TB" or "tb" (ex: TB 14)
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "TB \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohseven_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "tb \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohseven_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+
+# Now an edge case - some Tidbits are four digits, with a dash, space, or underscore between the first and last set. For all, the last two digits are 07. Let's extract those.
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "\\d{2}.07")
+# Replace last 3 digits (either " 07", "-07", or "_07") with "07"
+new_digs <- str_replace(new_digs, ".07", "-07")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohseven_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+# We also have a few Tidbits where it's four digits ending in 07 (ex: 2007, not 20-07. We'll convert those too.)
+new_digs <- str_extract(ohseven_pot_dat$Pot.Comment, "\\d{2}07")
+# Replace last 3 digits (either " 07", "-07", or "_07") with "07"
+new_digs <- str_replace(new_digs, "07", "-07")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohseven_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+# We still have a few left, but we can just add these manually
+ohseven_pot_dat[grep("tb  03", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "03"
+ohseven_pot_dat[grep("tibit 11", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "11"
+ohseven_pot_dat[grep("Tidbit  11", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "11"
+ohseven_pot_dat[grep("Tidbit # 25", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "25"
+ohseven_pot_dat[grep("TB 17.-07", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "17-07"
+ohseven_pot_dat[grep("TB 2-07", ohseven_pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- "02-07"
+
+# Alright, verify we did a good job here
+ohseven_pot_dat[is.na(ohseven_pot_dat$tidbit_id), ]
+# We have three NA, and none have comments noting tidbits. 
+# All set!
+```
+
+#### 2008: Convert pot_dat comments to Tidbit IDs
+
+```{r}
+oheight_pot_dat <- pot_dat %>%
+  filter(Year == 2008)
+
+# All pots had some sort of comment noting the presence of Tidbits, so we don't need to filter
+# out pots without tidbit references
+
+# We'll add in all Tidbits after a # (no space)
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "#\\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  }
+}
+
+# Instead of being prefaced with "Tidbit", some are prefaced with "TB" or "tb" (ex: TB 14)
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "TB \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "tb \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+# Sometimes there's no space between the TB and the number (all these are capitalized). Let's fix
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "TB\\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+# Now an edge case - some Tidbits are four digits, with a dash, space, or underscore between the first and last set. For all, the last two digits are 07. Let's extract those.
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "\\d{2}.07")
+# Replace last 3 digits (either " 07", "-07", or "_07") with "07"
+new_digs <- str_replace(new_digs, ".07", "-07")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+# We also have a few Tidbits where it's four digits ending in 07 (ex: 2007, not 20-07. We'll convert those too.)
+new_digs <- str_extract(oheight_pot_dat$Pot.Comment, "\\d{2}07")
+# Replace last 3 digits (either " 07", "-07", or "_07") with "07"
+new_digs <- str_replace(new_digs, "07", "-07")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    oheight_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+
+
+# Alright, do a visual inspection. Looks good to me! We've got some overlap in tidbit names (ex: 20-07 and 2007), but we'll solve that later. 
+```
+
+### Merging all Tidbit IDs
+
+We now have five data tables - one for each year from 2005-2008 with accurate Tidbit IDs from that year, and one from 2009-2019 which already had accurate Tidbit IDs. Merge them all.
+
+```{r}
+pot_dat <- rbind(ohfive_pot_dat, ohsix_pot_dat, ohseven_pot_dat, oheight_pot_dat, full_pot_dat)
+
+# Check other year comments for tidbit ID
+tidbit_pots <- pot_dat %>%
+  filter(grepl("Tidbit", Pot.Comment, ignore.case = TRUE)) %>%
+  filter(Year > 2008)
+
+# Alright, we've got a few notable commments, but almost none!
+# Some tidbits are listed as missing, but have tidbit numbers in tidbit_id
+# Others don't have a value in tidbit_id, but are listed in the comments
+# Let's make some manual corrections
+pot_dat[grep("no tidbit", pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- NA
+pot_dat[grep("tidbit missing", pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- NA
+pot_dat[grep("Pot open, no sample, Tidbit broken", pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- NA
+pot_dat[grep("tidbit 10", pot_dat$Pot.Comment, ignore.case = TRUE), ]$tidbit_id <- 10
+
+# Let's also check about values labeled "tb"
+tidbit_pots <- pot_dat %>%
+  filter(grepl("TB", Pot.Comment, ignore.case = TRUE)) %>%
+  filter(Year > 2008)
+
+# Yep, we've got a bunch. Bummer! Let's fix those. All are from 2009, so we'll specify
+# Simplest way is gonna be just removing the 2009 data, editing it separately, then reading it back in
+# That'll eliminate issues with, say, 2008 pots with "TB 2007" in the comments being read in as tidbit_id = 20
+
+ohnine_pot_dat <- pot_dat %>%
+  filter(Year == 2009)
+
+pot_dat <- pot_dat %>%
+  filter(Year != 2009)
+
+new_digs <- str_extract(ohnine_pot_dat$Pot.Comment, "TB \\d{1,2}")
+new_digs <- str_extract(new_digs, "\\d{1,2}")
+for (i in 1:length(new_digs)){
+  if (!is.na(new_digs[i])) {
+    ohnine_pot_dat$tidbit_id[i] <- new_digs[i]
+  } 
+}
+
+# Re-merge 2009 data in
+pot_dat <- rbind(ohnine_pot_dat, pot_dat)
+
+# Manually scan through comments from un-examined years to look for any unusual references to tidbits or loggers
+test <- pot_dat %>%
+  filter(Year > 2009)
+# None found! We can safely remove the comments column
+pot_dat <- pot_dat %>%
+  select(-Pot.Comment)
+```
+
+
+
+
+# Junk
+
+
+To avoid dealing with an unmanageably large dataset, we'll now merge the Tidbit data with the pot data from 2005.
+
+```{r}
 
 # Now we'll merge the tidbit data with the 2005 pot data based on Tidbit number. This will create a HUGE number of false entries, as each Tidbit entry will match to every deployment. 
-full_data <- inner_join(ohfive_pot_data, tidbit_data, by = "tidbit_id")
+full_data <- inner_join(ohfive_pot_dat, tidbit_data, by = "tidbit_id")
 
 # Select only true entries by only choosing rows where the data point is from 2 minutes before the time hauled (to allow for small timekeeping errors) or 5 minutes after the pot was set (to allow it to fall to the bottom)
 # 2 min before time hauled
@@ -345,93 +492,6 @@ full_data <- full_data[!duplicated(full_data$Time.Hauled), ]
 complete_data <- full_data
 
 ```
-
-
-
-### 2006
-
-```{r}
-# Get path to folder with all .txt files in it
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006"
-
-# List all files in folder
-tidbits <- list.files(data_path, recursive = TRUE)
-
-# Remove all non-text files (our summary files are in .xls)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 2:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-
-# Do the same for Leg 2 of the survey
-data_path <- "../data/ADFG_SE_AK_pot_surveys/Tidbits/2005/Tanner_survey/Leg_2"
-
-# List all files in folder
-tidbits <- list.files(data_path)
-
-# Starting at 2 here because we already read in the first file (10.txt)
-for (i in 1:length(tidbits)){
-  print(tidbits[i])
-  # Read in tidbit file
-  new_tidbit <- read.delim(file = paste0(data_path, "/", tidbits[i]))
-  # Extract year from filename
-  get_year <- unlist(strsplit(data_path, split = 'Tidbits/', fixed = TRUE))[2]
-  # Quickly get survey and leg, then get year
-  get_survey <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[2]
-  get_leg <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[3]
-  get_year <- unlist(strsplit(get_year, split = "/", fixed = TRUE))[1]
-  # Extract ID from name of Tidbit file
-  get_id <- str_remove(tidbits[i], ".txt")
-  
-  # Add year, survey, and ID to the tidbit data column
-  new_tidbit$year <- get_year
-  new_tidbit$survey <- get_survey
-  new_tidbit$leg <- get_leg
-  new_tidbit$tidbit_id <- get_id
-  
-  # Join new Tidbit info to full Tidbit dataframe
-  tidbit_data <- rbind(tidbit_data, new_tidbit)
-}
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

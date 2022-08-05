@@ -1,0 +1,148 @@
+---
+title: "2_7_cleaning_full_data.Rmd"
+author: "Aidan Coyle"
+date: "8/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In the previous script, we finished by creating a full dataframe containing temperature and catch data for each crab (excluding crabs without either data on their temperature or the presence/absence of Bitter Crab Syndrome).
+
+Now it's time to start exploring the data! Let's check out what's been going on with these crabs, and see the relationship to temperature.
+
+#### Load libraries (and install if necessary), and load packages
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lubridate")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+# Read in data and fix it up
+
+```{r}
+# Examine things related to crabs (1 row per crab sampled)
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
+
+# Examine things related to location (1 row per pot deployment)
+pot_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv")
+```
+
+
+# Exploring the Pot Data
+
+```{r}
+#### Temperature and Site --------------------------
+exper <- pot_dat %>%
+  group_by(Location) %>%
+  summarize(temp_avg  = mean(temp),
+            temp_sd = sd(temp),
+            n_pots = n()) %>%
+  ungroup()
+
+ggplot(exper) +
+  geom_bar(aes(x = Location, y = temp_avg),
+           stat = "identity") +
+  geom_errorbar(aes(x = Location, ymin = temp_avg - temp_sd, ymax = temp_avg + temp_sd)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+# Alright, neat little graph here! Looks like most sites have a broadly similar range of temperatures, with some exceptions. Port Camden in particular seems to be substantially higher than practically every other site!
+
+# Let's look at how temperature relates to year!
+exper <- pot_dat %>%
+  group_by(Year) %>%
+  summarize(temp_avg  = mean(temp),
+            temp_sd = sd(temp),
+            n_pots = n()) %>%
+  ungroup()
+
+ggplot(exper) +
+  geom_bar(aes(x = Year, y = temp_avg),
+           stat = "identity") +
+  geom_errorbar(aes(x = Year, ymin = temp_avg - temp_sd, ymax = temp_avg + temp_sd)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#### Temp vs. time of year ----------------------------
+# We'll use Julian day for this
+pot_dat$Jul.Day <- as.Date(pot_dat$Time.Hauled)
+pot_dat$Jul.Day <- yday(pot_dat$Jul.Day)
+
+# First, a scatterplot of all temps and Julian days
+ggplot(pot_dat, aes(x = Jul.Day, y = temp)) +
+  geom_point()
+
+# Alright, we can see an overall gentle curve, along with the timing of each survey (Tanner vs. RKC)
+
+# Now, let's make a line plot!
+exper <- pot_dat %>%
+  group_by(Jul.Day) %>%
+  summarize(temp_avg = mean(temp))
+
+ggplot(exper, aes( x= Jul.Day, y = temp_avg)) +
+  geom_line() +
+  geom_point()
+
+#### Temp vs. depth ---------------------------
+# We'll look at the average depth of each site vs. the average temp
+exper <- pot_dat %>%
+  group_by(Location) %>%
+  summarize(depth_avg  = mean(Depth.Fathoms),
+            temp_avg = mean(temp),
+            temp_sd = sd(temp),
+            depth_sd = sd(Depth.Fathoms),
+            n_pots = n()) %>%
+  ungroup()
+
+# First, depth of each site
+ggplot(exper) +
+  geom_bar(aes(x = Location, y = depth_avg),
+           stat = "identity") +
+  geom_errorbar(aes(x = Location, ymin = depth_avg - depth_sd, ymax = depth_avg + depth_sd)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+# Now, depth vs. temperature
+ggplot(exper, aes(x = depth_avg, y = temp_avg)) +
+  geom_point()
+
+# Now let's switch it up to maximum depth (more of an examination of the water bodies) and temperature
+exper <- pot_dat %>%
+  group_by(Location) %>%
+  summarize(depth_max  = max(Depth.Fathoms),
+            temp_avg = mean(temp),
+            temp_sd = sd(temp),
+            n_pots = n()) %>%
+  ungroup()
+
+# First, depth of each site
+ggplot(exper) +
+  geom_bar(aes(x = Location, y = depth_max),
+           stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+# Now, depth vs. temperature
+ggplot(exper, aes(x = depth_max, y = temp_avg)) +
+  geom_point()
+
+
+# Finally, 
+```
+
+
+
+
+
+

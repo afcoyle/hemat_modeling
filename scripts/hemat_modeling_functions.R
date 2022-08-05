@@ -38,8 +38,6 @@ read_tidbit_data  <- function(data_path) {
   tidbit_data <- matrix(nrow = 0, ncol = 4)
   
   for (i in 1:length(tidbits)) {
-    print(tidbits[i])
-    print(i)
     
     #ID the file extension
     file_type <- file_ext(tidbits[i])

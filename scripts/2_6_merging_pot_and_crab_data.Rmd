@@ -21,7 +21,7 @@ This means that for each crab, we'll have the temperature in the pot at the time
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "readxl", "lubridate")
+list.of.packages <- c("tidyverse", "lubridate")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -46,10 +46,6 @@ pot_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_da
 # Issue: crab_dat doesn't have a single unique identifying column in common with pot_dat (such as time of haul)
 # Solution: create one from five columns!
 # Both dataframes have year, project, trip number (AKA leg), location, and pot number as columns
-
-# First, clean things up a bit to remove unneeded columns
-pot_dat <- pot_dat %>%
-  select(-c(Trip.Start.Date, Trip.End.Date, Density.Strata))
 
 # Now modify some of the values to be easier for R to read (and make more sense to us when in an ID column)
 # We'll organize these so we're doing them in each dataframe in a row (make one change in both, not making all changes in one, then moving to the other)
@@ -84,12 +80,11 @@ full_crab_dat <- left_join(x = crab_dat, y = pot_dat, by = "pot_ID",
                            suffix = c("", ".y"))
 
 # Drop all crabs without values for temperature
-full_crab_dat <- full_crab_dat[!is.na(full_crab_dat$mean_temp), ]
+full_crab_dat <- full_crab_dat[!is.na(full_crab_dat$temp), ]
 
 # Drop irrelevant columns
 full_crab_dat <- full_crab_dat %>%
-  select(-c(pot_ID, Year.y, Project.y, Trip.No.y, Location.y, Pot.No.y,
-            Time.Set, Time.Hauled, Buoy.No, tidbit_id))
+  select(-c(pot_ID, Year.y, Project.y, Trip.No.y, Location.y, Pot.No.y, Time.Hauled, Buoy.No, tidbit_id))
 
 # Write out data
 write.csv(full_crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv", row.names = FALSE)

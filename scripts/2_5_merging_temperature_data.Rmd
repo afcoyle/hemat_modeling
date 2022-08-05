@@ -713,9 +713,18 @@ tidbit_pot_merged <- tidbit_pot_merged %>%
 # NOAA sea surface temperatures are warm at this time in Juneau (7.7C), and could be warmer at the nearby Port Camden, where these pots were taken.
 # Given that they align broadly with the pot data pattern of sets + hauls, and these temperatures are seen across many Tidbits, it's quite likely that these temperatures are accurate.
 
-# Remove unnecessary columns we've created
+# Remove unnecessary columns we've created, plus some additional unneeded columns
 tidbit_pot_merged <- tidbit_pot_merged %>%
-  select(-c(year, survey, tidbit_datetime, Temp, diff_temp, date))
+  select(-c(year, survey, tidbit_datetime, Temp, diff_temp, date, Density.Strata, Time.Set))
+
+
+
+# Change column names
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  rename(temp = mean_temp)
+
+
+# Convert 
 
 # Write out data to file
 write.csv(tidbit_pot_merged, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv",

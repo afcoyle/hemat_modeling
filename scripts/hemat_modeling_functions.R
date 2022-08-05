@@ -55,7 +55,7 @@ read_tidbit_data  <- function(data_path) {
       # Split DateTime column
       suppressWarnings(
         new_tidbit <- new_tidbit %>%
-        separate(DateTime, into = c("Date", "Time"), sep = " ")
+        separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
       )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
@@ -74,7 +74,7 @@ read_tidbit_data  <- function(data_path) {
       # Split DateTime column
       suppressWarnings(
         new_tidbit <- new_tidbit %>%
-        separate(DateTime, into = c("Date", "Time"), sep = " ")
+        separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
       )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)

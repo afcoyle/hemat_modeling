@@ -767,7 +767,7 @@ for (i in 1:length(leg2_files)) {
     select(datetime, temp_f)
   # Split datetime column using the space
   issue <- issue %>%
-    separate(datetime, c("date", "time"), sep = " ")
+    separate(datetime, c("date", "time"), sep = " ", extra = "merge")
   # Convert temperature from F to C
   issue$temp_f <- (issue$temp_f - 32)*(5/9)
   # Rename column to signify the change to C

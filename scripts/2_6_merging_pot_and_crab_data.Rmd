@@ -1,0 +1,97 @@
+---
+title: "2_6_merging_pot_and_crab_data.Rmd"
+author: "Aidan Coyle"
+date: "8/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In the previous script, we finished by merging our Tidbit data with our pot data, giving us a dataframe of pot data with temperature information
+
+In this script, we'll merge that dataframe with our crab ID information.
+
+This means that for each crab, we'll have the temperature in the pot at the time the crab was caught.
+
+#### Load libraries (and install if necessary), and load packages
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "readxl", "lubridate")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+# Load crab data and pot data with temperature
+
+```{r}
+# We're loading the data from earlier, which contains all crabs in which BCS condition was examined
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv")
+
+# Load in the pot data to which we've added temperature
+pot_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv")
+
+# Issue: crab_dat doesn't have a single unique identifying column in common with pot_dat (such as time of haul)
+# Solution: create one from five columns!
+# Both dataframes have year, project, trip number (AKA leg), location, and pot number as columns
+
+# First, clean things up a bit to remove unneeded columns
+pot_dat <- pot_dat %>%
+  select(-c(Trip.Start.Date, Trip.End.Date, Density.Strata))
+
+# Now modify some of the values to be easier for R to read (and make more sense to us when in an ID column)
+# We'll organize these so we're doing them in each dataframe in a row (make one change in both, not making all changes in one, then moving to the other)
+
+# Change name of projects
+pot_dat[pot_dat$Project == "Red King Crab Survey", ]$Project <- "RKC"
+pot_dat[pot_dat$Project == "Tanner Crab Survey", ]$Project <- "Tanner"
+crab_dat[crab_dat$Project == "Red King Crab Survey", ]$Project <- "RKC"
+crab_dat[crab_dat$Project == "Tanner Crab Survey", ]$Project <- "Tanner"
+
+# Remove spaces in locations
+pot_dat$Location <- sub(" ", "_", pot_dat$Location)
+crab_dat$Location <- sub(" ", "_", crab_dat$Location)
+
+# Filter out all crab data from before 2005, which is when temperature data began to be collected
+# Also filter out data from after 2019, which is when our temperature data ends
+crab_dat <- crab_dat %>%
+  filter(Year >= 2005 & Year <= 2019)
+
+# Examine all locations in each dataframe, see if they match
+names(table(pot_dat$Location)) == names(table(crab_dat$Location))
+
+# Examine survey names in each dataframe, see if they match
+names(table(pot_dat$Project)) == names(table(crab_dat$Project))
+
+# Create pot ID column
+pot_dat$pot_ID <- paste(pot_dat$Year, pot_dat$Project, pot_dat$Trip.No, pot_dat$Location, pot_dat$Pot.No, sep = "_")
+crab_dat$pot_ID <- paste(crab_dat$Year, crab_dat$Project, crab_dat$Trip.No, crab_dat$Location, crab_dat$Pot.No, sep = "_")
+
+# Join pot and crab dataframes
+full_crab_dat <- left_join(x = crab_dat, y = pot_dat, by = "pot_ID",
+                           suffix = c("", ".y"))
+
+# Drop all crabs without values for temperature
+full_crab_dat <- full_crab_dat[!is.na(full_crab_dat$mean_temp), ]
+
+# Drop irrelevant columns
+full_crab_dat <- full_crab_dat %>%
+  select(-c(pot_ID, Year.y, Project.y, Trip.No.y, Location.y, Pot.No.y,
+            Time.Set, Time.Hauled, Buoy.No, tidbit_id))
+
+# Write out data
+write.csv(full_crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv", row.names = FALSE)
+```
+

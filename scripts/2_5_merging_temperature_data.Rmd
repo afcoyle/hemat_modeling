@@ -1,5 +1,5 @@
 ---
-title: "2_4_merging_temperature_data"
+title: "2_5_merging_temperature_data"
 author: "Aidan Coyle"
 date: "7/25/2022"
 output: html_document
@@ -11,17 +11,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-In the previous script, we fixed file structure issues in our temperature data. Now, we'll incorporate the temperature data, which is included in .txt (and occasionally .csv) files. This is going to be a pain, so buckle up. Main issues are as follows:
+In the previous script, we fixed individual issues with our temperature data. 
 
-- Temperature data is directly from data loggers that were in the pots. This means that they include both time at the bottom and time on deck.
+Here, we'll do the following:
 
-- Data loggers are identified by the number in the filename
+- Use a custom function to read in our Tidbit data
 
-- In some surveys, data loggers were downloaded once (at the end of all legs). More commonly, they were downloaded at the end of each survey.
+- Clean up the pot data. In some years, Tidbit IDs are in the comments - we need to move those over
 
-- Number of tidbits shift from year to year
-
-- Best file to examine differs from year to year! Sometimes Tidbit files are individually numbered, other times they're already amalgamated into a master sheet
+- Merge out Tidbit data with our pot data
 
 #### Load libraries (and install if necessary), and load packages
 
@@ -449,6 +447,131 @@ pot_dat <- pot_dat %>%
   select(-Pot.Comment)
 ```
 
+# Alter tidbit IDs in the pot data 
+
+We want to make sure that tidbit IDs in the pot data match those in the Tidbit ID data, and alter them if they don't!
+
+```{r}
+# 2005
+table(pot_dat[pot_dat$Year == 2005, ]$tidbit_id)
+table(full_dat[full_dat$year == 2005, ]$tidbit_id)
+
+# We've got a few that aren't present in the tidbit ID data (these are likely from the RKC survey), but all IDs in the tidbit data have a corollary in the pot data
+
+# Searching for two things:
+#   - pot_data tidbit ID values that appear to be duplicated, with both having a match to full_data tidbit ID values (ex: 2207 and 22-07)
+
+#   - full_data values with errors in tidbit ID entries (ex: leading zeros)
+
+# 2006
+table(pot_dat[pot_dat$Year == 2006, ]$tidbit_id)
+table(full_dat[full_dat$year == 2006, ]$tidbit_id)
+# Oof, looks like a lot within the pot data are preceded by a #. Let's remove that from all throughout all years
+pot_dat$tidbit_id <- sub("#", "", pot_dat$tidbit_id)
+# Check again
+names(table(pot_dat[pot_dat$Year == 2006, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2006, ]$tidbit_id))
+# Okay, we've still got issues. What's listed as Tidbit 2 in the tidbit data is listed as Tidbit 02 in the comments. This is an issue in many years, so let's just solve it all at once.
+pot_dat$tidbit_id <- str_remove(pot_dat$tidbit_id, "^0")
+# Check again
+names(table(pot_dat[pot_dat$Year == 2006, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2006, ]$tidbit_id))
+# Looks good!
+
+#2007
+names(table(pot_dat[pot_dat$Year == 2007, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2007, ]$tidbit_id))
+# Looks good!
+
+#2008
+names(table(pot_dat[pot_dat$Year == 2008, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2008, ]$tidbit_id))
+# Alright, some tidbits from this year have multiple names. Let's modify
+# Change 17-07 to 17
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "17-07"), ]$tidbit_id <- "17"
+# Change 177 to 17
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "177"), ]$tidbit_id <- "17"
+# Change 18-07 to 18
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "18-07"), ]$tidbit_id <- "18"
+# Change 1807 to 18
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "1807"), ]$tidbit_id <- "18"
+# Change 187 to 18
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "187"), ]$tidbit_id <- "18"
+# Change 2-07 to 2
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "2-07"), ]$tidbit_id <- "2"
+# Change 20-07 to 2007
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "20-07"), ]$tidbit_id <- "2007"
+# Change 207 to 2
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "207"), ]$tidbit_id <- "2"
+# Change 21-07, 2107, and 217 to 21
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "21-07" | pot_dat$tidbit_id == "2107" | pot_dat$tidbit_id == "217"), ]$tidbit_id <- "21"
+# Change 22-07, 2207, and 227 to 21
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "22-07" | pot_dat$tidbit_id == "2207" | pot_dat$tidbit_id == "227"), ]$tidbit_id <- "22"
+# Change 24-07, 2407, and 247 to 21
+pot_dat[which(pot_dat$Year == 2008 & pot_dat$tidbit_id == "24-07" | pot_dat$tidbit_id == "2407" | pot_dat$tidbit_id == "247"), ]$tidbit_id <- "24"
+
+# 2009
+names(table(pot_dat[pot_dat$Year == 2009, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2009, ]$tidbit_id))
+# Looks good!
+
+# 2010
+names(table(pot_dat[pot_dat$Year == 2010, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2010, ]$tidbit_id))
+# Looks good!
+
+# 2011
+names(table(pot_dat[pot_dat$Year == 2011, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2011, ]$tidbit_id))
+# Looks like for Tanner survey, Leg 2, 5 got renamed 5_0.
+# Let's fix
+full_dat[which(full_dat$year == 2011 & full_dat$tidbit_id == "5_0"), ]$tidbit_id <- "5"
+# Alright, now it looks good!
+
+# 2012
+names(table(pot_dat[pot_dat$Year == 2012, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2012, ]$tidbit_id))
+# Looks good!
+
+# 2013
+names(table(pot_dat[pot_dat$Year == 2013, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2013, ]$tidbit_id))
+# We've got some prefix zeroes in full_dat as well, let's remove those too
+full_dat$tidbit_id <- str_remove(full_dat$tidbit_id, "^0")
+# Looks good now!
+
+# 2014
+names(table(pot_dat[pot_dat$Year == 2014, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2014, ]$tidbit_id))
+# Looks good!
+
+# 2015
+names(table(pot_dat[pot_dat$Year == 2015, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2015, ]$tidbit_id))
+# Looks good!
+
+# 2016
+names(table(pot_dat[pot_dat$Year == 2016, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2016, ]$tidbit_id))
+# Looks good!
+
+# 2017
+names(table(pot_dat[pot_dat$Year == 2017, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2017, ]$tidbit_id))
+# Looks good!
+
+# 2018
+names(table(pot_dat[pot_dat$Year == 2018, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2018, ]$tidbit_id))
+# Looks good!
+
+# 2019
+names(table(pot_dat[pot_dat$Year == 2019, ]$tidbit_id))
+names(table(full_dat[full_dat$year == 2019, ]$tidbit_id))
+# Looks good!
+```
+
+
 # Merge Pot Data and Tidbit ID data
 
 ```{r}
@@ -456,7 +579,7 @@ pot_dat <- pot_dat %>%
 # Instead, we'll try to merge each year individually using a for loop
 
 # Initialize loop with matrix and vector of years
-test_pot_merged <- matrix(nrow = 0, ncol = 20)
+tidbit_pot_merged <- matrix(nrow = 0, ncol = 20)
 years <- 2005:2019
 
 
@@ -477,15 +600,15 @@ for (i in 1:length(years)){
   
   # Create new column calculating difference between tidbit time and haul time
   year_dat$change_time <- difftime(year_dat$tidbit_datetime, year_dat$Time.Hauled, tz = "US/Alaska", units = "mins")
-  # Filter to only include rows 2+ min before haul time
+  # Filter to only include rows 60+ min before haul time in case of minor timekeeping errors
   year_dat <- year_dat %>%
-    filter(change_time < -2)
+    filter(change_time < -61)
   
   # Change column to difference between tidbit time and set time
   year_dat$change_time <- difftime(year_dat$tidbit_datetime, year_dat$Time.Set, tz = "US/Alaska", units = "mins")
-  # Filter to only include rows 5+ min after set time
+  # Filter to only include rows 60+ min after set time in case of minor timekeeping errors
   year_dat <- year_dat %>%
-    filter(change_time > 5)
+    filter(change_time > 61)
   
   # Remove column
   year_dat <- year_dat %>% 
@@ -497,6 +620,16 @@ for (i in 1:length(years)){
     mutate(mean_temp = mean(Temp)) %>%
     ungroup
   
+  # We'll also calculate the difference between max and min temperatures. This will be a "red flag" column - 
+  # entries with a large difference between max and min temps are likely to be the result of data entry errors.
+  
+  # Calculate max temperature, adding a new column in the database for it
+  year_dat <- year_dat %>%
+    group_by(Time.Hauled) %>%
+    mutate(diff_temp = (max(Temp) - min(Temp))) %>%
+    ungroup
+
+  
   # Remove duplicate IDs from Time.Hauled. This leaves us with one row per haul. That eliminates temp (the specific measurements), date, time, and DateTime, but we don't care about that. 
   
   # It keeps average temperature of the pot, which is what we care about!
@@ -504,144 +637,87 @@ for (i in 1:length(years)){
   year_dat <- year_dat[!duplicated(year_dat$Time.Hauled), ]
   
   # Append this to our merged data
-  test_pot_merged <- rbind(test_pot_merged, year_dat)
+  tidbit_pot_merged <- rbind(tidbit_pot_merged, year_dat)
 }
-
-
 ```
 
-
-
-# Junk
-
-
-To avoid dealing with an unmanageably large dataset, we'll now merge the Tidbit data with the pot data from 2005.
+Alright, looks good! However, we've got some errors. Let's try to fix them!
 
 ```{r}
+# First, we'll ditch any line with a difference in temperature greater than 3, as it's likely to be an error in readings or in data entry (for the pot ID or tidbit ID).
 
-# Now we'll merge the tidbit data with the 2005 pot data based on Tidbit number. This will create a HUGE number of false entries, as each Tidbit entry will match to every deployment. 
-full_data <- inner_join(ohfive_pot_dat, tidbit_data, by = "tidbit_id")
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  filter(diff_temp < 3)
 
-# Select only true entries by only choosing rows where the data point is from 2 minutes before the time hauled (to allow for small timekeeping errors) or 5 minutes after the pot was set (to allow it to fall to the bottom)
-# 2 min before time hauled
+# Next, we'll eliminate all pots with a set or haul time of 0:00:00. While I'm sure some may have been hauled or set at precisely midnight, it's more likely that the exact time was simply not entered (or present on the data forms), and thus our values are incorrect. 
 
-# Create new column calculating difference between tidbit time and haul time, then filter
-full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Hauled, tz = "US/Alaska", units = "mins")
-full_data <- full_data %>%
-  filter(change_time < -2)
-# Change column to difference between tidbit time and set time, then filter
-full_data$change_time <- difftime(full_data$tidbit_datetime, full_data$Time.Set, tz = "US/Alaska", units = "mins")
-full_data <- full_data %>%
-  filter(change_time > 5)
-# Remove column
-full_data <- full_data %>%
-  select(-change_time)
+# Look at Time.Set column, eliminate rows set at 0:00:00
+tidbit_pot_merged$time <- tidbit_pot_merged$Time.Set %>%
+  str_split(" ") %>%
+  map_chr(2) %>%
+  hms()
 
-# Calculate average temperature, adding a new column in the database for it
-full_data <- full_data %>%
-  group_by(Time.Hauled) %>%
-  mutate(mean_temp = mean(Temperature....C.)) %>%
-  ungroup
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  filter(time != "0S")
 
-# Remove duplicate IDs for Time.Hauled. This leaves us with one row per haul. That eliminates temp (the specific measurements), date, time, and DateTime, but
-# we don't care about that. It keeps average temperature of the pot, which is what we care about!
+# Look at Time.hauled column, eliminate rows set at 0:00:00
+tidbit_pot_merged$time <- tidbit_pot_merged$Time.Hauled %>%
+  str_split(" ") %>%
+  map_chr(2) %>%
+  hms()
 
-full_data <- full_data[!duplicated(full_data$Time.Hauled), ]
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  filter(time != "0S")
 
-# Rename this to complete_data
-complete_data <- full_data
+# Drop the time column
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  select(-time)
 
+# We'll now go through the top mean temperatures in search of data entry errors
+# These are likely to be errors in noting which Tidbit is which, and thus can't really be searched for.
+# We have to do it...sigh...manually
+
+# 2014 RKC, Leg 3, Tidbit 22. Mean temp = 14.11C.
+# First deployment of the leg, I think they forgot to add the Tidbit
+# Following deployments were approx 6C, don't believe this was valid msmt
+tidbit_pot_merged <- tidbit_pot_merged[as.character(tidbit_pot_merged$Time.Hauled) != "2014-07-23 10:29:00", ]
+
+# 2011 Tanner crab, Leg 1
+# Almost all our new highest temp values are from those set on 10-07 on this survey
+# An examination of NOAA weather reports (at https://www.ndbc.noaa.gov/station_history.php?station=jnea2) don't reveal any unusual warmth
+# Furthermore, the pots experience a dramatic cold snap (substantially cooler than air temperature at the time) after they're lifted from the water
+# Finally, no pots are listed as being set on 10-08 or pulled on  10-09 which is quite unusual (especially as pots were set on 10-09).
+# Finally, pots set the next day are quite cool, typically around 4C. 
+# My hypothesis: the captain got their dates mixed up, and entered the pots as being set on the 7th and pulled on the 8th, whereas in reality they were
+# set on the 8th and pulled on the 9th.
+
+# Therefore, we'll remove all pots from this day and the one before. 
+
+tidbit_pot_merged$date <- tidbit_pot_merged$Time.Set %>%
+  str_split(" ") %>%
+  map_chr(1)
+
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  filter(date != "2011-10-07")
+
+# 2016 RKC, Leg 3
+# Our highest three mean temperatures are all from this survey, specifically from pots set on July 25th (tidbits 16, 7, and 13).
+# All temperatures are approx. 9.3C
+# However, these look quite legitimate. In all cases, the set time and tidbit data agree. Prior to the pot being set, the tidbit data gives temps
+# around 13-14C. And after the pot was hauled, the tidbit data temps return to 13-14C. Therefore, it's quite likely that these temperatures are accurate.
+
+
+# 2013 Tanner crab, Leg 2
+# Most of the remaining top 20 or so temp values are from those set at 10-20 on this survey.
+# However, these look legitimate as well. The temps are cooler than those from 2011 Tanner, Leg 2, plus the pots don't experience a cooling after being hauled. # Instead, they warm slightly. An example of this is Tidbit 20, which is approx. 9C from 8pm on Oct 19th until 11am on Oct 20th. This is then followed # by a few hours at approx 11C, then at 1pm it drops to 9C again. This corresponds with the pot data pattern of sets + hauls (set at 8pm on the 19th, hauled at 11am on the 20th, set again at 1pm on the 20th).
+# NOAA sea surface temperatures are warm at this time in Juneau (7.7C), and could be warmer at the nearby Port Camden, where these pots were taken.
+# Given that they align broadly with the pot data pattern of sets + hauls, and these temperatures are seen across many Tidbits, it's quite likely that these temperatures are accurate.
+
+# Remove unnecessary columns we've created
+tidbit_pot_merged <- tidbit_pot_merged %>%
+  select(-c(year, survey, tidbit_datetime, Temp, diff_temp, date))
+
+# Write out data to file
+write.csv(tidbit_pot_merged, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv",
+          row.names = FALSE)
 ```
-
-
-
-### 2006 Alt
-
-The RKC data has already been assembled! It's not averaged out over time, but we have one row for each Tidbit timepoint, filtered to only include timepoints in which the Tidbit was in the water. We can just read that directly in as a new dataframe, which we'll call cleaned_tidbit_data
-
-Same situation for the Tanner crab data, which we'll follow the same protocol with and then combine the data frames
-
-```{r}
-## RKC Data
-
-# Read in data
-cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/RKC_survey/skipper_tidbit_data.xls")
-
-# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  filter(DateTime < TIME_HAULED & DateTime > (TIME_SET + 5))
-
-# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  group_by(TIME_HAULED) %>%
-  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
-  ungroup
-
-# Remove duplicate IDs for TIME_HAULED. This leaves us with one row per haul that includes average temp. We lose temp (as in specific measurement), date, time, and DateTime, but we don't care about that
-cleaned_tidbit_data <- cleaned_tidbit_data[!duplicated(cleaned_tidbit_data$TIME_HAULED), ]
-
-# TANNER CRAB DATA
-
-# Read in data
-new_cleaned_tidbit_data <- read_excel(path = "../data/ADFG_SE_AK_pot_surveys/Tidbits/2006/Tanner_survey/skipper_tidbit_data.xls")
-
-# Just to be safe, remove rows where the data point is from after the time hauled or 5 minutes after the pot was set (to allow it to fall to the bottom)
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  filter(Datetime < TIME_HAULED & Datetime > (TIME_SET + 5))
-
-# We'll also remove any rows with an NA temperature, NA tidbit ID, or NA time hauled
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  drop_na(c(`Temperature  (*C)`, `Tidbit #`, TIME_HAULED))
-
-# Each pot has a completely unique TIME_HAULED, so we can use that as the unique ID to average the temperatures over the pot's time in the water
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  group_by(TIME_HAULED) %>%
-  mutate(mean_temp = mean(`Temperature  (*C)`)) %>%
-  ungroup
-
-# Remove duplicate IDs for TIME_HAULED. Now that we have avg temp, we just need one row. Plus, it's almost all identical anyways (except for temp, date, time, and DateTime).
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data[!duplicated(new_cleaned_tidbit_data$TIME_HAULED), ]
-
-# Check if names match between data frames
-all_equal(cleaned_tidbit_data, new_cleaned_tidbit_data, ignore_col_order = FALSE)
-
-# Nope, we've got one extra column! Find it
-new_cleaned_tidbit_data %>% select(which(!colnames(new_cleaned_tidbit_data) %in% colnames(cleaned_tidbit_data)))
-
-cleaned_tidbit_data %>% select(which(!colnames(cleaned_tidbit_data) %in% colnames(new_cleaned_tidbit_data)))
-
-# New data has Datetime, Set Date, and ID
-# Old data has DateTime and Tidbit_NO.
-
-# Change name of Datetime to DateTime
-# Remove Set Date (info captured in TIME_SET)
-# Remove ID (irrelevant)
-# Remove Tidbit_NO. (already have a "Tidbit #" column)
-
-# Change name of Datetime in new data
-new_cleaned_tidbit_data <- rename(new_cleaned_tidbit_data, DateTime = Datetime)
-
-# Drop columns from each dataset
-new_cleaned_tidbit_data <- new_cleaned_tidbit_data %>%
-  select(-c("Set Date", "ID"))
-
-cleaned_tidbit_data <- cleaned_tidbit_data %>%
-  select(-Tidbit_NO.)
-
-# Merge two datasets
-cleaned_tidbit_data <- rbind(cleaned_tidbit_data, new_cleaned_tidbit_data)
-```
-
-
-### 2007
-
-2007 RKC is the same as 2006, already conveniently filtered and assembled! Just need to get the averages and do some slight cleaning.
-
-2007 Tanners are not - instead, we'll just pull out the 
-
-```{r}
-
-```
-
-
-

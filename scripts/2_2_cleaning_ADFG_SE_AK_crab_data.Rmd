@@ -584,10 +584,10 @@ NOTE: This is NOT the actual data that will be used inside each model. It includ
 
 ```{r}
 # Black Mat data
-write.csv(BM.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/all_rows/black_mat_cleaned.csv", row.names = FALSE)
+write.csv(BM.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/crab_data/black_mat_cleaned.csv", row.names = FALSE)
 
 # Bitter Crab Syndrome data
-write.csv(BCS.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/all_rows/BCS_cleaned.csv", row.names = FALSE)
+write.csv(BCS.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", row.names = FALSE)
 
 ```
 

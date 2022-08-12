@@ -19,7 +19,7 @@ Now it's time to start exploring the data! Let's check out what's been going on 
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "lubridate")
+list.of.packages <- c("tidyverse", "lubridate", "beepr")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -124,7 +124,9 @@ exper <- pot_dat %>%
   summarize(depth_max  = max(Depth.Fathoms),
             temp_avg = mean(temp),
             temp_sd = sd(temp),
-            n_pots = n()) %>%
+            n_pots = n(),
+            avg_day = mean(Jul.Day),
+            day_sd = sd(Jul.Day))%>%
   ungroup()
 
 # First, depth of each site
@@ -137,12 +139,105 @@ ggplot(exper) +
 ggplot(exper, aes(x = depth_max, y = temp_avg)) +
   geom_point()
 
+# Hmm, doesn't seem to be a super strong relationship there. Neat! Note though, this is averaged by site
 
-# Finally, 
+# What about average date each site was sampled?
+ggplot(exper) +
+  geom_bar(aes(x = Location, y = avg_day),
+           stat = "identity") +
+  geom_errorbar(aes(x = Location, ymin = avg_day - day_sd, ymax = avg_day + day_sd)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))  
+
+# Hmm, alright. Looks like a few of the sites are specific to the later survey, while most aren't. 
+# Let's verify this with a table
+table(pot_dat$Location, pot_dat$Project)
+
+# Interesting! Alright, looks like surveys fall into the following buckets:
+# Tanner crab only:
+#       - Glacier Bay
+#       - Icy Strait
+#       - Port Camden
+#       - Stephens Passage
+#       - Thomas Bay
+# Both Tanner and RKC survey:
+#       - Hoklham Bay
+# RKC only:
+#       - All other surveys
+
+# That might complicate things a bit - disentangling the effect of location and date - but hey, ah well.
+
+# One thing I'm concerned about is a strong relationship between temperature and date. Let's figure that out
+cor(pot_dat
+    $temp, pot_dat$Jul.Day)
+# Alright, that's acceptable! Let's just graph it too
+ggplot(pot_dat, aes(x = Jul.Day, y = temp)) +
+  geom_point()
+# Clearly a warming trend over time, but it does flatten by October (realistically, peaks and goes back down)
+
+# Let's also double check on latitude. Almost definitely fine, because our spatial scale is small, but hey
+ggplot(pot_dat, aes(x = Latitude.Decimal.Degrees, y = temp)) +
+  geom_point()
+
+beep(8)
+
+# Ooh, that's not good, we've got a few pots with crazy outlier values. Alright, let's switch over to cleaning up our crab data, since that's what we really care about!
 ```
 
+#### Cleaning crab data
+
+The plan is to go through each column one by one and clean up the dataframe in that order
+
+```{r}
+# Look at the columns to be examined
+names(crab_dat)
+
+# Check each column for NAs
+colSums(is.na(crab_dat))
+
+# Alright, some NAs in columns are understandable (male crab won't have egg condition values, for instance), others aren't. 
+
+# Let's remove NA values in columns where we care about them
+
+# Sex
+crab_dat <- crab_dat[!is.na(crab_dat$Sex), ]
+
+# Width
+crab_dat <- crab_dat[!is.na(crab_dat$Width.Millimeters), ]
+
+# Shell condition
+crab_dat <- crab_dat[!is.na(crab_dat$Shell.Condition), ]
+
+# Leg condition
+crab_dat <- crab_dat[!is.na(crab_dat$Leg.Condition), ]
+
+# Depth
+crab_dat <- crab_dat[!is.na(crab_dat$Depth.Fathoms), ]
+
+# Check again
+colSums(is.na(crab_dat))
+
+# Alright, only remaining NAs are in male-specific columns (chela height) or female-specific (egg-related)
+
+# Proceed with examining each column specifically in detail
+
+#### Year ---------------------------------------
+table(crab_dat$Year)
+any(is.na(crab_dat$Year))
+
+
+#Let's eliminate everything with a latitude < 50 or > 60 in our crab_dat, which is what we really care about!
+crab_dat <- crab_dat %>%
+  filter(Latitude.Decimal.Degrees > 50) %>%
+  filter(Latitude.Decimal.Degrees < 60)
+
+# Let's do the same with longitude, eliminating all with a latitude < -140 or > -130
+crab_dat <- crab_dat %>%
+  filter(Longitude.Decimal.Degrees > -140) %>%
+  filter(Longitude.Decimal.Degrees < -130)
 
 
 
 
 
+
+```

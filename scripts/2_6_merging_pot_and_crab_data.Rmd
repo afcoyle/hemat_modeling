@@ -84,7 +84,7 @@ full_crab_dat <- full_crab_dat[!is.na(full_crab_dat$temp), ]
 
 # Drop irrelevant columns
 full_crab_dat <- full_crab_dat %>%
-  select(-c(pot_ID, Year.y, Project.y, Trip.No.y, Location.y, Pot.No.y, Time.Hauled, Buoy.No, tidbit_id))
+  dplyr::select(-c(pot_ID, Year.y, Project.y, Trip.No.y, Location.y, Pot.No.y, Buoy.No, tidbit_id))
 
 # Write out data
 write.csv(full_crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv", row.names = FALSE)

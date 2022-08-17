@@ -1,0 +1,237 @@
+---
+title: "2_8_running_model"
+author: "Aidan Coyle"
+date: "8/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+In this script, we will create a generalized linear mixed model to examine potential associations between _Hematodinium_ infection status and variables within both the environment and the crab.
+
+This script will include both male and female crab, and only include crabs for which temperature data is available.
+
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+```
+
+# Read in data
+```{r}
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
+```
+
+### Check all variables were read in correctly as either categorical or continuous predictors
+
+```{r}
+# See class of each column
+str(crab_dat)
+# Looks like we've got lots of columns that should be converted to factors!
+crab_dat$Survey <- factor(crab_dat$Survey)
+crab_dat$Site <- factor(crab_dat$Site)
+crab_dat$Sex <- factor(crab_dat$Sex)
+crab_dat$Recruit.Status <- factor(crab_dat$Recruit.Status)
+crab_dat$Shell.Condition <- ordered(crab_dat$Shell.Condition)
+crab_dat$Egg.Condition <- factor(crab_dat$Egg.Condition)
+crab_dat$Egg.Development <- factor(crab_dat$Egg.Development)
+crab_dat$Leg.Condition <- factor(crab_dat$Leg.Condition)
+crab_dat$Bitter <- factor(crab_dat$Bitter)
+crab_dat$Blackmat <- factor(crab_dat$Blackmat)
+
+# See updated class of each column
+str(crab_dat)
+
+# We'll adjust our numeric variables, scaling some
+
+# Subtract 2004 from all years, so that our earliest year is 1
+crab_dat$s.Year <- crab_dat$Year-(min(crab_dat$Year)-1)
+
+# Scale CW, chela height, egg percent, latitude, longitude, Julian day, depth, and temperature
+crab_dat$s.CW <- scale(crab_dat$CW)
+crab_dat$s.Chela.Ht <- scale(crab_dat$Chela.Ht)
+crab_dat$s.Egg.Percent <- scale(crab_dat$Egg.Percent)
+crab_dat$s.Latitude <- scale(crab_dat$Latitude)
+crab_dat$s.Longitude <- scale(crab_dat$Longitude)
+crab_dat$s.Jul.Day <- scale(crab_dat$Jul.Day)
+crab_dat$s.Depth <- scale(crab_dat$Depth)
+crab_dat$s.Temp <- scale(crab_dat$Temp)
+
+```
+
+# Model of all crabs
+
+This model will include ALL crabs, both male and female. Therefore, it will not include sex-specific measurements, such as chela height and egg-related measurements
+
+We have a Bernoulli distribution, plus random effects of year and location
+
+An issue: our model is too big to run directly. Instead, we'll check for collinearity using Pearson's test (if both are continuous), Cramer's V test (if both are categorical), and Spearman rank-order correlation (if one is continuous and one is categorical). Once we get a runnable model, we'll check for multicollinearity using VIFs.
+
+```{r}
+# Select all variables to be used in our model for all crabs
+allcrabs_dat <- crab_dat %>%
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Recruit.Status, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Longitude, s.Jul.Day, s.Depth, s.Temp))
+
+# Create a null model and get AIC
+null_mod <- glmer(Bitter ~ (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+AIC_null <- extractAIC(null_mod)[2]
+print(AIC_null)
+
+# Create a model with only sex code
+sex_mod <- glmer(Bitter ~ Sex + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(sex_mod)
+extractAIC(sex_mod)[2] < AIC_null
+AIC_null - extractAIC(sex_mod)[2]
+# Looks like sex improves the model!
+
+# Create a model with only carapace width
+CW_mod <- glmer(Bitter ~ s.CW + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(CW_mod)
+extractAIC(CW_mod)[2] < AIC_null
+AIC_null - extractAIC(CW_mod)[2]
+# Looks like CW definitely improves the model!
+
+# Create a model with only recruit status
+recruit_mod <- glmer(Bitter ~ Recruit.Status + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(recruit_mod)
+extractAIC(recruit_mod)[2] < AIC_null
+AIC_null - extractAIC(recruit_mod)[2]
+# Recruit status also improves the model
+
+# Create a model with only shell condition
+SC_mod <- glmer(Bitter ~ Shell.Condition + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(SC_mod)
+extractAIC(SC_mod)[2] < AIC_null
+AIC_null - extractAIC(SC_mod)[2]
+# Improves model a lot!
+
+# Create a model with only leg condition
+leg_mod <- glmer(Bitter ~ Leg.Condition + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(leg_mod)
+extractAIC(leg_mod)[2] < AIC_null
+AIC_null - extractAIC(leg_mod)[2]
+# Leg condition improves the model too
+
+# Create a model with only Black Mat status
+blackmat_mod <- glmer(Bitter ~ Blackmat + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(blackmat_mod)
+extractAIC(blackmat_mod)[2] < AIC_null
+AIC_null - extractAIC(blackmat_mod)[2]
+# Black Mat improves the model too!
+
+# Create a model with only latitude
+lat_mod <- glmer(Bitter ~ s.Latitude + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(lat_mod)
+extractAIC(lat_mod)[2] < AIC_null
+AIC_null - extractAIC(lat_mod)[2]
+# Latitude makes it worse! Alright, sounds good
+# Was planning on almost definitely using site rather than lat/long
+# since everything's on a small scale anyways, but this confirms it
+
+long_mod <- glmer(Bitter ~ s.Longitude + (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+extractAIC(long_mod)
+extractAIC(long_mod)[2] < AIC_null
+AIC_null - extractAIC(long_mod)[2]
+
+
+```
+
+# Create null model and get AIC
+null_mod <- glmer(PARASITE_CODE ~ (1 | LOCATION_CODE) + (1 | s.YEAR), 
+                  data = crabdat,
+                  family = binomial)
+AIC_null <- extractAIC(null_mod)[2]
+print(AIC_null)
+
+# Create model with only Black Mat code
+blackmat_mod <- glmer(PARASITE_CODE ~ BLACKMAT_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(blackmat_mod)
+extractAIC(blackmat_mod)[2] < AIC_null
+AIC_null - extractAIC(blackmat_mod)[2]
+# Looks like Black Mat improves the model!
+
+depth_mod <- glmer(PARASITE_CODE ~ DEPTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(depth_mod)
+extractAIC(depth_mod) < AIC_null
+AIC_null - extractAIC(depth_mod)[2]
+# Looks like depth also improves the model!
+
+shellcond_mod <- glmer(PARASITE_CODE ~ SHELL_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(shellcond_mod)
+extractAIC(shellcond_mod) < AIC_null
+AIC_null - extractAIC(shellcond_mod)[2]
+# Shell condition also improves the model!
+
+day_mod <- glmer(PARASITE_CODE ~ DAY_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(day_mod)
+extractAIC(day_mod) < AIC_null
+AIC_null - extractAIC(day_mod)[2]
+# Day also improves the model (though just barely)
+
+CW_mod <- glmer(PARASITE_CODE ~ WIDTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(CW_mod)
+extractAIC(CW_mod) < AIC_null
+AIC_null - extractAIC(CW_mod)[2]
+# Carapace width also improves the model
+
+sex_mod <- glmer(PARASITE_CODE ~ SEX_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(sex_mod)
+extractAIC(sex_mod) < AIC_null
+AIC_null - extractAIC(sex_mod)[2]
+
+legcond_mod <- glmer(PARASITE_CODE ~ LEG_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
+                      data = crabdat,
+                      family = binomial)
+extractAIC(legcond_mod)
+extractAIC(legcond_mod) < AIC_null
+AIC_null - extractAIC(legcond_mod)[2]
+# Well shoot, leg condition also improves over the null model
+
+
+```

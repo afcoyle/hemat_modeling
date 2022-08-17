@@ -178,8 +178,6 @@ ggplot(pot_dat, aes(x = Jul.Day, y = temp)) +
 ggplot(pot_dat, aes(x = Latitude.Decimal.Degrees, y = temp)) +
   geom_point()
 
-beep(8)
-
 # Ooh, that's not good, we've got a few pots with crazy outlier values. Alright, let's switch over to cleaning up our crab data, since that's what we really care about!
 ```
 
@@ -190,6 +188,10 @@ The plan is to go through each column one by one and clean up the dataframe in t
 ```{r}
 # Look at the columns to be examined
 names(crab_dat)
+
+# Remove irrelevant columns
+crab_dat <- crab_dat %>%
+  dplyr::select(-c(Trip.Start.Date, Trip.End.Date))
 
 # Check each column for NAs
 colSums(is.na(crab_dat))
@@ -218,26 +220,169 @@ colSums(is.na(crab_dat))
 
 # Alright, only remaining NAs are in male-specific columns (chela height) or female-specific (egg-related)
 
+#### Renaming Columns ---------------------------------------
+# A lot of the names of our variables aren't super descriptive or follow a good pattern. Let's fix that!
+
+crab_dat <- crab_dat %>%
+  dplyr::rename(c(
+    Survey = Project,
+    Leg = Trip.No,
+    Site = Location,
+    CW = Width.Millimeters,
+    Chela.Ht = Chela.Height.Millimeters,
+    Latitude = Latitude.Decimal.Degrees,
+    Longitude = Longitude.Decimal.Degrees,
+    Jul.Day = Time.Hauled,         # Converting this to Julian day
+    Depth = Depth.Fathoms,
+    Temp = temp
+  ))
+
+# Quickly shift Time.Hauled column to Julian day
+crab_dat$Jul.Day <- as.Date(crab_dat$Jul.Day)
+crab_dat$Jul.Day <- yday(crab_dat$Jul.Day)
+
+
+
 # Proceed with examining each column specifically in detail
 
 #### Year ---------------------------------------
 table(crab_dat$Year)
-any(is.na(crab_dat$Year))
+min(crab_dat$Year)
+max(crab_dat$Year)
+# Looks all good, unsurprisingly!
 
+#### Survey --------------------------------------
+table(crab_dat$Survey)
+# Also unsurprisingly, all good!
 
-#Let's eliminate everything with a latitude < 50 or > 60 in our crab_dat, which is what we really care about!
+#### Leg -----------------------------------
+table(crab_dat$Leg)
+# Also looks good!
+
+#### Site --------------------------
+table(crab_dat$Site)
+# We've got some very low numbers here at some sites
+# Cape Fanshaw has three and Round Rock has one. We'll remove both
 crab_dat <- crab_dat %>%
-  filter(Latitude.Decimal.Degrees > 50) %>%
-  filter(Latitude.Decimal.Degrees < 60)
+  filter(Site != "Cape_Fanshaw" & Site != "Round_Rock")
+# Alright, now all good!
 
+#### Pot.No ----------------------------
+# At this point, we don't actually care about pot number - that was just a way to join it with the pot data. Let's remove it!
+crab_dat <- crab_dat %>%
+  dplyr::select(-Pot.No)
+
+#### Sex --------------------------------
+table(crab_dat$Sex)
+# We'll switch the data codes over to the ones used by ADFG.
+# 1 = Male, 2 = Female
+crab_dat[crab_dat$Sex == "Male", ]$Sex <- 1
+crab_dat[crab_dat$Sex == "Female", ]$Sex <- 2
+
+#### Carapace Width (CW) -------------------------------
+head(sort(crab_dat$CW), n = 10)
+# Upon sorting and looking at the full table, all these look legit except the first one. No way there's a mature female with eggs and a CW of 9. Let's remove that
+crab_dat <- crab_dat %>%
+  filter(CW > 9)
+
+head(sort(crab_dat$CW, decreasing = TRUE), n = 10)
+# Also looks all good. Let's check our females specifically, since they mature at smaller sizes
+head(sort(crab_dat[crab_dat$Sex == 2, ]$CW, decreasing = TRUE), n = 10)
+# A bit suspicious, since I've never seen a female Tanner close to that big. But still doesn't mean it's impossible, and there are a good number within relatively close sizes. We'll assume these are accurate female measurements.
+
+#### Chela Height ------------------------------
+head(sort(crab_dat$Chela.Ht), n = 10)
+# I'm almost certain using chela height is going to be a total waste of time, and I'm not planning on including it in the final model. Just keeping it in to be safe. Still, it's implausible to me that you can get a measurement of a crab with a chela height <= 3mm
+crab_dat <- crab_dat %>%
+  mutate(Chela.Ht = replace(Chela.Ht, Chela.Ht <= 3, NA))
+
+# Also change all chela heights from females with NA, since it's only biologically meaningful on males (chela height:CW ratio marks maturity)
+crab_dat <- crab_dat %>%
+  mutate(Chela.Ht = replace(Chela.Ht, Sex == 2, NA))
+# All good!
+
+#### Recruit.Status ----------------------------
+table(crab_dat$Recruit.Status)
+# Looks fine to me!
+
+#### Shell Condition
+table(crab_dat$Shell.Condition)
+# Hmm, we've only got 12 shell condition 1s. That's not a whole lot, let's remove them
+crab_dat <- crab_dat %>%
+  filter(Shell.Condition != 1)
+# All good!
+
+#### Egg.Condition ---------------------------------------
+table(crab_dat$Egg.Condition)
+# To be safe, turn any males into NAs
+crab_dat <- crab_dat %>%
+  mutate(Egg.Condition = replace(Egg.Condition, Sex == 1, NA))
+# Looks fine!
+
+#### Egg.Development ------------------------------------------------------
+table(crab_dat$Egg.Development)
+# Only 4 have eyed eggs, let's remove. Then we'll replace any values for males with NAs
+crab_dat <- crab_dat %>%
+  mutate(Egg.Development = replace(Egg.Development, Sex == 1, NA))
+
+#### Leg.Condition -------------------------------------------------
+table(crab_dat$Leg.Condition, useNA = "always")
+# Change to either 0 (not damaged) or 1 (damaged)
+crab_dat[crab_dat$Leg.Condition == 1, ]$Leg.Condition <- 0
+crab_dat[crab_dat$Leg.Condition != 0, ]$Leg.Condition <- 1
+table(crab_dat$Leg.Condition, useNA = "always")
+# Looks fine!
+
+#### Bitter -------------------------------------
+table(crab_dat$Bitter)
+# Looks fine!
+
+#### Egg.Percent -------------------------------
+table(crab_dat$Egg.Percent)
+# We have some odd values in here, but hey, who cares if they didn't round. We'll just treat this as numeric later on
+
+#### Blackmat -----------------------------------
+table(crab_dat$Blackmat)
+
+#### Latitude ----------------------------------------
+#Let's eliminate everything with a latitude < 50 or > 60, anything else is outside the boundaries of the survey realistically
+crab_dat <- crab_dat %>%
+  filter(Latitude > 50) %>%
+  filter(Latitude < 60)
+# Looks good
+
+#### Longitude ------------------------------------------------
 # Let's do the same with longitude, eliminating all with a latitude < -140 or > -130
 crab_dat <- crab_dat %>%
-  filter(Longitude.Decimal.Degrees > -140) %>%
-  filter(Longitude.Decimal.Degrees < -130)
+  filter(Longitude > -140) %>%
+  filter(Longitude < -130)
+# Looks good
 
+#### Day ---------------------------------------------------
+min(crab_dat$Jul.Day)
+# That's June 4th (or 3rd, in leap years). Reasonable!
+max(crab_dat$Jul.Day)
+# That's Oct. 30th or 31st. Also reasonable!
 
+#### Depth --------------------------------------------------------
+head(sort(crab_dat$Depth))
+head(sort(crab_dat$Depth, decreasing = TRUE))
+# Both values look realistic. Depth is in fathoms, so 48 feet to ~1150 feet isn't too crazy. Still, let's look at a few years just to be sure
+crab_dat %>%
+  group_by(Year) %>%
+  summarise(max = max(Depth))
+# Yep, broadly similar maximum depths across surveys!
 
-
-
-
+#### Temp --------------------------------------------------
+head(sort(crab_dat$Temp))
+head(sort(crab_dat$Temp, decreasing = TRUE))
+# Looks good to me! Unsurprising though, we already fixed up temp earlier when reviewing our pot data and looking for outlier temperatures.
 ```
+
+Alright, all crab data is now cleaned! Amazing. Let's write out that file. We didn't make any major edits, so let's just overwrite the one we made previously
+```{r}
+
+write.csv(crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv", row.names = FALSE)
+beep(8)
+```
+

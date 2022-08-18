@@ -20,7 +20,7 @@ This script will include both male and female crab, and only include crabs for w
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr")
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr", "regclass")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -57,9 +57,83 @@ crab_dat$Blackmat <- factor(crab_dat$Blackmat)
 
 # See updated class of each column
 str(crab_dat)
+```
 
-# We'll adjust our numeric variables, scaling some
+### Check for correlation
 
+Prior to modeling anything, we're going to run checks on combinations of variables to see if any are correlated
+
+```{r}
+# CORRELATION BETWEEN CONTINUOUS VARIABLES
+
+crab_nums <- select_if(crab_dat, is.numeric)
+numcor <- cor(crab_nums, method = "pearson")
+
+# See the resulting table
+print(numcor)
+
+# See if any correlations are > 0.6 (our bar for correlation) and less than 1 (since every variable is perfectly correlated with itself)
+any(abs(numcor) > 0.6 & numcor < 1)
+which(abs(numcor) > 0.6 & numcor < 1, arr.ind = TRUE)
+# Looks like we have a tight correlation between latitude and longitude
+# Temperature and Julian day are pretty close (corr = 0.56), but nothing else is above 0.5
+
+# CORRELATIONS BETWEEN CATEGORICAL VARIABLES
+
+# Now we're using Cramer's V test to look at correlation among our categorical variables
+crabcat <- select_if(crab_dat, is.factor)
+
+# Turn all from factors to numeric
+crabcat[] <- sapply(crabcat, as.numeric)
+
+# Initialize a blank matrix
+results_matrix <- matrix(nrow = length(crabcat), ncol = length(crabcat))
+# Name all rows and columns with our variable names
+colnames(results_matrix) <- names(crabcat)
+rownames(results_matrix) <- names(crabcat)
+
+# Fill the matrix by performing Cramer's V test on each possible combination of factors
+for (i in 1:ncol(crabcat)) {
+  for (j in 1:ncol(crabcat)) {
+    cramer.table <- table(crabcat[,i],crabcat[,j])
+    cramer.matrix <- as.matrix(cramer.table)
+    results_matrix[i,j] <- cramerV(cramer.matrix)
+  }
+}
+# See the resulting matrix
+print(results_matrix)
+
+# See if any of our correlations (aside from self-correlations) cross our boundary of too much correlation
+any(results_matrix > 0.6 & results_matrix < 1)
+which(abs(results_matrix) > 0.6 & results_matrix < 1, arr.ind = TRUE)
+
+# Tight correlation between survey and site, which is fine - we weren't planning to include survey in any model
+# Correlations of 1 between recruit status and sex too, indicating we should choose one for our models
+#       We'll pick sex, since recruit status is mostly captured by sex + CW
+# No other strong correlations
+
+# CORRELATIONS BETWEEN CATEGORICAL AND CONTINUOUS VARIABLES
+
+# We'll use Spearman rank-order correlation to determine whether we have any correlation
+crabrank <- crab_dat
+crabrank[] <- sapply(crab_dat, as.numeric)
+crabcomps <- cor(crabrank, method = "spearman")
+any(abs(crabcomps) > 0.6 & crabcomps < 1)
+# Looks like we do have some significant correlations this time! Let's pull them out
+which(abs(crabcomps) > 0.6 & crabcomps < 1, arr.ind = TRUE)
+print(crabcomps)
+# Correlations are between:
+    # Julian day and survey (don't care, not including survey in model)
+    # Recruit status and CW (already decided to exclude recruit status from model since it's mostly CW + sex)
+    # Latitude and longitude (we'll likely just use latitude, or skip altogether and just use site)
+    # Temperature and Julian day (these are two continuous variables, which were already cleared using the more appropriate Pearson metric)
+```
+
+
+
+# Adjust numeric variables, scaling some
+
+```{r}
 # Subtract 2004 from all years, so that our earliest year is 1
 crab_dat$s.Year <- crab_dat$Year-(min(crab_dat$Year)-1)
 
@@ -81,157 +155,123 @@ This model will include ALL crabs, both male and female. Therefore, it will not 
 
 We have a Bernoulli distribution, plus random effects of year and location
 
-An issue: our model is too big to run directly. Instead, we'll check for collinearity using Pearson's test (if both are continuous), Cramer's V test (if both are categorical), and Spearman rank-order correlation (if one is continuous and one is categorical). Once we get a runnable model, we'll check for multicollinearity using VIFs.
+An issue: our model is too big to run directly. Instead, we'll run a really tiny model with just one independent variable, and then progressively add in our other variables using update()
 
 ```{r}
 # Select all variables to be used in our model for all crabs
 allcrabs_dat <- crab_dat %>%
-  dplyr::select(c(s.Year, Site, Sex, s.CW, Recruit.Status, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Longitude, s.Jul.Day, s.Depth, s.Temp))
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Longitude, s.Jul.Day, s.Depth, s.Temp))
+
+# Select independent variables
+modeled_vars <- names(allcrabs_dat)
+modeled_vars <- modeled_vars[!modeled_vars %in% c("s.Year", "Site", "Bitter")]
+
+# Initialize dataframe with model values
+AIC_vals <- matrix(nrow = 10, ncol = 2)
 
 # Create a null model and get AIC
 null_mod <- glmer(Bitter ~ (1 | Site) + (1 | s.Year), 
                   data = allcrabs_dat,
                   family = binomial)
 AIC_null <- extractAIC(null_mod)[2]
-print(AIC_null)
+AIC_vals[1, 1] <- "null_mod"
+AIC_vals[1, 2] <- extractAIC(null_mod)[2] - AIC_null
 
-# Create a model with only sex code
-sex_mod <- glmer(Bitter ~ Sex + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(sex_mod)
-extractAIC(sex_mod)[2] < AIC_null
-AIC_null - extractAIC(sex_mod)[2]
-# Looks like sex improves the model!
+# Create for loop to extract AIC for all variables
+for (i in 1:length(modeled_vars)){
+  my_formula = paste0("Bitter ~ ", modeled_vars[i], " + (1 | Site) + (1 | s.Year)")
+  test_mod <- glmer(my_formula,
+                    data = allcrabs_dat,
+                    family = binomial)
+  
+  AIC_vals[i, 1] <- modeled_vars[i]
+  AIC_vals[i, 2] <- extractAIC(test_mod)[2] - AIC_null
+}
+beep()
 
-# Create a model with only carapace width
-CW_mod <- glmer(Bitter ~ s.CW + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(CW_mod)
-extractAIC(CW_mod)[2] < AIC_null
-AIC_null - extractAIC(CW_mod)[2]
-# Looks like CW definitely improves the model!
 
-# Create a model with only recruit status
-recruit_mod <- glmer(Bitter ~ Recruit.Status + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(recruit_mod)
-extractAIC(recruit_mod)[2] < AIC_null
-AIC_null - extractAIC(recruit_mod)[2]
-# Recruit status also improves the model
+# See which variables improve the model the most
+# I just printed these and reordered them around a bit
+AIC_vals[order(AIC_vals[, 2]), ]
 
-# Create a model with only shell condition
-SC_mod <- glmer(Bitter ~ Shell.Condition + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(SC_mod)
-extractAIC(SC_mod)[2] < AIC_null
-AIC_null - extractAIC(SC_mod)[2]
-# Improves model a lot!
+# Alright, so it's treating them as a character. That's still good enough to see! Here's the order, from most to least impactful:
+```
 
-# Create a model with only leg condition
-leg_mod <- glmer(Bitter ~ Leg.Condition + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(leg_mod)
-extractAIC(leg_mod)[2] < AIC_null
-AIC_null - extractAIC(leg_mod)[2]
-# Leg condition improves the model too
+Here's the order of the impact of our variables, from most to least impactful. This'll determine the order in which we try to add these variables to our full model!
 
-# Create a model with only Black Mat status
-blackmat_mod <- glmer(Bitter ~ Blackmat + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(blackmat_mod)
-extractAIC(blackmat_mod)[2] < AIC_null
-AIC_null - extractAIC(blackmat_mod)[2]
-# Black Mat improves the model too!
+Shell condition
+Temperature
+CW
+Black Mat
+Leg condition
+Julian day
+Sex
+---------Null model line ------------------
+Latitude
+Longitude
+Depth
 
-# Create a model with only latitude
-lat_mod <- glmer(Bitter ~ s.Latitude + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(lat_mod)
-extractAIC(lat_mod)[2] < AIC_null
-AIC_null - extractAIC(lat_mod)[2]
-# Latitude makes it worse! Alright, sounds good
-# Was planning on almost definitely using site rather than lat/long
-# since everything's on a small scale anyways, but this confirms it
+Based on this, we'll make a judgment call: We'll try to put Depth in before Lat/Long (since location is also captured with Site)
 
-long_mod <- glmer(Bitter ~ s.Longitude + (1 | Site) + (1 | s.Year), 
-                  data = allcrabs_dat,
-                  family = binomial)
-extractAIC(long_mod)
-extractAIC(long_mod)[2] < AIC_null
-AIC_null - extractAIC(long_mod)[2]
+Note that we haven't yet checked for correlation between variables! We'll do that after we try to run a full model using vif() which also checks for multicollinearity.
 
+One difficulty with Laplace approximation is that it is slower and more computationally intensive. We have a very complex model, which, in fact, makes it impossible to run our full model immediately. As a result, instead we plan to create a smaller model and then slowly build on it using the update() function
+
+```{r}
+# Try to run the first model
+lap_first_mod <- glmer(Bitter ~ Shell.Condition + (1 | Site) + (1 | s.Year),
+                       data = allcrabs_dat,
+                       family = binomial,
+                       na.action = "na.fail",              # This line is for the dredge() function used later
+                       control = glmerControl(optimizer = "bobyqa")   # This is to improve optimization
+                       )
+
+# Update the model to include the effect of temperature
+lap_next_mod <- update(lap_first_mod, Bitter ~ Shell.Condition + s.Temp + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of CW
+lap_third_mod <- update(lap_next_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of black mat
+lap_fourth_mod <- update(lap_third_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of leg condition
+lap_fifth_mod <- update(lap_fourth_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of Julian day
+lap_sixth_mod <- update(lap_fifth_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of sex
+lap_seven_mod <- update(lap_sixth_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of depth
+lap_eight_mod <- update(lap_seven_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of latitude
+lap_nine_mod <- update(lap_eight_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + s.Latitude + (1 | Site) + (1 | s.Year))
+
+# Update the model to include the effect of longitude
+lap_ten_mod <- update(lap_nine_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + s.Latitude + s.Longitude + (1 | Site) + (1 | s.Year))
+
+# Oh my god, we actually got everything in our model!!! Incredible - it just straight-up broke the first time when I tried with even putting in two variables simultaneously. Go us!
 
 ```
 
-# Create null model and get AIC
-null_mod <- glmer(PARASITE_CODE ~ (1 | LOCATION_CODE) + (1 | s.YEAR), 
-                  data = crabdat,
-                  family = binomial)
-AIC_null <- extractAIC(null_mod)[2]
-print(AIC_null)
 
-# Create model with only Black Mat code
-blackmat_mod <- glmer(PARASITE_CODE ~ BLACKMAT_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(blackmat_mod)
-extractAIC(blackmat_mod)[2] < AIC_null
-AIC_null - extractAIC(blackmat_mod)[2]
-# Looks like Black Mat improves the model!
+# Try to run the full model
+lap_first_mod <- glmer(PARASITE_CODE ~ BLACKMAT_CODE + SHELL_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR), 
+                       data = crabdat, 
+                       family = binomial, 
+                       na.action = "na.fail",   # This chunk is for the dredge() function used later
+                       control = glmerControl(optimizer = c("bobyqa"))) # This is to improve optimization
 
-depth_mod <- glmer(PARASITE_CODE ~ DEPTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(depth_mod)
-extractAIC(depth_mod) < AIC_null
-AIC_null - extractAIC(depth_mod)[2]
-# Looks like depth also improves the model!
+#Next, update the model to include the effects of depth
+lap_two_mod <- update(lap_first_mod, PARASITE_CODE ~ BLACKMAT_CODE + SHELL_CONDITION_CODE + DEPTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR))
 
-shellcond_mod <- glmer(PARASITE_CODE ~ SHELL_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(shellcond_mod)
-extractAIC(shellcond_mod) < AIC_null
-AIC_null - extractAIC(shellcond_mod)[2]
-# Shell condition also improves the model!
 
-day_mod <- glmer(PARASITE_CODE ~ DAY_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(day_mod)
-extractAIC(day_mod) < AIC_null
-AIC_null - extractAIC(day_mod)[2]
-# Day also improves the model (though just barely)
 
-CW_mod <- glmer(PARASITE_CODE ~ WIDTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(CW_mod)
-extractAIC(CW_mod) < AIC_null
-AIC_null - extractAIC(CW_mod)[2]
-# Carapace width also improves the model
 
-sex_mod <- glmer(PARASITE_CODE ~ SEX_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(sex_mod)
-extractAIC(sex_mod) < AIC_null
-AIC_null - extractAIC(sex_mod)[2]
-
-legcond_mod <- glmer(PARASITE_CODE ~ LEG_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR),
-                      data = crabdat,
-                      family = binomial)
-extractAIC(legcond_mod)
-extractAIC(legcond_mod) < AIC_null
-AIC_null - extractAIC(legcond_mod)[2]
-# Well shoot, leg condition also improves over the null model
+M1[order(M1[,1],decreasing=FALSE),]
 
 
 ```

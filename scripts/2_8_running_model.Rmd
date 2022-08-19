@@ -160,7 +160,7 @@ An issue: our model is too big to run directly. Instead, we'll run a really tiny
 ```{r}
 # Select all variables to be used in our model for all crabs
 allcrabs_dat <- crab_dat %>%
-  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Longitude, s.Jul.Day, s.Depth, s.Temp))
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp))
 
 # Select independent variables
 modeled_vars <- names(allcrabs_dat)
@@ -208,12 +208,7 @@ Julian day
 Sex
 ---------Null model line ------------------
 Latitude
-Longitude
 Depth
-
-Based on this, we'll make a judgment call: We'll try to put Depth in before Lat/Long (since location is also captured with Site)
-
-Note that we haven't yet checked for correlation between variables! We'll do that after we try to run a full model using vif() which also checks for multicollinearity.
 
 One difficulty with Laplace approximation is that it is slower and more computationally intensive. We have a very complex model, which, in fact, makes it impossible to run our full model immediately. As a result, instead we plan to create a smaller model and then slowly build on it using the update() function
 
@@ -245,33 +240,84 @@ lap_sixth_mod <- update(lap_fifth_mod, Bitter ~ Shell.Condition + s.Temp + s.CW 
 lap_seven_mod <- update(lap_sixth_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + (1 | Site) + (1 | s.Year))
 
 # Update the model to include the effect of depth
-lap_eight_mod <- update(lap_seven_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + (1 | Site) + (1 | s.Year))
+lap_eight_mod <- update(lap_seven_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Latitude + (1 | Site) + (1 | s.Year))
 
 # Update the model to include the effect of latitude
-lap_nine_mod <- update(lap_eight_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + s.Latitude + (1 | Site) + (1 | s.Year))
+lap_nine_mod <- update(lap_eight_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year))
 
-# Update the model to include the effect of longitude
-lap_ten_mod <- update(lap_nine_mod, Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Depth + s.Latitude + s.Longitude + (1 | Site) + (1 | s.Year))
+beep(8)
 
 # Oh my god, we actually got everything in our model!!! Incredible - it just straight-up broke the first time when I tried with even putting in two variables simultaneously. Go us!
 
 ```
 
+### Dredging
 
-# Try to run the full model
-lap_first_mod <- glmer(PARASITE_CODE ~ BLACKMAT_CODE + SHELL_CONDITION_CODE + (1 | LOCATION_CODE) + (1 | s.YEAR), 
-                       data = crabdat, 
-                       family = binomial, 
-                       na.action = "na.fail",   # This chunk is for the dredge() function used later
-                       control = glmerControl(optimizer = c("bobyqa"))) # This is to improve optimization
+We will now use the dredge() function from the MuMIn package to go through each of our model possibilities and select an optimal full model using AIC.
 
-#Next, update the model to include the effects of depth
-lap_two_mod <- update(lap_first_mod, PARASITE_CODE ~ BLACKMAT_CODE + SHELL_CONDITION_CODE + DEPTH_SCALED + (1 | LOCATION_CODE) + (1 | s.YEAR))
+```{r}
+# First, extract AIC of our full model
+extractAIC(lap_nine_mod)
 
+# Use the dredge() function to generate a model selection table with various combinations of fixed effect terms
+lap_mods <- dredge(lap_nine_mod, beta = "none",
+       eval = TRUE,
+       rank = "AICc")
+# See all the resulting models
+lap_mods
 
+# Looks like only two of our models have weights > 0! Let's look at them:
+best_two <- get.models(lap_mods, subset = weight > 0.01)
 
+# First model - heaviest weight, at 0.72
+first_mod <- best_two[[1]]
+first_mod
+summary(first_mod)
 
-M1[order(M1[,1],decreasing=FALSE),]
+# Second model - contains the rest of the weight at 0.28
+second_mod <- best_two[[2]]
+second_mod
+summary(second_mod)
 
+# Average models based on AICc
+avg_model <- model.avg(best_two, beta = "none")
 
+# See what that average model looks like
+avg_model$coefficients
+summary(avg_model)
+```
+
+### Model Diagnostics
+
+Now that we have produced some models, before we accept their average, we need to do some diagnostics to ensure the models meet our assumptions
+
+```{r}
+# GOODNESS OF FIT
+
+chisq <- sum((as.integer(as.character(crabdat$PARASITE_CODE)) - fitted(first_mod))^2 / fitted(first_mod))
+
+pchisq(chisq, df = nrow(crabdat) - length(coef(first_mod)), lower.tail = FALSE)
+# P-value is large, so don't reject null hypothesis for our first model. Repeat for second model
+
+chisq <- sum((as.integer(as.character(crabdat$PARASITE_CODE)) - fitted(second_mod))^2 / fitted(second_mod))
+
+pchisq(chisq, df = nrow(crabdat) - length(coef(second_mod)), lower.tail = FALSE)
+# P-value is large, so don't reject null hypothesis for our second model
+
+# Both models pass our goodness-of-fit test!
+
+# Q-Q PLOT OF RESIDUALS
+
+qqnorm(residuals(first_mod), main = "QQ plot (residuals)")
+qqnorm(residuals(second_mod), main = "QQ plot (residuals)")
+
+# Hmm, both Q-Q plots show sharp breaks in the middle, but not an issue for binary data
+
+# CHECK WHETHER VARIATION IS ACCOUNTED FOR USING HOSMER-LEMESHOW
+
+logitgof(crabdat$PARASITE_CODE, fitted(first_mod), g = 10)
+
+logitgof(crabdat$PARASITE_CODE, fitted(second_mod), g = 10)
+
+# In both cases, looks like we DO have variation that isn't accounted for, indicating we're missing parameters in our model. Disappointing, but we included all possible parameters in our model initially
 ```

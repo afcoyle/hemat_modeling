@@ -1,0 +1,14 @@
+- Plot errors against y-hats
+- What is outlier test and KS test?
+- Use function predict() on GLMM object. Predicts bitter values based on model parameters. Predictive posterior
+    - predict.glmmTMB()
+-ggeffects package
+- vizreg package
+- Ensure errors look normally distributed
+- Check that glmmTMB() spits out an error if it doesn't converge
+- Use hatvalues(model) to look for leverage points
+- Do predictions for each separately, see if any are fundamentally not giving me aroudn the right number of bitter/non-bitter
+- Also compare weighted models (top 4 or top 8) to single models! Factor in number of parameters (less is better)
+    
+
+

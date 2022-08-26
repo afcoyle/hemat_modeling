@@ -692,8 +692,6 @@ plot(predictorEffect("Blackmat", masc_full_model))
 plot(predictorEffect("Leg.Condition", masc_full_model))
 plot(predictorEffect("s.Latitude", masc_full_model))
 plot(predictorEffect("s.Depth", masc_full_model))
-
-
 ```
 
            Term  VIF   VIF 95% CI Increased SE Tolerance Tolerance 95% CI

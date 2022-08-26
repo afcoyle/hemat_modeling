@@ -594,9 +594,7 @@ for (i in 1:length(years)){
     filter(year == crab_year)
   # Join pot and tidbit data by tidbit ID
   year_dat <- inner_join(year_pot, year_tidbit, by = "tidbit_id")
-  # Select only true entries by choosing rows where the data point is:
-  #   - 2 min before time hauled (to account for small timekeeping errors)
-  #   - 5 min after pot was set (to allow it to fall to the bottom)
+  # Select only true entries by choosing rows where the data point is at least 1 hour away from set or haul
   
   # Create new column calculating difference between tidbit time and haul time
   year_dat$change_time <- difftime(year_dat$tidbit_datetime, year_dat$Time.Hauled, tz = "US/Alaska", units = "mins")

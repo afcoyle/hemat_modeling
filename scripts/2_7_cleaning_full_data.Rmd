@@ -386,3 +386,26 @@ write.csv(crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_d
 beep(8)
 ```
 
+[Trash]
+
+Miscellaneous quick functions meant to examine survey design
+```{r}
+table(pot_dat$Year, pot_dat$Project)
+
+table(pot_dat$Trip.Start.Date, pot_dat$Project)
+table(pot_dat$Trip.End.Date, pot_dat$Project)
+
+rkc_dat <- pot_dat %>%
+  filter(Project == "Red King Crab Survey")
+
+table(rkc_dat$Year, rkc_dat$Location)
+
+tan_dat <- pot_dat %>%
+  filter(Project == "Tanner Crab Survey")
+
+table(tan_dat$Year, tan_dat$Location)
+
+table(pot_dat$Location, pot_dat$Project)
+
+```
+

@@ -558,8 +558,6 @@ masc_crabs$mat_line <- (1.189 * log(masc_crabs$CW)) - 2.674
 # Drop crabs without chela height value
 masc_crabs <- masc_crabs[!is.na(masc_crabs$Chela.Ht),]
 
-# Drop crabs 
-
 # Calculate maturity value. If greater than maturity line and CW >= 60 cm, is mature
 masc_crabs$mat_val <- log(masc_crabs$Chela.Ht)
 
@@ -751,64 +749,69 @@ This model will include all crabs with maturity measurements
 ### Filter and re-scale to get correct data for model
 
 ```{r}
-# Select only male crabs
-masc_crabs <- crab_dat %>%
-  filter(Sex == "1")
+# Create new data table called mat_crabs
+mat_crabs <- crab_dat
 
-# Drop egg columns
-masc_crabs <- masc_crabs %>%
-  select(-c(Egg.Development, Egg.Condition, Egg.Percent))
-
-# Drop scaled columns - we'll scale them again
-masc_crabs <- masc_crabs %>%
-  select(-contains("s."))
-
-# We'll use the ratio of chela height to carapace width to indicate crab maturity
+# Get maturity for male crabs
+# Same process as before - using the ratio of chela height to carapace width to indicate male maturity
 # Note: This is using the EBS line for height-CW, will have to get the SE AK ratio later
 # EBS equation = ln(chela_ht) = (1.189*ln(CW)) - 2.674
 # Create new column for maturity line. Remember, log() computes ln, R is weird like that 
 # Also, male crabs with a CW < 60 are immature
-masc_crabs$mat_line <- (1.189 * log(masc_crabs$CW)) - 2.674
-
-# Drop crabs without chela height value
-masc_crabs <- masc_crabs[!is.na(masc_crabs$Chela.Ht),]
-
-# Drop crabs 
+mat_crabs$mat_line <- (1.189 * log(mat_crabs$CW)) - 2.674
 
 # Calculate maturity value. If greater than maturity line and CW >= 60 cm, is mature
-masc_crabs$mat_val <- log(masc_crabs$Chela.Ht)
+mat_crabs$mat_val <- log(mat_crabs$Chela.Ht)
 
 # Create column for maturity status
-masc_crabs <- masc_crabs %>%
+mat_crabs <- mat_crabs %>%
   mutate(mat_stat = case_when(
-    mat_val <= mat_line | CW <= 60 ~ "1",
-    mat_val > mat_line ~ "2"
+    mat_val <= mat_line | CW <= 60 & Sex == 1 | Recruit.Status == "Juvenile_Female" ~ "1",
+    mat_val > mat_line | Recruit.Status == "Mature_Female" ~ "2"
     ))
 
+table(mat_crabs$Recruit.Status, mat_crabs$mat_stat, mat_crabs$Sex)
+
+# Drop lines without a value for maturity
+mat_crabs <- mat_crabs[!is.na(mat_crabs$mat_stat), ]
+
 # Remove maturity value and line columns, no longer needed
-masc_crabs <- masc_crabs %>%
-  select(-c(mat_val, mat_line))
+mat_crabs <- mat_crabs %>%
+  dplyr::select(-c(mat_val, mat_line))
+
+# Drop egg columns and chela height columns
+mat_crabs <- mat_crabs %>%
+  dplyr::select(-c(Egg.Development, Egg.Condition, Egg.Percent, Chela.Ht))
+
+# Drop scaled columns - we'll scale them again
+mat_crabs <- mat_crabs %>%
+  dplyr::select(-contains("s."))
 
 # See how many NAs we have
-colSums(is.na(masc_crabs))
+colSums(is.na(mat_crabs))
 
-# Great, we've got around 25,000 rows! Neat stuff.
+# Great, we've got around 50,000 rows! Neat stuff.
 
 #### Re-scale all variables for our new dataset
 
 # Subtract 2004 from all years, so that our earliest year is 1
-masc_crabs$s.Year <- masc_crabs$Year-(min(masc_crabs$Year)-1)
+mat_crabs$s.Year <- mat_crabs$Year-(min(mat_crabs$Year)-1)
 
 # Scale latitude, longitude, Julian day, depth, and temperature
-masc_crabs$s.Latitude <- scale(masc_crabs$Latitude)
-masc_crabs$s.Longitude <- scale(masc_crabs$Longitude)
-masc_crabs$s.Jul.Day <- scale(masc_crabs$Jul.Day)
-masc_crabs$s.Depth <- scale(masc_crabs$Depth)
-masc_crabs$s.Temp <- scale(masc_crabs$Temp)
-# Just need to scale CW once this time
-masc_crabs$s.CW <- scale(masc_crabs$CW)
+mat_crabs$s.Latitude <- scale(mat_crabs$Latitude)
+mat_crabs$s.Longitude <- scale(mat_crabs$Longitude)
+mat_crabs$s.Jul.Day <- scale(mat_crabs$Jul.Day)
+mat_crabs$s.Depth <- scale(mat_crabs$Depth)
+mat_crabs$s.Temp <- scale(mat_crabs$Temp)
 
-colnames(masc_crabs)
+# We'll scale CW twice - once for males, and once for females. This'll capture the sexual dimorphism within Tanner crabs
+mat_crabs_f <- mat_crabs[mat_crabs$Sex == "2", ]
+mat_crabs_m <- mat_crabs[mat_crabs$Sex == "1", ]
+
+mat_crabs_f$s.CW <- scale(mat_crabs_f$CW)
+mat_crabs_m$s.CW <- scale(mat_crabs_m$CW)
+
+mat_crabs <- rbind(mat_crabs_f, mat_crabs_m)
 ```
 
 
@@ -818,11 +821,11 @@ colnames(masc_crabs)
 
 ```{r}
 # Select all variables to be used in our model for male crabs
-masccrabs_dat <- masc_crabs %>%
-  dplyr::select(c(s.Year, Site, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp, mat_stat))
+matcrabs_dat <- mat_crabs %>%
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp, mat_stat))
 
 # Select independent variables
-modeled_vars <- names(masccrabs_dat)
+modeled_vars <- names(matcrabs_dat)
 modeled_vars <- modeled_vars[!modeled_vars %in% c("s.Year", "Site", "Bitter")]
 
 # Initialize dataframe with model values
@@ -830,7 +833,7 @@ AIC_vals <- matrix(nrow = length(modeled_vars), ncol = 2)
 
 # Create a null model and get AIC
 null_mod <- glmmTMB(Bitter ~ (1 | Site) + (1 | s.Year), 
-                  data = masccrabs_dat,
+                  data = matcrabs_dat,
                   family = binomial,
                   na.action = "na.fail")
 
@@ -842,7 +845,7 @@ AIC_vals[1, 2] <- extractAIC(null_mod)[2] - AIC_null
 for (i in 1:length(modeled_vars)){
   my_formula = paste0("Bitter ~ ", modeled_vars[i], " + (1 | Site) + (1 | s.Year)")
   test_mod <- glmer(my_formula,
-                    data = masccrabs_dat,
+                    data = matcrabs_dat,
                     family = binomial)
   
   AIC_vals[i, 1] <- modeled_vars[i]
@@ -875,13 +878,13 @@ Depth
 Alright, we'll again use glmmTMB to build a full model, then we'll check for collinearity
 
 ```{r}
-masc_full_model <- glmmTMB(Bitter ~ Shell.Condition + mat_stat + s.CW + s.Temp + s.Jul.Day + Blackmat + Leg.Condition + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
-                       data = masccrabs_dat,
+mat_full_model <- glmmTMB(Bitter ~ Shell.Condition + mat_stat + s.CW + s.Temp + s.Jul.Day + Blackmat + Leg.Condition + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
+                       data = matcrabs_dat,
                        family = binomial,
                        na.action = "na.fail"              # This line is for the dredge() function used later
                        )
 
-check_collinearity(masc_full_model)
+check_collinearity(mat_full_model)
 
 # Wow, everything looks great! Was worried about having issues with egg percent and egg development (since barren = 0), but apparently all good!
 ```
@@ -893,24 +896,24 @@ Now that we have produced a full model, before we start fine-tuning it, we need 
 
 ```{r}
 # Simulate residuals and plot
-testOutliers(masc_full_model, alternative = "two.sided", margin = "both", type = "bootstrap", plot = TRUE)
-simulateResiduals(masc_full_model, plot = TRUE)
+testOutliers(mat_full_model, alternative = "two.sided", margin = "both", type = "bootstrap", plot = TRUE)
+simulateResiduals(mat_full_model, plot = TRUE)
 
 # Perform ANOVA on model fits
-car::Anova(masc_full_model)
+car::Anova(mat_full_model)
 
 # Alright, looks like in our full model, shell condition, maturity, CW, temperature, and leg condition are significant, while Julian day, Black Mat, Latitude, and Depth aren't.
 
-# Test for effects. You can plot these all together with plot(allEffects(masc_full_model)), but that gets crowded visually
-plot(predictorEffect("Shell.Condition", masc_full_model))
-plot(predictorEffect("mat_stat", masc_full_model))
-plot(predictorEffect("s.CW", masc_full_model))
-plot(predictorEffect("s.Temp", masc_full_model))
-plot(predictorEffect("s.Jul.Day", masc_full_model))
-plot(predictorEffect("Blackmat", masc_full_model))
-plot(predictorEffect("Leg.Condition", masc_full_model))
-plot(predictorEffect("s.Latitude", masc_full_model))
-plot(predictorEffect("s.Depth", masc_full_model))
+# Test for effects. You can plot these all together with plot(allEffects(mat_full_model)), but that gets crowded visually
+plot(predictorEffect("Shell.Condition", mat_full_model))
+plot(predictorEffect("mat_stat", mat_full_model))
+plot(predictorEffect("s.CW", mat_full_model))
+plot(predictorEffect("s.Temp", mat_full_model))
+plot(predictorEffect("s.Jul.Day", mat_full_model))
+plot(predictorEffect("Blackmat", mat_full_model))
+plot(predictorEffect("Leg.Condition", mat_full_model))
+plot(predictorEffect("s.Latitude", mat_full_model))
+plot(predictorEffect("s.Depth", mat_full_model))
 ```
 
 ### Dredging
@@ -918,29 +921,29 @@ plot(predictorEffect("s.Depth", masc_full_model))
 We will now use the dredge() function from the MuMIn package to go through each of our model possibilities and select an optimal full model using AIC.
 
 ```{r}
-masc_all_mods <- dredge(masc_full_model, beta = "none",
+mat_all_mods <- dredge(mat_full_model, beta = "none",
        eval = TRUE,
        rank = "AICc")
 
-plot(masc_all_mods)
+plot(mat_all_mods)
 
 # Looks like we have four good models (weights > 0.2) and four marginal models (weights between 0.04 and 0.01)
-masc_best_mods <- get.models(masc_all_mods, subset = weight > 0.01)
+mat_best_mods <- get.models(mat_all_mods, subset = weight > 0.01)
 
 # See what each of the best models look like
-masc_best_mods[1]
-masc_best_mods[2]
-masc_best_mods[3]
-masc_best_mods[4]
-masc_best_mods[5]
-masc_best_mods[6]
-masc_best_mods[7]
-masc_best_mods[8]
+mat_best_mods[1]
+mat_best_mods[2]
+mat_best_mods[3]
+mat_best_mods[4]
+mat_best_mods[5]
+mat_best_mods[6]
+mat_best_mods[7]
+mat_best_mods[8]
 
 # Average models based on AICc
-masc_avg_model <- model.avg(masc_best_mods, beta = "none")
+mat_avg_model <- model.avg(mat_best_mods, beta = "none")
 
 # See what that average model looks like
-masc_avg_model$coefficients
-summary(masc_avg_model)
+mat_avg_model$coefficients
+summary(mat_avg_model)
 ```

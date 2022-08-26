@@ -558,12 +558,10 @@ masc_crabs$mat_line <- (1.189 * log(masc_crabs$CW)) - 2.674
 # Drop crabs without chela height value
 masc_crabs <- masc_crabs[!is.na(masc_crabs$Chela.Ht),]
 
-# Drop crabs 
-
-# Calculate maturity value. If greater than maturity line and CW >= 60 cm, is mature
+# Calculate maturity value. 
 masc_crabs$mat_val <- log(masc_crabs$Chela.Ht)
 
-# Create column for maturity status
+# Create column for maturity status. If maturity value is greater than maturity line and CW >= 60 cm, is mature
 masc_crabs <- masc_crabs %>%
   mutate(mat_stat = case_when(
     mat_val <= mat_line | CW <= 60 ~ "1",

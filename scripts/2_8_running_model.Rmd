@@ -20,7 +20,7 @@ This script will include both male and female crab, and only include crabs for w
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr", "regclass", "car", "DHARMa", "broom.mixed", "dotwhisker")
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr", "regclass", "car", "DHARMa", "broom.mixed", "dotwhisker", "glmmTMB", "performance", "effects")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -269,15 +269,17 @@ plot(all_mods)
 # Looks like we have four good models (weights > 0.2) and four marginal models (weights between 0.04 and 0.01)
 best_mods <- get.models(all_mods, subset = weight > 0.01)
 
+all_best_mod <- get.models(all_mods, subset = 1)[[1]]
+
 # See what each of the best models look like
 best_mods[1]
-best_mods[2]
-best_mods[3]
-best_mods[4]
-best_mods[5]
-best_mods[6]
-best_mods[7]
-best_mods[8]
+best_mods[2] # Same as #1, but drops Depth
+best_mods[3] # Same as #1, but includes Leg Condition
+best_mods[4] # Same as #1, but includes Leg Condition and drops Depth
+best_mods[5] # Same as #1, but drops Latitude
+best_mods[6] # Same as #1, but includes Leg Condition and drops Latitude
+best_mods[7] # Same as #1, but drops Depth and Latitude
+best_mods[8] # Same as #1, but includes Leg Condition and drops Depth + Latitude
 
 # Average models based on AICc
 avg_model <- model.avg(best_mods, beta = "none")
@@ -288,17 +290,198 @@ summary(avg_model)
 ```
 ### More tests 
 ```{r}
-# Linear hypothesis testing
-g1 <- glht(full_model)
-summary(g1)
+#### Test dispersion of each of our eight best models
 
-# Coefficient plots! Still need to do these - don't want to unload rlang() because I'd have to restart R and re-run everything, will do later
-t1 <- broom.mixed::tidy(full_model, conf.int = TRUE)
-t1 <- transform(t1, term=sprintf("%s.%s", component, term))
+# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern.
 
-dw <- dwplot(t1)
 
-print(dw + geom_vline(xintercept=0,lty=2))
+# First model
+simulationOutput <- simulateResiduals(fittedModel = best_mods[1][[1]], plot = F) 
+
+plot(simulationOutput, asFactor = TRUE)
+
+
+testDispersion(best_mods[1][[1]])       # Looks good! P-value = 0.73, residuals look evenish
+
+
+
+```
+
+
+```{r}
+
+
+
+#Evaluate Error Assumptions########################################################
+
+## Testing the assumption of "identically distributed" 
+
+#plot residuals against fitted
+plot(fitted(all_best_mod),residuals(all_best_mod))
+abline(h = 0)
+
+#plot sqrt(abs(residuals)) against fitted
+plot(fitted(lmod), sqrt(abs(residuals(lmod))))
+
+#regress sqrt(abs(error)) on fitted
+summary(lmod.test <- lm(sqrt(abs(residuals(lmod))) ~ fitted(lmod)) )
+
+#use an F-test to test "big" residuals against small residuals to see if they come from the same distribution
+ee <- residuals(lmod)
+g1 <- ee[ee < median(ee)]
+g2 <- ee[ee > median(ee)]
+var.test(g1, g2)
+
+#Another version of this is Levene's Test, which is robust to non-normality
+#in this case, they give you nearly the same result 
+KW$group <- rep(0,nrow(KW))
+KW$group[which(residuals(lmod)>median(residuals(lmod)))] <- 1
+KW$group <- as.factor(KW$group)
+leveneTest(residuals(lmod),KW$group)
+
+#Faraway demonstrates Levene's test as follows in the book - notice the answer is the same as for `leveneTest`
+med <- with(KW,tapply(ee,group,median))
+ar <- with(KW,abs(ee -med[group]))
+anova(lm(ar ~ group,KW))
+
+
+## Testing the assumption of "normally distributed" 
+
+#produce a qqplot 
+qqnorm(residuals(lmod))
+qqline(residuals(lmod))
+
+#it's a good idea to get a sense of what a "good" QQ plot with your n might look like
+eps <- rnorm(nrow(KW),mean=0,sd=sqrt(sigma2))
+qqnorm(eps)
+qqline(eps)
+
+#make a QQ plot of standardized residuals - can be easier to look at 
+qqnorm(rstandard(lmod))
+qqline(rstandard(lmod))
+
+## Testing the assumption of "independently distributed" 
+
+#Here we have temporal data so we might want to plot residual(t+1) against residual(t)
+plot(head(residuals(lmod),n-1),tail(residuals(lmod),n-1),xlab = expression(epsilon(t)),ylab = expression(epsilon(t+1)))
+
+
+#Unusual Observations########################################################
+
+#look for any large leverage points 
+hatv <- hatvalues(lmod)
+sort(hatv)
+(two_p_over_n <- 2*2/n )
+
+#create a half normal plot of leverages
+require(faraway)
+yrs <- KW$years
+halfnorm(hatv,nlab = 3, labs= yrs, ylab="Leverages")
+
+#get studentized residuals 
+studentized <- rstudent(lmod)
+(max.student <- studentized[which.max(abs(studentized))] )
+#this is the quantile that your studentized residual must exceed to be significant at 0.05 (note 2-sided test) 
+#note that this includes a Bonferonni correction (we adjust our p-value)
+qt(0.025/n,n-2-1,lower.tail = FALSE)
+#you can also get this here  
+library(car)
+outlierTest(lmod)
+
+#calculate the cooks.distance for any potentially influential points 
+cook <- cooks.distance(lmod)
+halfnorm(cook,3,labs=row.names(KW),ylab="Cook's distances")
+#exclude point with largest Cook's distance - does it change model fit 
+lmod2 <- lm(prcnt ~ years, KW, subset = (years != 20))
+#plot all - the point with largest Cook's distance didn't make much difference to fit
+plot(KW$years, KW$prcnt)
+abline(lmod)
+abline(lmod2, lty = 2)
+
+
+
+#Generalized Least Squares########################################################
+
+#Because our data are time data, we might want to look for any temporal autocorrelation in errors
+acf(KW$prcnt)
+acf(residuals(lmod))
+
+#eps[t] ~ N(phi*eps[t-1], tau)
+lmod1.gls <- gls(prcnt ~ years,
+              correlation = corAR1(form = ~ years),
+              data = na.omit(KW))
+summary(lmod1.gls)
+#look at the intervals on correlation 
+intervals(lmod1.gls)
+
+
+#Let's also look at the global warming data from Faraway
+data(globwarm, package = "faraway")
+#trim to recent years
+dat <- globwarm[globwarm$year > 1960,]
+
+#Plot data
+plot(dat$nhtemp, dat$wusa, xlab = "Temperature", ylab = "Tree growth", main = "")
+
+#Let's fit a simple regression model where tree growth (`wusa`) is a function of temperature (`nhtemp`).
+model2 <- lm(wusa ~ nhtemp, dat)
+
+res <- residuals(model2)
+
+#Plot fitted against residuals
+plot(fitted(model2), res, xlab = "Fitted values", ylab = "Residuals", main = "")
+abline(h = 0, lty ="dashed")
+plot(res[1:(length(res)-1)], res[2:length(res)], xlab = expression(italic(e[t])), ylab = expression(italic(e)[italic(t)+1]),
+     main = "")
+
+#We can also try the acf plot here 
+acf(ee,ylab = expression(paste("Correlation of ", italic(e[t]), " & ", italic(e[t + h]))),main = "")
+
+#Let's try a generalized least squares fit 
+model3 <- gls(nhtemp ~ wusa,
+             correlation = corAR1(form = ~ year),
+             data = na.omit(globwarm))
+
+#The model here is y[t] = X[t]B + eps[t], eps[t] ~ N(phi*(eps[t-1]),sigma) 
+
+## examine parameters - notice our correlation is pretty high
+summary(model3)
+intervals(model3)
+
+
+
+#Box-Cox Transformations########################################################
+
+#let's see whether the Box-Cox transformation indicates that we should try a transformation
+require(MASS)
+bc <- boxcox(lmod,plotit=TRUE,lambda = seq(-2,3,by = 0.1))
+bc$x[which.max(bc$y)]
+
+#this looks good but we will fit a square root transformation to see how it works 
+summary( lmod.trans <- lm(sqrt(prcnt) ~ years, KW) )
+
+#plot error against fitted
+plot(fitted(lmod.trans),residuals(lmod.trans))
+abline(h = 0)
+
+#predict and plot on the transformed response 
+plot(sqrt(prcnt) ~ years, cex.lab = 1.5, cex.axis = 1.5, ylab = expression(sqrt(Prcnt)), xlab = "Years")
+abline(lmod.trans)
+
+#get a confidence interval 
+out <- predict(lmod.trans, newdata = data.frame(x = years), interval="confidence")
+
+#now plot on the real scale with the confidence interval
+plot(prcnt ~ years, cex.lab = 1.5, cex.axis = 1.5, ylab = "Prcnt", xlab = "Years")
+lines(years,out[,1]^2,col="red")
+lines(years,out[,2]^2,lty = 2,col="red")
+lines(years,out[,3]^2,lty = 2,col="red")
+
+#now the the prediction interval, also on the real scale 
+out2 <- predict(lmod.trans, newdata = data.frame(x = years), interval="prediction")
+lines(years,out2[,1]^2,col="blue")
+lines(years,out2[,2]^2,lty = 2,col="blue")
+lines(years,out2[,3]^2,lty = 2,col="blue")
 ```
 
 
@@ -716,10 +899,11 @@ masc_all_mods <- dredge(masc_full_model, beta = "none",
 
 plot(masc_all_mods)
 
-# Looks like we have four good models (weights > 0.2) and four marginal models (weights between 0.04 and 0.01)
+# Looks like we have 16 total models above 0.01. Of these, two are best (combined weight: 0.39), and an additional 6 are decent (combined weight with the two best: combined weight: 0.83). There are then 9 more models with weights from 0.3 to 0.1
+
 masc_best_mods <- get.models(masc_all_mods, subset = weight > 0.01)
 
-# See what each of the best models look like
+# See what each of the top 8 models look like
 masc_best_mods[1]
 masc_best_mods[2]
 masc_best_mods[3]
@@ -739,7 +923,7 @@ summary(masc_avg_model)
 
 # MODEL W MATURITY
 
-Hey, now that we have mature/immmature status for both males and females, why not do another full model? This time, it'll examine maturity as well - same as the model of all crabs, but only including crabs with maturity status (and, of course, adding maturity status as a variable)
+Hey, now that we have mature/immature status for both males and females, why not do another full model? This time, it'll examine maturity as well - same as the model of all crabs, but only including crabs with maturity status (and, of course, adding maturity status as a variable)
 
 
 This model will include all crabs with maturity measurements

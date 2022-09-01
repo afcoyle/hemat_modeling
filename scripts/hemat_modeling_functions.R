@@ -274,4 +274,25 @@ fix_txt_headers <- function(filepath) {
               row.names = FALSE)
 }
 
+#### sim_dat()---------------------------------------
+
+# This quick function is meant to repeatedly simulate a model and get the number of bitter crab
+
+sim_dat <- function(model, data, num_sims){
+  
+  sim_results <- matrix(nrow = num_sims, ncol = 3)
+  names(sim_results) <- c("Total_Bitter", "pct_change_from_data")
+  num_bitter <- sum(data$Bitter == 1)
+  
+  for (i in 1:num_sims){
+    mod_res <- simulate(model)
+    mod_res <- mod_res$sim_1[,1]
+    sim_results[i, 1] <- i                     # Simulation number
+    sim_results[i, 2] <- sum(mod_res)          # Total number of bitter crab
+    sim_results[i, 3] <- (sum(mod_res) / nrow(data)) - (num_bitter / nrow(data))
+  }
+  colnames(sim_results) <- c("sim_num", "total_bitter", "pct_change_from_data")
+  return(as.data.frame(sim_results))
+}
+
 

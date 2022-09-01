@@ -31,6 +31,10 @@ if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, FUN = function(X) {
   do.call("require", list(X))
 })
+
+# Read in custom functions
+source("hemat_modeling_functions.R")
+
 ```
 
 # Read in data
@@ -498,11 +502,11 @@ fem_crabs <- crab_dat %>%
 
 # Drop chela height column
 fem_crabs <- fem_crabs %>%
-  select(-Chela.Ht)
+  dplyr::select(-Chela.Ht)
 
 # Drop scaled columns - we'll scale them again
 fem_crabs <- fem_crabs %>%
-  select(-contains("s."))
+  dplyr::select(-contains("s."))
 
 # We'll try to move Egg Development and Egg Condition into a single column, a lot of the data is redundant or useless
 
@@ -530,7 +534,7 @@ fem_crabs <- fem_crabs %>%
 
 # Alright, we can remove the Egg Condition column
 fem_crabs <- fem_crabs %>%
-  select(-Egg.Condition)
+  dplyr::select(-Egg.Condition)
 
 # If a crab has an egg percent of zero (and isn't a juvenile or barren), change to NA in egg development (since we don't know if barren or matted)
 fem_crabs <- fem_crabs %>%
@@ -691,18 +695,29 @@ fem_all_mods <- dredge(fem_full_model, beta = "none",
 
 plot(fem_all_mods)
 
-# Looks like we have four good models (weights > 0.2) and four marginal models (weights between 0.04 and 0.01)
+# We have one very good model (weight = 0.30), a good model (weight = 0.18), 
+# five alright models (weights < .10 & > 0.05), and seven meh models (weights < 0.05 & > 0.01)
 fem_best_mods <- get.models(fem_all_mods, subset = weight > 0.01)
 
-# See what each of the best models look like
-fem_best_mods[1]
-fem_best_mods[2]
-fem_best_mods[3]
-fem_best_mods[4]
-fem_best_mods[5]
-fem_best_mods[6]
-fem_best_mods[7]
-fem_best_mods[8]
+summary(fem_best_mods)
+
+# See what each of the models look like. Comments compare it to the best model (1)
+fem_best_mods[1]                               
+fem_best_mods[2] # Adds depth
+# Start of alright models
+fem_best_mods[3] # Drops Black Mat
+fem_best_mods[4] # Drops latitude
+fem_best_mods[5] # Adds depth, drops latitude
+fem_best_mods[6] # Drops leg condition
+fem_best_mods[7] # Adds depth, drops Black Mat
+# Start of meh models
+fem_best_mods[8] # Drops leg condition, adds depth
+fem_best_mods[9] # Drops Black Mat and latitude
+fem_best_mods[10] # Drops Black Mat and latitude, adds depth
+fem_best_mods[11] # Drops Black Mat and leg condition
+fem_best_mods[12] # Drops leg condition and latitude
+fem_best_mods[13] # Drops leg condition and latitude, adds depth
+fem_best_mods[14] # Drops Black Mat and leg condition, adds depth
 
 # Average models based on AICc
 fem_avg_model <- model.avg(fem_best_mods, beta = "none")
@@ -711,6 +726,60 @@ fem_avg_model <- model.avg(fem_best_mods, beta = "none")
 fem_avg_model$coefficients
 summary(fem_avg_model)
 ```
+
+### More tests 
+```{r}
+#### Test dispersion of each of our models
+
+# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
+
+# First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
+
+# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
+
+# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
+
+# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
+
+for (i in 1:length(fem_best_mods)){
+  print(paste("Model", i))
+  simulationOutput <- simulateResiduals(fittedModel = fem_best_mods[i][[1]], plot = TRUE) 
+  plotResiduals(simulationOutput, femcrabs_dat$Bitter, quantreg = TRUE, rank = TRUE, main = paste("Model", i))
+  testDispersion(simulationOutput, alternative = "greater", plot = TRUE)
+  testZeroInflation(simulationOutput)
+}
+
+# Lovely, all models look just fine!
+```
+Quick break just so we can visualize plots easier
+```{r}
+# Create for loop simulating data and plotting results for each model
+for (i in 1:length(fem_best_mods)) {
+  # Simulate data, see how accurate models are. This uses our custom function sim_dat()
+  sim_data <- sim_dat(model = fem_best_mods[i][[1]], data = femcrabs_dat, num_sims = 1000)
+  # Plot simulated data with a red line as the real data
+  plot(sim_data$sim_num, sim_data$total_bitter, main = paste("Model", i)) +
+    abline(h = sum(femcrabs_dat$Bitter == 1), col = "red")
+  # Plot percent change from real data
+  hist(sim_data$pct_change_from_data, main = paste("Histogram of Model", i))
+  # Extract mean percent change from real data
+  print(mean(sim_data$pct_change_from_data))
+  
+  
+}
+```
+Quick break for easier graphing 
+
+```{r}
+# Do we want to use fitted() or predict() too?
+pred_mod <- fitted(fem_best_mods[1][[1]], newdata = femcrabs_dat)
+```
+
+```{r}
+summary(fem_avg_model)
+        
+```
+
 
 # MODEL OF MALE CRABS
 

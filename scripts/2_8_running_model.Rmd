@@ -291,203 +291,60 @@ avg_model <- model.avg(best_mods, beta = "none")
 # See what that average model looks like
 avg_model$coefficients
 summary(avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(best_mods)) {
+  saveRDS(best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/model", i, ".rds"))
+  
+}
 ```
+
+
 ### More tests 
 ```{r}
-#### Test dispersion of each of our eight best models
+#### Test dispersion of each of our models
 
-# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern.
+# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
 
+# First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
 
-# First model
-simulationOutput <- simulateResiduals(fittedModel = best_mods[1][[1]], plot = F) 
+# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
 
-plot(simulationOutput, asFactor = TRUE)
+# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
 
+# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
 
-testDispersion(best_mods[1][[1]])       # Looks good! P-value = 0.73, residuals look evenish
+for (i in 1:length(best_mods)){
+  print(paste("Model", i))
+  simulationOutput <- simulateResiduals(fittedModel = best_mods[i][[1]], plot = TRUE) 
+  plotResiduals(simulationOutput, allcrabs_dat$Bitter, quantreg = TRUE, rank = TRUE, main = paste("Model", i))
+  testDispersion(simulationOutput, alternative = "greater", plot = TRUE)
+  testZeroInflation(simulationOutput)
+}
 
-
-
+# Lovely, all models look just fine!
 ```
 
+Quick break just so we can visualize plots easier
 
 ```{r}
 
+# Create for loop, predicting data and plotting results for each model
+# Predicted should effectively be a line with no outliers, histogram should be one block
 
-
-#Evaluate Error Assumptions########################################################
-
-## Testing the assumption of "identically distributed" 
-
-#plot residuals against fitted
-plot(fitted(all_best_mod),residuals(all_best_mod))
-abline(h = 0)
-
-#plot sqrt(abs(residuals)) against fitted
-plot(fitted(lmod), sqrt(abs(residuals(lmod))))
-
-#regress sqrt(abs(error)) on fitted
-summary(lmod.test <- lm(sqrt(abs(residuals(lmod))) ~ fitted(lmod)) )
-
-#use an F-test to test "big" residuals against small residuals to see if they come from the same distribution
-ee <- residuals(lmod)
-g1 <- ee[ee < median(ee)]
-g2 <- ee[ee > median(ee)]
-var.test(g1, g2)
-
-#Another version of this is Levene's Test, which is robust to non-normality
-#in this case, they give you nearly the same result 
-KW$group <- rep(0,nrow(KW))
-KW$group[which(residuals(lmod)>median(residuals(lmod)))] <- 1
-KW$group <- as.factor(KW$group)
-leveneTest(residuals(lmod),KW$group)
-
-#Faraway demonstrates Levene's test as follows in the book - notice the answer is the same as for `leveneTest`
-med <- with(KW,tapply(ee,group,median))
-ar <- with(KW,abs(ee -med[group]))
-anova(lm(ar ~ group,KW))
-
-
-## Testing the assumption of "normally distributed" 
-
-#produce a qqplot 
-qqnorm(residuals(lmod))
-qqline(residuals(lmod))
-
-#it's a good idea to get a sense of what a "good" QQ plot with your n might look like
-eps <- rnorm(nrow(KW),mean=0,sd=sqrt(sigma2))
-qqnorm(eps)
-qqline(eps)
-
-#make a QQ plot of standardized residuals - can be easier to look at 
-qqnorm(rstandard(lmod))
-qqline(rstandard(lmod))
-
-## Testing the assumption of "independently distributed" 
-
-#Here we have temporal data so we might want to plot residual(t+1) against residual(t)
-plot(head(residuals(lmod),n-1),tail(residuals(lmod),n-1),xlab = expression(epsilon(t)),ylab = expression(epsilon(t+1)))
-
-
-#Unusual Observations########################################################
-
-#look for any large leverage points 
-hatv <- hatvalues(lmod)
-sort(hatv)
-(two_p_over_n <- 2*2/n )
-
-#create a half normal plot of leverages
-require(faraway)
-yrs <- KW$years
-halfnorm(hatv,nlab = 3, labs= yrs, ylab="Leverages")
-
-#get studentized residuals 
-studentized <- rstudent(lmod)
-(max.student <- studentized[which.max(abs(studentized))] )
-#this is the quantile that your studentized residual must exceed to be significant at 0.05 (note 2-sided test) 
-#note that this includes a Bonferonni correction (we adjust our p-value)
-qt(0.025/n,n-2-1,lower.tail = FALSE)
-#you can also get this here  
-library(car)
-outlierTest(lmod)
-
-#calculate the cooks.distance for any potentially influential points 
-cook <- cooks.distance(lmod)
-halfnorm(cook,3,labs=row.names(KW),ylab="Cook's distances")
-#exclude point with largest Cook's distance - does it change model fit 
-lmod2 <- lm(prcnt ~ years, KW, subset = (years != 20))
-#plot all - the point with largest Cook's distance didn't make much difference to fit
-plot(KW$years, KW$prcnt)
-abline(lmod)
-abline(lmod2, lty = 2)
-
-
-
-#Generalized Least Squares########################################################
-
-#Because our data are time data, we might want to look for any temporal autocorrelation in errors
-acf(KW$prcnt)
-acf(residuals(lmod))
-
-#eps[t] ~ N(phi*eps[t-1], tau)
-lmod1.gls <- gls(prcnt ~ years,
-              correlation = corAR1(form = ~ years),
-              data = na.omit(KW))
-summary(lmod1.gls)
-#look at the intervals on correlation 
-intervals(lmod1.gls)
-
-
-#Let's also look at the global warming data from Faraway
-data(globwarm, package = "faraway")
-#trim to recent years
-dat <- globwarm[globwarm$year > 1960,]
-
-#Plot data
-plot(dat$nhtemp, dat$wusa, xlab = "Temperature", ylab = "Tree growth", main = "")
-
-#Let's fit a simple regression model where tree growth (`wusa`) is a function of temperature (`nhtemp`).
-model2 <- lm(wusa ~ nhtemp, dat)
-
-res <- residuals(model2)
-
-#Plot fitted against residuals
-plot(fitted(model2), res, xlab = "Fitted values", ylab = "Residuals", main = "")
-abline(h = 0, lty ="dashed")
-plot(res[1:(length(res)-1)], res[2:length(res)], xlab = expression(italic(e[t])), ylab = expression(italic(e)[italic(t)+1]),
-     main = "")
-
-#We can also try the acf plot here 
-acf(ee,ylab = expression(paste("Correlation of ", italic(e[t]), " & ", italic(e[t + h]))),main = "")
-
-#Let's try a generalized least squares fit 
-model3 <- gls(nhtemp ~ wusa,
-             correlation = corAR1(form = ~ year),
-             data = na.omit(globwarm))
-
-#The model here is y[t] = X[t]B + eps[t], eps[t] ~ N(phi*(eps[t-1]),sigma) 
-
-## examine parameters - notice our correlation is pretty high
-summary(model3)
-intervals(model3)
-
-
-
-#Box-Cox Transformations########################################################
-
-#let's see whether the Box-Cox transformation indicates that we should try a transformation
-require(MASS)
-bc <- boxcox(lmod,plotit=TRUE,lambda = seq(-2,3,by = 0.1))
-bc$x[which.max(bc$y)]
-
-#this looks good but we will fit a square root transformation to see how it works 
-summary( lmod.trans <- lm(sqrt(prcnt) ~ years, KW) )
-
-#plot error against fitted
-plot(fitted(lmod.trans),residuals(lmod.trans))
-abline(h = 0)
-
-#predict and plot on the transformed response 
-plot(sqrt(prcnt) ~ years, cex.lab = 1.5, cex.axis = 1.5, ylab = expression(sqrt(Prcnt)), xlab = "Years")
-abline(lmod.trans)
-
-#get a confidence interval 
-out <- predict(lmod.trans, newdata = data.frame(x = years), interval="confidence")
-
-#now plot on the real scale with the confidence interval
-plot(prcnt ~ years, cex.lab = 1.5, cex.axis = 1.5, ylab = "Prcnt", xlab = "Years")
-lines(years,out[,1]^2,col="red")
-lines(years,out[,2]^2,lty = 2,col="red")
-lines(years,out[,3]^2,lty = 2,col="red")
-
-#now the the prediction interval, also on the real scale 
-out2 <- predict(lmod.trans, newdata = data.frame(x = years), interval="prediction")
-lines(years,out2[,1]^2,col="blue")
-lines(years,out2[,2]^2,lty = 2,col="blue")
-lines(years,out2[,3]^2,lty = 2,col="blue")
+for (i in 1:length(best_mods)) {
+  # Simulate data, see how accurate models are. This uses our custom function pred_dat()
+  pred_data <- pred_dat(model = best_mods[i][[1]], data = allcrabs_dat, num_sims = 500)
+  # Plot simulated data with a red line as the real data
+  plot(pred_data$sim_num, pred_data$total_bitter, main = paste("Model", i)) +
+    abline(h = sum(allcrabs_dat$Bitter == 1), col = "red")
+  # Plot percent change from real data
+  hist(pred_data$pct_change_from_data, main = paste("Histogram of Model", i))
+  # Print total mean difference from data
+  print(paste("Mean difference for Model", i, "is", mean(pred_data$total_bitter) - sum(allcrabs_dat$Bitter == 1)))
+}
 ```
-
 
 # MODEL OF FEMALE CRABS
 
@@ -725,6 +582,13 @@ fem_avg_model <- model.avg(fem_best_mods, beta = "none")
 # See what that average model looks like
 fem_avg_model$coefficients
 summary(fem_avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(fem_best_mods)) {
+  saveRDS(fem_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/model", i, ".rds"))
+  
+}
 ```
 
 ### More tests 
@@ -752,33 +616,23 @@ for (i in 1:length(fem_best_mods)){
 # Lovely, all models look just fine!
 ```
 Quick break just so we can visualize plots easier
+
 ```{r}
-# Create for loop simulating data and plotting results for each model
+
+# Create for loop, predicting data and plotting results for each model
+# Predicted should effectively be a line with no outliers, histogram should be one block
+
 for (i in 1:length(fem_best_mods)) {
-  # Simulate data, see how accurate models are. This uses our custom function sim_dat()
-  sim_data <- sim_dat(model = fem_best_mods[i][[1]], data = femcrabs_dat, num_sims = 1000)
+  # Simulate data, see how accurate models are. This uses our custom function pred_dat()
+  pred_data <- pred_dat(model = fem_best_mods[i][[1]], data = femcrabs_dat, num_sims = 500)
   # Plot simulated data with a red line as the real data
-  plot(sim_data$sim_num, sim_data$total_bitter, main = paste("Model", i)) +
+  plot(pred_data$sim_num, pred_data$total_bitter, main = paste("Model", i)) +
     abline(h = sum(femcrabs_dat$Bitter == 1), col = "red")
   # Plot percent change from real data
-  hist(sim_data$pct_change_from_data, main = paste("Histogram of Model", i))
-  # Extract mean percent change from real data
-  print(mean(sim_data$pct_change_from_data))
+  hist(pred_data$pct_change_from_data, main = paste("Histogram of Model", i))
   # Print total mean difference from data
-  print(mean(sim_data$total_bitter) - sum(crab_dat$Bitter == 1))
-  
+  print(paste("Mean difference for Model", i, "is", mean(pred_data$total_bitter) - sum(femcrabs_dat$Bitter == 1)))
 }
-```
-Quick break for easier graphing 
-
-```{r}
-# Do we want to use fitted() or predict() too?
-pred_mod <- fitted(fem_best_mods[1][[1]], newdata = femcrabs_dat)
-```
-
-```{r}
-summary(fem_avg_model)
-        
 ```
 
 
@@ -1000,6 +854,13 @@ masc_avg_model <- model.avg(masc_best_mods, beta = "none")
 # See what that average model looks like
 masc_avg_model$coefficients
 summary(masc_avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(masc_best_mods)) {
+  saveRDS(masc_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/model", i, ".rds"))
+  
+}
 ```
 ### More tests 
 ```{r}
@@ -1027,28 +888,23 @@ for (i in 1:length(masc_best_mods)){
 ```
 
 Quick break just so we can visualize plots easier
-```{r}
-# Create for loop simulating data and plotting results for each model
-for (i in 1:length(masc_best_mods)) {
-  # Simulate data, see how accurate models are. This uses our custom function sim_dat()
-  sim_data <- sim_dat(model = masc_best_mods[i][[1]], data = masccrabs_dat, num_sims = 1000)
-  # Plot simulated data with a red line as the real data
-  plot(sim_data$sim_num, sim_data$total_bitter, main = paste("Model", i)) +
-    abline(h = sum(masccrabs_dat$Bitter == 1), col = "red")
-  # Plot percent change from real data
-  hist(sim_data$pct_change_from_data, main = paste("Histogram of Model", i))
-  # Extract mean percent change from real data
-  print(mean(sim_data$pct_change_from_data))
-  # Print total mean difference from data
-  print(mean(sim_data$total_bitter) - sum(crab_dat$Bitter == 1))
-  
-}
-```
-Quick break for easier graphing 
 
 ```{r}
-# Do we want to use fitted() or predict() too?
-pred_mod <- fitted(masc_best_mods[1][[1]], newdata = masccrabs_dat)
+
+# Create for loop, predicting data and plotting results for each model
+# Predicted should effectively be a line with no outliers, histogram should be one block
+
+for (i in 1:length(masc_best_mods)) {
+  # Simulate data, see how accurate models are. This uses our custom function pred_dat()
+  pred_data <- pred_dat(model = masc_best_mods[i][[1]], data = masccrabs_dat, num_sims = 500)
+  # Plot simulated data with a red line as the real data
+  plot(pred_data$sim_num, pred_data$total_bitter, main = paste("Model", i)) +
+    abline(h = sum(masccrabs_dat$Bitter == 1), col = "red")
+  # Plot percent change from real data
+  hist(pred_data$pct_change_from_data, main = paste("Histogram of Model", i))
+  # Print total mean difference from data
+  print(paste("Mean difference for Model", i, "is", mean(pred_data$total_bitter) - sum(masccrabs_dat$Bitter == 1)))
+}
 ```
 
 # MODEL W MATURITY
@@ -1218,18 +1074,26 @@ mat_all_mods <- dredge(mat_full_model, beta = "none",
 
 plot(mat_all_mods)
 
-# Looks like we have four good models (weights > 0.2) and four marginal models (weights between 0.04 and 0.01)
+# Looks like we have two good models (weights ~ 0.2), four meh models (weights > 0.05 & < 0.15) and eight marginal models (weights between 0.04 and 0.01). Easier to see this in summary(mat_avg_model) below. 
 mat_best_mods <- get.models(mat_all_mods, subset = weight > 0.01)
 
 # See what each of the best models look like
+# Comments compare each to the best model (mat_best_mods[1])
 mat_best_mods[1]
-mat_best_mods[2]
-mat_best_mods[3]
-mat_best_mods[4]
-mat_best_mods[5]
-mat_best_mods[6]
-mat_best_mods[7]
-mat_best_mods[8]
+mat_best_mods[2] # Adds Depth
+mat_best_mods[3] # Drops Black Mat
+mat_best_mods[4] # Adds Depth, drops Black Mat
+mat_best_mods[5] # Drops Leg Condition
+mat_best_mods[6] # Adds Depth, drops Leg Condition
+mat_best_mods[7] # Drops Black Mat and Leg Condition
+mat_best_mods[8] # Adds Depth, drops Black Mat and Leg Condition
+mat_best_mods[9] # Drops Julian day
+mat_best_mods[10] # Drops Black Mat and Julian day
+mat_best_mods[11] # Adds Depth, drops Latitude
+mat_best_mods[12] # Drops Latitude
+mat_best_mods[13] # Drops Leg Condition and Julian day
+mat_best_mods[14] # Adds Depth, drops Julian day
+
 
 # Average models based on AICc
 mat_avg_model <- model.avg(mat_best_mods, beta = "none")
@@ -1237,4 +1101,57 @@ mat_avg_model <- model.avg(mat_best_mods, beta = "none")
 # See what that average model looks like
 mat_avg_model$coefficients
 summary(mat_avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(mat_best_mods)) {
+  saveRDS(mat_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/model", i, ".rds"))
+  
+}
 ```
+
+### More tests 
+```{r}
+#### Test dispersion of each of our models
+
+# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
+
+# First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
+
+# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
+
+# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
+
+# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
+
+for (i in 1:length(mat_best_mods)){
+  print(paste("Model", i))
+  simulationOutput <- simulateResiduals(fittedModel = mat_best_mods[i][[1]], plot = TRUE) 
+  plotResiduals(simulationOutput, matcrabs_dat$Bitter, quantreg = TRUE, rank = TRUE, main = paste("Model", i))
+  testDispersion(simulationOutput, alternative = "greater", plot = TRUE)
+  testZeroInflation(simulationOutput)
+}
+
+# Lovely, all models look just fine!
+```
+
+Quick break just so we can visualize plots easier
+
+```{r}
+
+# Create for loop, predicting data and plotting results for each model
+# Predicted should effectively be a line with no outliers, histogram should be one block
+
+for (i in 1:length(mat_best_mods)) {
+  # Simulate data, see how accurate models are. This uses our custom function pred_dat()
+  pred_data <- pred_dat(model = mat_best_mods[i][[1]], data = matcrabs_dat, num_sims = 500)
+  # Plot simulated data with a red line as the real data
+  plot(pred_data$sim_num, pred_data$total_bitter, main = paste("Model", i)) +
+    abline(h = sum(matcrabs_dat$Bitter == 1), col = "red")
+  # Plot percent change from real data
+  hist(pred_data$pct_change_from_data, main = paste("Histogram of Model", i))
+  # Print total mean difference from data
+  print(paste("Mean difference for Model", i, "is", mean(pred_data$total_bitter) - sum(matcrabs_dat$Bitter == 1)))
+}
+```
+

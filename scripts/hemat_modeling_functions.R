@@ -53,7 +53,7 @@ read_tidbit_data  <- function(data_path) {
       # Split DateTime column
       suppressWarnings(
         new_tidbit <- new_tidbit %>%
-        separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
+          separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
       )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
@@ -72,7 +72,7 @@ read_tidbit_data  <- function(data_path) {
       # Split DateTime column
       suppressWarnings(
         new_tidbit <- new_tidbit %>%
-        separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
+          separate(DateTime, into = c("Date", "Time"), sep = " ", extra = "merge")
       )
       # Drop rows with NAs
       new_tidbit <- na.omit(new_tidbit)
@@ -188,7 +188,7 @@ read_tidbit_data  <- function(data_path) {
 #### fix_long_csvs() ---------------------------------
 
 fix_long_csvs <- function(filepath) {
-
+  
   issue <- read.csv(filepath)
   
   # Drop the unneeded column of Fahrenheit values
@@ -212,7 +212,7 @@ fix_long_csvs <- function(filepath) {
 # where format is column 1 = date, column 2 = time,temp
 
 fix_timetemp_comma <- function(filepath) {
-
+  
   issue <- read.delim(file = filepath)
   
   # Split the time/temp column apart using the comma
@@ -244,7 +244,7 @@ fix_longhead_txt <- function(filepath) {
   # Split the DateTime column
   suppressWarnings(
     issue <- issue %>%
-    separate(DateTime, into = c("Date", "Time"), sep = " ")
+      separate(DateTime, into = c("Date", "Time"), sep = " ")
   )
   
   # Write out file
@@ -281,7 +281,7 @@ fix_txt_headers <- function(filepath) {
 sim_dat <- function(model, data, num_sims){
   
   sim_results <- matrix(nrow = num_sims, ncol = 3)
-  names(sim_results) <- c("Total_Bitter", "pct_change_from_data")
+  names(sim_results) <- c("sim_num", "Total_Bitter", "pct_change_from_data")
   num_bitter <- sum(data$Bitter == 1)
   
   for (i in 1:num_sims){
@@ -294,5 +294,50 @@ sim_dat <- function(model, data, num_sims){
   colnames(sim_results) <- c("sim_num", "total_bitter", "pct_change_from_data")
   return(as.data.frame(sim_results))
 }
+
+
+#### pred_dat()
+# This function is meant to repeatedly predict model output from the variables included
+# and get the number of bitter crab. Uses
+
+# model: A specific model you want to simulate
+# data: the data with which that model was simulated (or new data that you want to test model accuracy on)
+# num_sims: the number of simulations you want to run
+
+pred_dat <- function(model, data, num_sims){
+  
+  # Set up empty matrix
+  pred_results <- matrix(nrow = num_sims, ncol = 3)
+  # Extract number of bitter crab in the actual data
+  num_bitter <- sum(data$Bitter == 1)
+  
+  #### See what variables are in the model, pull into vector
+  mod_vars <- as.character(model$call)[2]
+  # Remove the Bitter part and random effects, since they'll be in all
+  mod_vars <- str_split(mod_vars, pattern = fixed(" ~ "))[[1]][2]
+  mod_vars <- str_split(mod_vars, pattern = fixed("+ (1 | Site) + (1 | s.Year)"))[[1]][1]
+  # Split by the plus sign, remove spaces
+  mod_vars <- str_split(mod_vars, pattern = fixed("+"))[[1]]
+  mod_vars <- str_remove_all(mod_vars, pattern = " ")
+  # Print variables in the model
+  print(paste("Model", i, "variables are:"))
+  print(mod_vars)
+  
+  # Choose all variables in model, put in new dataframe
+  mod_vars <- names(data)[names(data) %in% mod_vars]
+  mod_dat <- data %>%
+    dplyr::select(c(Bitter, mod_vars, Site, s.Year))
+  
+  # Each run of this for loop is a different simulation
+  for (i in 1:num_sims){
+    mod_dat$Pred <- predict(model, new.data = mod_dat, type = "response")
+    pred_results[i, 1] <- i                              # simulation number
+    pred_results[i, 2] <- sum(mod_dat$Pred)              # Number of bitter crab in simulation
+    pred_results[i, 3] <- sum(mod_dat$Pred) - num_bitter # Difference between simulated and true number of bitter crabs
+  }
+  colnames(pred_results) <- c("sim_num", "total_bitter", "pct_change_from_data")
+  return(as.data.frame(pred_results))
+}
+
 
 

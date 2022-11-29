@@ -643,13 +643,13 @@ saveRDS(fem_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_
 
 # Read in best models individually
 
-#### Get vector of relevant files
+### Get vector of relevant files
 #fem_best_mod_files <- list.files(model_filepath)
-#### Remove average model from vector
+### Remove average model from vector
 #fem_best_mod_files <- fem_best_mod_files[grep("^model", fem_best_mod_files)]
-#### Create blank list
+### Create blank list
 #fem_best_mods <- list()
-##### Read in files
+#### Read in files
 #for (i in 1:length(fem_best_mod_files)) {
 #  fem_best_mods[i] <- readRDS(file = paste0(model_filepath, fem_best_mod_files[i]))
 #}
@@ -910,8 +910,6 @@ masc_best_mods[14] # Adds Black Mat and Latitude, drops Julian day
 masc_best_mods[15] # Adds Black Mat, Depth, and Latitude
 masc_best_mods[16] # Adds Black Mat, Depth, and Latitude, drops Julian day
 
-
-
 # Average models based on AICc
 masc_avg_model <- model.avg(masc_best_mods, beta = "none")
 
@@ -924,7 +922,6 @@ summary(masc_avg_model)
 for (i in 1:length(masc_best_mods)) {
   saveRDS(masc_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/model", i, ".rds"))
 }
-
 
 # Also save the average model
 saveRDS(masc_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/avg_model.rds")
@@ -945,7 +942,7 @@ saveRDS(masc_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted
 #masc_best_mod_files <- masc_best_mod_files[grep("^model", masc_best_mod_files)]
 #### Create blank list
 #masc_best_mods <- list()
-##### Read in files
+#### Read in files
 #for (i in 1:length(masc_best_mod_files)) {
 #  masc_best_mods[i] <- readRDS(file = paste0(model_filepath, masc_best_mod_files[i]))
 #}
@@ -1183,7 +1180,6 @@ mat_best_mods[12] # Drops Latitude
 mat_best_mods[13] # Drops Leg Condition and Julian day
 mat_best_mods[14] # Adds Depth, drops Julian day
 
-
 # Average models based on AICc
 mat_avg_model <- model.avg(mat_best_mods, beta = "none")
 
@@ -1202,24 +1198,24 @@ saveRDS(mat_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_
 
 # Un-comment the below code to re-read model files back in when R crashes
 
-#### Set model filepath
-#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/"
+### Set model filepath
+model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/"
 
-##### Read in average model
-#mat_avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+#### Read in average model
+mat_avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
 
 # Read in best models individually
 
-#### Get vector of relevant files
-#mat_best_mod_files <- list.files(model_filepath)
-#### Remove average model from vector
-#mat_best_mod_files <- mat_best_mod_files[grep("^model", mat_best_mod_files)]
-#### Create blank list
-#mat_best_mods <- list()
-##### Read in files
-#for (i in 1:length(mat_best_mod_files)) {
-#  mat_best_mods[i] <- readRDS(file = paste0(model_filepath, mat_best_mod_files[i]))
-#}
+### Get vector of relevant files
+mat_best_mod_files <- list.files(model_filepath)
+### Remove average model from vector
+mat_best_mod_files <- mat_best_mod_files[grep("^model", mat_best_mod_files)]
+### Create blank list
+mat_best_mods <- list()
+#### Read in files
+for (i in 1:length(mat_best_mod_files)) {
+  mat_best_mods[i] <- readRDS(file = paste0(model_filepath, mat_best_mod_files[i]))
+}
 ```
 
 ### More tests 

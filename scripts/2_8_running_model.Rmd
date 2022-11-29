@@ -34,7 +34,6 @@ lapply(list.of.packages, FUN = function(X) {
 
 # Read in custom functions
 source("hemat_modeling_functions.R")
-
 ```
 
 # Read in data
@@ -258,6 +257,25 @@ plot(predictorEffect("s.Jul.Day", full_model))
 plot(predictorEffect("Sex", full_model))
 plot(predictorEffect("s.Latitude", full_model))
 plot(predictorEffect("s.Depth", full_model))
+
+# Get influence measures of each datapoint.
+# Sadly, the only way to do this with glmmTMB is bruteforce it
+# That means refitting the model with each element removed using glmmTMB::influence_mixed()
+# May prove to be too long to be feasible, let's test!
+
+# Update: yep, it's too long, Did the calculations, it took us 
+# about 12 hours to run dredge(), which analyzed 512 possible models
+# This would be 150,000 possible models, which would be almost 150 days
+
+# Check significance of random effects using bootstrapped LRT
+
+full_model.onlySite <- glmmTMB(Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + s.Jul.Day + Sex + s.Latitude + s.Depth + (1 | Site),
+                       data = allcrabs_dat,
+                       family = binomial,
+                       na.action = "na.fail")
+
+  
+
 ```
 ### Dredging
 
@@ -291,6 +309,36 @@ avg_model <- model.avg(best_mods, beta = "none")
 # See what that average model looks like
 avg_model$coefficients
 summary(avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(best_mods)) {
+  saveRDS(best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/model", i, ".rds"))
+}
+
+# Also save the average model
+saveRDS(avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/avg_model.rds")
+
+# Un-comment the below code to re-read model files back in when R crashes
+
+#### Set model filepath
+#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/"
+
+##### Read in average model
+#avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Read in best models individually
+
+#### Get vector of relevant files
+#best_mod_files <- list.files(model_filepath)
+#### Remove average model from vector
+#best_mod_files <- best_mod_files[grep("^model", best_mod_files)]
+#### Create blank list
+#best_mods <- list()
+##### Read in files
+#for (i in 1:length(best_mod_files)) {
+#  best_mods[i] <- readRDS(file = paste0(model_filepath, best_mod_files[i]))
+#}
 
 # Save each of the best models! This lets us reload them in case R crashes
 # This saves a LOT of time - dredge() takes forever to run!
@@ -587,8 +635,31 @@ summary(fem_avg_model)
 # This saves a LOT of time - dredge() takes forever to run!
 for (i in 1:length(fem_best_mods)) {
   saveRDS(fem_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/model", i, ".rds"))
-  
 }
+
+# Also save the average model
+saveRDS(fem_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/avg_model.rds")
+
+# Un-comment the below code to re-read model files back in when R crashes
+
+#### Set model filepath
+#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/"
+
+##### Read in average model
+#fem_avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Read in best models individually
+
+#### Get vector of relevant files
+#fem_best_mod_files <- list.files(model_filepath)
+#### Remove average model from vector
+#fem_best_mod_files <- fem_best_mod_files[grep("^model", fem_best_mod_files)]
+#### Create blank list
+#fem_best_mods <- list()
+##### Read in files
+#for (i in 1:length(fem_best_mod_files)) {
+#  fem_best_mods[i] <- readRDS(file = paste0(model_filepath, fem_best_mod_files[i]))
+#}
 ```
 
 ### More tests 
@@ -859,8 +930,32 @@ summary(masc_avg_model)
 # This saves a LOT of time - dredge() takes forever to run!
 for (i in 1:length(masc_best_mods)) {
   saveRDS(masc_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/model", i, ".rds"))
-  
 }
+
+
+# Also save the average model
+saveRDS(masc_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/avg_model.rds")
+
+# Un-comment the below code to re-read model files back in when R crashes
+
+#### Set model filepath
+#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/"
+
+##### Read in average model
+#masc_avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Read in best models individually
+
+#### Get vector of relevant files
+#masc_best_mod_files <- list.files(model_filepath)
+#### Remove average model from vector
+#masc_best_mod_files <- masc_best_mod_files[grep("^model", masc_best_mod_files)]
+#### Create blank list
+#masc_best_mods <- list()
+##### Read in files
+#for (i in 1:length(masc_best_mod_files)) {
+#  masc_best_mods[i] <- readRDS(file = paste0(model_filepath, masc_best_mod_files[i]))
+#}
 ```
 ### More tests 
 ```{r}
@@ -869,6 +964,12 @@ for (i in 1:length(masc_best_mods)) {
 # Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
 
 # First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
+
+# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
+
+# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
+
+# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
 
 # Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
 
@@ -1061,6 +1162,7 @@ plot(predictorEffect("Blackmat", mat_full_model))
 plot(predictorEffect("Leg.Condition", mat_full_model))
 plot(predictorEffect("s.Latitude", mat_full_model))
 plot(predictorEffect("s.Depth", mat_full_model))
+plot(predictorEffect("Sex", mat_full_model))
 ```
 
 ### Dredging
@@ -1106,8 +1208,31 @@ summary(mat_avg_model)
 # This saves a LOT of time - dredge() takes forever to run!
 for (i in 1:length(mat_best_mods)) {
   saveRDS(mat_best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/model", i, ".rds"))
-  
 }
+
+# Also save the average model
+saveRDS(mat_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/avg_model.rds")
+
+# Un-comment the below code to re-read model files back in when R crashes
+
+#### Set model filepath
+#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/mature_crabs/"
+
+##### Read in average model
+#mat_avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Read in best models individually
+
+#### Get vector of relevant files
+#mat_best_mod_files <- list.files(model_filepath)
+#### Remove average model from vector
+#mat_best_mod_files <- mat_best_mod_files[grep("^model", mat_best_mod_files)]
+#### Create blank list
+#mat_best_mods <- list()
+##### Read in files
+#for (i in 1:length(mat_best_mod_files)) {
+#  mat_best_mods[i] <- readRDS(file = paste0(model_filepath, mat_best_mod_files[i]))
+#}
 ```
 
 ### More tests 

@@ -339,13 +339,6 @@ saveRDS(avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_mode
 #for (i in 1:length(best_mod_files)) {
 #  best_mods[i] <- readRDS(file = paste0(model_filepath, best_mod_files[i]))
 #}
-
-# Save each of the best models! This lets us reload them in case R crashes
-# This saves a LOT of time - dredge() takes forever to run!
-for (i in 1:length(best_mods)) {
-  saveRDS(best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/model", i, ".rds"))
-  
-}
 ```
 
 
@@ -964,12 +957,6 @@ saveRDS(masc_avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted
 # Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
 
 # First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
-
-# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
-
-# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
-
-# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
 
 # Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
 

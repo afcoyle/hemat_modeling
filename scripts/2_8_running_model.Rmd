@@ -341,6 +341,53 @@ saveRDS(avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_mode
 #}
 ```
 
+### Get a summary of full model
+```{r}
+# Set up path to put plots
+plot_path <- "../output/ADFG_SE_AK_pot_surveys/model_results/full_models/all_crabs/images/"
+
+# Get coefficients
+summary(avg_model)
+
+# Plot coefficients, and save file
+png(filename = paste0(plot_path, "coefficients.png"))
+plot(avg_model)
+dev.off()
+
+# Plot predictor effects
+plot(predictorEffect("Shell.Condition", avg_model))
+
+
+# First, get the names of our variables
+test <- summary(avg_model)
+var_names <- colnames(test$coefficients)
+attr(var_names, "order") <- NULL
+var_names <- 
+
+
+
+
+png(filename="your/file/location/name.png")
+plot(fit)
+dev.off()
+
+# Plot predictor effects
+
+plot(effect("s.Temp", avg_model))
+
+plot(predictorEffect("Shell.Condition", best_mods[1]))
+plot(predictorEffect("s.Temp", full_model))
+plot(predictorEffect("s.CW", full_model))
+plot(predictorEffect("Blackmat", full_model))
+plot(predictorEffect("Leg.Condition", full_model))
+plot(predictorEffect("s.Jul.Day", full_model))
+plot(predictorEffect("Sex", full_model))
+plot(predictorEffect("s.Latitude", full_model))
+plot(predictorEffect("s.Depth", full_model))
+
+```
+
+
 
 ### More tests 
 ```{r}

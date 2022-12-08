@@ -159,6 +159,51 @@ crab_dat_m$s.CW <- scale(crab_dat_m$CW)
 crab_dat <- rbind(crab_dat_f, crab_dat_m)
 ```
 
+#### TRASHY LIL TEST MODEL
+
+This is purely to look at the effects of temperature in combination with site and year
+
+
+```{r}
+
+# Check that temperature scaled correctly
+bitter <- crab_dat
+bitter$Bitter <- as.numeric(bitter$Bitter)
+bitter$Temp <- round(bitter$Temp, digits = 1)
+bitter$s.Temp <- scale(bitter$Temp)
+table(bitter$s.Temp)
+table(bitter$Temp)
+
+
+bitter <- bitter %>%
+  group_by(s.Temp) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_point(aes(x = s.Temp, y = bitter_avg))
+
+# Yep, it scaled correctly!
+
+# Alright, let's build a model with just temperature and site
+
+trash_model <- glmmTMB(Bitter ~ Temp + (1 | Site) + (1 | s.Year),
+                       data = crab_dat,
+                       family = binomial,
+                       na.action = "na.fail")
+
+summary(trash_model)
+
+plot(predictorEffect("Temp", trash_model))
+
+# Okay, let's figure out what the heck is going on with temperature and our random effects!
+
+
+
+
+```
+
+
 # MODEL OF ALL CRABS
 
 This model will include ALL crabs, both male and female. Therefore, it will not include sex-specific measurements, such as chela height and egg-related measurements
@@ -304,7 +349,7 @@ best_mods[7] # Same as #1, but drops Depth and Latitude
 best_mods[8] # Same as #1, but includes Leg Condition and drops Depth + Latitude
 
 # Average models based on AICc
-avg_model <- model.avg(best_mods, beta = "none")
+avg_model_test <- model.avg(best_mods, beta = "none")
 
 # See what that average model looks like
 avg_model$coefficients
@@ -355,7 +400,7 @@ plot(avg_model)
 dev.off()
 
 # Plot predictor effects
-plot(predictorEffect("Shell.Condition", avg_model))
+plot(allEffects("Shell.Condition", test))
 
 
 # First, get the names of our variables
@@ -373,7 +418,7 @@ dev.off()
 
 # Plot predictor effects
 
-plot(effect("s.Temp", avg_model))
+plot(predictorEffect("s.Temp", avg_model))
 
 plot(predictorEffect("Shell.Condition", best_mods[1]))
 plot(predictorEffect("s.Temp", full_model))

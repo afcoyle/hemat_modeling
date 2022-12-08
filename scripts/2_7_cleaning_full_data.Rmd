@@ -386,6 +386,83 @@ write.csv(crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_d
 beep(8)
 ```
 
+
+Let's also make a quick preliminary graph looking at the effects of temperature and its impact on bitterness
+
+```{r}
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 1)
+table(bitter$Temp)
+
+
+bitter <- bitter %>%
+  group_by(Temp) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_point(aes(x = Temp, y = bitter_avg))
+
+# Okay, looks like there's an overall negative relationship between temperature and bitterness. That's really weird because in my final model, there's a positive relationship. I also created a model with just temperature + random effects, and there was still a positive relationship. So let's check those random effects to see if there's some confounding issue there!
+
+# Site 
+
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 0)
+table(bitter$Temp)
+
+bitter <- bitter %>%
+  group_by(Temp, Site) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_jitter(aes(x = Temp, y = bitter_avg, col = Site)) +
+  geom_smooth(aes(x = Temp, y = bitter_avg, col = Site), method = lm, se = FALSE)
+
+# Year
+
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 0)
+bitter$Year <- as.factor(bitter$Year)
+
+bitter <- bitter %>%
+  group_by(Temp, Year) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_jitter(aes(x = Temp, y = bitter_avg, col = Year)) +
+  geom_smooth(aes(x = Temp, y = bitter_avg, col = Year), method = lm, se = FALSE)
+
+# Alright, looks like site is the issue! Let's look at the rates of bitterness by site
+
+bitter <- crab_dat
+
+bitter <- bitter %>%
+  group_by(Site) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_bar(aes(x = Site, y = bitter_avg), stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# And just to check, rates of bitterness by year
+
+bitter <- crab_dat
+
+bitter <- bitter %>%
+  group_by(Year) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_bar(aes(x = Year, y = bitter_avg), stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
 [Trash]
 
 Miscellaneous quick functions meant to examine survey design

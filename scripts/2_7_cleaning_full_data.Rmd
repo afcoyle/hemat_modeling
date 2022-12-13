@@ -460,6 +460,41 @@ bitter <- bitter %>%
 ggplot(bitter) +
   geom_bar(aes(x = Year, y = bitter_avg), stat = "identity") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# Alright, so we seem to have a situation where within each site, warmer waters = more infected crab. However, warmer sites tend to have lower rates of infection in the first place. Weird! Let's confirm that by making some site-specific graphs of infection rates
+
+# Copy over data, rounding temp to nearest 0.1 degree
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 1)
+
+# Create filepath to save graphs
+temp_graphs <- "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/"
+
+# Create a vector of all sites
+sites <- unique(bitter$Site)
+
+# Start our for loop. Each time we will filter data to only include data from one site, summarize, and graph
+for (i in 1:length(sites)) {
+  site_dat <- bitter %>%
+    dplyr::filter(Site == sites[i])
+  
+  site_avgs <- site_dat %>%
+    group_by(Temp) %>%
+    summarize(bitter_avg = mean(Bitter),
+              n_crabs = n())
+  
+  ggplot(site_avgs) +
+    geom_point(aes(x = Temp, y = bitter_avg, size = n_crabs)) +
+    geom_smooth(aes(x = Temp, y = bitter_avg, weight = n_crabs), method = lm, se = FALSE) +
+    labs(title = sites[i]) +
+    xlim(3, 9.5) +
+    ylim(0, 1)
+  
+  ggsave(filename = paste0(temp_graphs, sites[i], ".png"), plot = last_plot(), device = png())
+  dev.off()
+}
+
+
 ```
 
 

@@ -386,6 +386,7 @@ write.csv(crab_dat, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_d
 beep(8)
 ```
 
+# Understanding Temperature-Bitterness Relationship
 
 Let's also make a quick preliminary graph looking at the effects of temperature and its impact on bitterness
 
@@ -460,15 +461,21 @@ bitter <- bitter %>%
 ggplot(bitter) +
   geom_bar(aes(x = Year, y = bitter_avg), stat = "identity") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
 
-# Alright, so we seem to have a situation where within each site, warmer waters = more infected crab. However, warmer sites tend to have lower rates of infection in the first place. Weird! Let's confirm that by making some site-specific graphs of infection rates
+
+Alright, so we seem to have a situation where within each site, warmer waters = more infected crab. However, warmer sites tend to have lower rates of infection in the first place. Weird! Let's confirm that by making some site-specific graphs of infection rates
+
+#### Temperature Per Site
+
+```{r fig.height=50}
 
 # Copy over data, rounding temp to nearest 0.1 degree
 bitter <- crab_dat
-bitter$Temp <- round(bitter$Temp, digits = 1)
+bitter$Temp <- round(bitter$Temp, digits = 0.1)
 
 # Create filepath to save graphs
-temp_graphs <- "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/"
+temp_graphs <- "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/infection_rates/without_year"
 
 # Create a vector of all sites
 sites <- unique(bitter$Site)
@@ -494,7 +501,99 @@ for (i in 1:length(sites)) {
   dev.off()
 }
 
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 1)
 
+site_avgs <- bitter %>%
+  group_by(Temp, Site) %>%
+  summarize(bitter_avg = mean(Bitter),
+            n_crabs = n())
+
+ggplot(site_avgs) +
+  geom_point(aes(x = Temp, y = bitter_avg, size = n_crabs)) +
+  geom_smooth(aes(x = Temp, y = bitter_avg, weight = n_crabs), method = lm, se = FALSE) +
+  facet_wrap(vars(Site), ncol = 3)
+
+ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/all_sites.png")
+
+
+```
+
+#### Temperature Per Site Per Year
+```{r fig.height=30}
+
+
+#### Now we'll do the same thing again, but adding color for year!
+
+# Copy over data, rounding temp to nearest 1 degree
+bitter <- crab_dat
+bitter$Temp <- round(bitter$Temp, digits = 1)
+# Set year to factor
+bitter$Year <- as.factor(bitter$Year)
+
+# Create filepath to save graphs
+temp_graphs <- "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/infection_rates/with_year/"
+
+# Create a vector of all sites
+sites <- unique(bitter$Site)
+
+# Start our for loop. Each time we will filter data to only include data from one site, summarize, and graph
+for (i in 1:length(sites)) {
+  site_dat <- bitter %>%
+    dplyr::filter(Site == sites[i])
+  
+  site_avgs <- site_dat %>%
+    group_by(Temp, Year) %>%
+    summarize(bitter_avg = mean(Bitter),
+              n_crabs = n())
+  
+  ggplot(site_avgs) +
+    geom_point(aes(x = Temp, y = bitter_avg, col = Year, size = n_crabs)) +
+    geom_smooth(aes(x = Temp, y = bitter_avg, col = Year, weight = n_crabs), method = lm, se = FALSE) +
+    labs(title = sites[i]) +
+    xlim(3, 9.5) +
+    ylim(0, 1)
+  
+  ggsave(filename = paste0(temp_graphs, sites[i], ".png"), plot = last_plot(), device = png())
+  dev.off()
+}
+```
+
+```{r fig.height= 30}
+
+### Plot infection data as binomial with regression line
+# This is the same basic process as before, but just with one change
+# Rather than plotting the data as averaged, we'll plot it binomially with a regression line
+
+# Copy over data. No need to round temp this time.
+bitter <- crab_dat
+
+# Create filepath to save graphs
+temp_graphs <- "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/logistic_regression/"
+
+# Create a vector of all sites
+sites <- unique(bitter$Site)
+
+# Start our for loop. Each time we will filter data to only include data from one site and graph
+for (i in 1:length(sites)) {
+  site_dat <- bitter %>%
+    dplyr::filter(Site == sites[i])
+  
+  ggplot(site_dat, aes(x = Temp, y = Bitter)) +
+    geom_point(alpha = 0.5) +
+    stat_smooth(method = "lm", se = FALSE, method.args = list(family = binomial))
+  
+  ggsave(filename = paste0(temp_graphs, sites[i], ".png"), plot = last_plot(), device = png())
+  dev.off()
+}
+
+
+ggplot(crab_dat, aes(x = Temp, y = Bitter)) +
+  geom_jitter() +
+  stat_smooth(method = "glm", se = FALSE, method.args = list(family = binomial)) +
+  facet_wrap(vars(Site), ncol = 3)
+
+ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/site_specific_graphs/logistic_regression/all_sites.png")
 ```
 
 

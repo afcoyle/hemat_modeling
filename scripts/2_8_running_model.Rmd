@@ -1,6 +1,6 @@
 ---
 title: "2_8_running_model"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "8/12/2022"
 output: html_document
 ---

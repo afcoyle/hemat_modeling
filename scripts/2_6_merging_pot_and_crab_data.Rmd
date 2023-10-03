@@ -1,6 +1,6 @@
 ---
 title: "2_6_merging_pot_and_crab_data.Rmd"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "8/4/2022"
 output: html_document
 ---

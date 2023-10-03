@@ -1,6 +1,6 @@
 ---
 title: "2_7_cleaning_full_data.Rmd"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "8/4/2022"
 output: html_document
 ---

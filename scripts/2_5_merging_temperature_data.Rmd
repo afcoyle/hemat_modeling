@@ -1,6 +1,6 @@
 ---
 title: "2_5_merging_temperature_data"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "7/25/2022"
 output: html_document
 ---

@@ -1,6 +1,6 @@
 ---
 title: "1_4_NOAA_EBS_bairdi_modeling.Rmd"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "6/29/2021"
 output: html_document
 ---

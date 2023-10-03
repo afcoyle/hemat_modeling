@@ -1,6 +1,6 @@
 ---
 title: "1_3_NOAA_EBS_all_crabs_modeling"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "6/28/2021"
 output: html_document
 ---

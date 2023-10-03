@@ -1,6 +1,6 @@
 ---
 title: "1_2_cleaning_NOAA_EBS_data"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "6/26/2021"
 output: html_document
 ---

@@ -1,5 +1,5 @@
 ###################################
-# Aidan Coyle, afcoyle@uw.edu
+# Aspen Coyle, afcoyle@uw.edu
 # Roberts Lab, UW-SAFS
 # 2022-07-27
 # File containing functions created during Hematodinium modeling project

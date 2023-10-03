@@ -1,6 +1,6 @@
 ---
 title: "2_2_cleaning_ADFG_SE_AK_crab_data"
-author: "Aidan Coyle"
+author: "Aspen Coyle"
 date: "8/17/2021"
 output: html_document
 ---

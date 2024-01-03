@@ -1,0 +1,138 @@
+---
+title: "3_1_data_exploration"
+author: "Aspen Coyle"
+date: "11/8/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#### Load libraries (and install if necessary), and load packages
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lubridate", "beepr", "maps", "sf", "rnaturalearth", "rnaturalearthdata")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+
+
+```
+
+## Introduction
+
+In this script, we'll be doing some data examination to get a bit more detail on the results of our model and the overall patterns in our data
+
+
+## Graphing Crab Density vs. Infection Rates
+
+Here, we'll create a graph of the density of crabs per site per year vs. the rate of infection
+
+
+```{r density}
+# Read in data
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", header = TRUE)
+
+# Drop all except year, project, location, pot number, infection status
+crab_dat <- crab_dat %>%
+  select("Year", "Project", "Location", "Pot.No", "Bitter")
+
+# Group by year and location, get number of crabs and number of pots per site
+crab_dat <- crab_dat %>%
+  group_by(Year, Location)%>%
+  summarise(infection_rate = (sum(Bitter)/length(Bitter)),
+            num_crabs = length(Bitter),
+            num_pots = max(Pot.No))
+
+# Create new column for crab density
+crab_dat <- crab_dat %>%
+  mutate(crab_density = num_crabs/num_pots)
+
+# Plot crab density vs. infection rate
+ggplot(data = crab_dat, aes(x = crab_density, y = infection_rate)) +
+  geom_point()+
+  geom_smooth(method = "lm")
+
+# Save plot
+ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/density_vs_infection.png")
+```
+## Map showing infection rates at each location
+
+```{r}
+# Start with reading in data again, it doesn't take long and this way we can run these chunks separately
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", header = TRUE)
+
+# Remove all except Location and Bitter
+crab_dat <- crab_dat %>%
+  select("Location", "Bitter")
+
+# Get average bitterness by location
+crab_dat <- crab_dat %>%
+  group_by(Location) %>%
+  summarise(avg_bitter = mean(Bitter, na.rm = TRUE))
+
+# Read in the pot data to get the locations
+loc_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv")
+
+# Remove all except Location, Latitude, and Longitude, rename columns to be easier
+loc_dat <- loc_dat %>%
+  select("Location", "Latitude.Decimal.Degrees", "Longitude.Decimal.Degrees") %>%
+  rename(Latitude = Latitude.Decimal.Degrees, 
+         Longitude = Longitude.Decimal.Degrees)
+
+# We've got some weird latitudes and longitudes, let's fix
+# Drop all latitudes under 50 and over 60
+# Drop all longitudes over -130 and under -150
+loc_dat <- loc_dat %>%
+  dplyr::filter(Latitude > 50 & Latitude < 60) %>%
+  dplyr::filter(Longitude > -150 & Longitude < -130)
+
+# Average lat and long by location
+loc_dat <- loc_dat %>%
+  group_by(Location) %>%
+  summarise(avg_lat = mean(Latitude, na.rm = TRUE),
+            avg_long = mean(Longitude, na.rm = TRUE))
+
+# Merge our crab and location data
+full_dat <- inner_join(crab_dat, loc_dat, by = "Location")
+
+# Use merged data to create a geometry column which has compatible coordinates
+map_dat <- full_dat %>% 
+  as.data.frame %>% 
+  sf::st_as_sf(coords = c(4, 3))
+
+# Convert this to a file that has the coordinates of each site 
+sites_sfc <- st_sfc(map_dat$geometry, crs = 4326)
+
+# Test that it's working and looking good
+plot(sites_sfc)
+
+# Start creating our basemap
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
+
+
+
+ggplot(data = world) +
+  geom_sf() +
+  xlab("Longitude") + ylab("Latitude") +
+  geom_point(data = full_dat, aes(x = avg_long, y = avg_lat, size = avg_bitter)) +
+  coord_sf(xlim = c(-138, -132), ylim = c(56.5, 59), crs = st_crs(4326))
+
+# Save plot
+ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/infection_rate_map.png")
+
+
+```
+
+

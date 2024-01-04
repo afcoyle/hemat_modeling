@@ -79,7 +79,8 @@ print(numcor)
 any(abs(numcor) > 0.6 & numcor < 1)
 which(abs(numcor) > 0.6 & numcor < 1, arr.ind = TRUE)
 # Looks like we have a tight correlation between latitude and longitude
-# Temperature and Julian day are pretty close (corr = 0.56), but nothing else is above 0.5
+# Temperature and Julian day are pretty close (corr = 0.61), but nothing else is above 0.5
+# In our initial run, in which temperature was individual to each pot, correlation was 0.56. It's barely above our bar, but let's kick out Julian day from our model
 
 # CORRELATIONS BETWEEN CATEGORICAL VARIABLES
 
@@ -129,7 +130,7 @@ print(crabcomps)
     # Julian day and survey (don't care, not including survey in model)
     # Recruit status and CW (already decided to exclude recruit status from model since it's mostly CW + sex)
     # Latitude and longitude (we'll likely just use latitude, or skip altogether and just use site)
-    # Temperature and Julian day (these are two continuous variables, which were already cleared using the more appropriate Pearson metric)
+    # Temperature and Julian day (already determined that we're only keeping temperature
 ```
 
 

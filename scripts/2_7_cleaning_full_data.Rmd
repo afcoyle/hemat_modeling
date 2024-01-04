@@ -379,6 +379,26 @@ head(sort(crab_dat$Temp, decreasing = TRUE))
 # Looks good to me! Unsurprising though, we already fixed up temp earlier when reviewing our pot data and looking for outlier temperatures.
 ```
 
+# Modifying Temperature to Average By Year and Location
+
+```{r}
+# Group temperature data by year and location
+crab_dat <- crab_dat %>%
+  group_by(Site, Year) %>%
+  mutate(temp_avg = mean(Temp)) %>%
+  ungroup()
+
+# Drop the original temp column
+crab_dat <- crab_dat %>%
+  select(-Temp)
+
+# For consistency, rename avg_temp to Temp
+crab_dat <- crab_dat %>%
+  dplyr::rename(
+    Temp = temp_avg)
+```
+
+
 Alright, all crab data is now cleaned! Amazing. Let's write out that file. We didn't make any major edits, so let's just overwrite the one we made previously
 ```{r}
 

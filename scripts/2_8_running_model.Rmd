@@ -425,7 +425,6 @@ plot(predictorEffect("s.Temp", full_model))
 plot(predictorEffect("s.CW", full_model))
 plot(predictorEffect("Blackmat", full_model))
 plot(predictorEffect("Leg.Condition", full_model))
-plot(predictorEffect("s.Jul.Day", full_model))
 plot(predictorEffect("Sex", full_model))
 plot(predictorEffect("s.Latitude", full_model))
 plot(predictorEffect("s.Depth", full_model))
@@ -546,10 +545,9 @@ fem_crabs <- na.omit(fem_crabs)
 # Subtract 2004 from all years, so that our earliest year is 1
 fem_crabs$s.Year <- fem_crabs$Year-(min(fem_crabs$Year)-1)
 
-# Scale latitude, longitude, Julian day, depth, and temperature
+# Scale latitude, longitude, day, depth, and temperature
 fem_crabs$s.Latitude <- scale(fem_crabs$Latitude)
 fem_crabs$s.Longitude <- scale(fem_crabs$Longitude)
-fem_crabs$s.Jul.Day <- scale(fem_crabs$Jul.Day)
 fem_crabs$s.Depth <- scale(fem_crabs$Depth)
 fem_crabs$s.Temp <- scale(fem_crabs$Temp)
 # Just need to scale CW once this time
@@ -567,7 +565,7 @@ colnames(fem_crabs)
 ```{r}
 # Select all variables to be used in our model for female crabs
 femcrabs_dat <- fem_crabs %>%
-  dplyr::select(c(s.Year, Site, s.CW, Shell.Condition, Egg.Development, Leg.Condition, Bitter, s.Egg.Percent, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp))
+  dplyr::select(c(s.Year, Site, s.CW, Shell.Condition, Egg.Development, Leg.Condition, Bitter, s.Egg.Percent, Blackmat, s.Latitude, s.Depth, s.Temp))
 
 # Select independent variables
 modeled_vars <- names(femcrabs_dat)
@@ -617,14 +615,13 @@ Temperature
 Depth
 Latitude
 [Null model]
-Julian Day
 
 ### Build model
 
 Alright, we'll again use glmmTMB to build a full model, then we'll check for collinearity
 
 ```{r}
-fem_full_model <- glmmTMB(Bitter ~ Shell.Condition + s.Egg.Percent + Egg.Development + Blackmat + Leg.Condition + s.CW + s.Temp + s.Depth + s.Latitude + s.Jul.Day + (1 | Site) + (1 | s.Year),
+fem_full_model <- glmmTMB(Bitter ~ Shell.Condition + s.Egg.Percent + Egg.Development + Blackmat + Leg.Condition + s.CW + s.Temp + s.Depth + s.Latitude + (1 | Site) + (1 | s.Year),
                        data = femcrabs_dat,
                        family = binomial,
                        na.action = "na.fail"              # This line is for the dredge() function used later
@@ -647,7 +644,7 @@ simulateResiduals(fem_full_model, plot = TRUE)
 # Perform ANOVA on model fits
 car::Anova(fem_full_model)
 
-# Alright, looks like in our full model, everything is significant except Black Mat and depth, with latitude and leg condition being just barely significant.
+# Alright, looks like in our full model, everything is significant except Latitude, with temperature, black mat, and leg condition barely significant
 
 # Test for effects. You can plot these all together with plot(allEffects(fem_full_model)), but that gets crowded visually
 plot(predictorEffect("Shell.Condition", fem_full_model))
@@ -659,8 +656,6 @@ plot(predictorEffect("s.CW", fem_full_model))
 plot(predictorEffect("s.Temp", fem_full_model))
 plot(predictorEffect("s.Depth", fem_full_model))
 plot(predictorEffect("s.Latitude", fem_full_model))
-plot(predictorEffect("s.Jul.Day", fem_full_model))
-
 ```
 
            Term  VIF   VIF 95% CI Increased SE Tolerance Tolerance 95% CI
@@ -685,29 +680,31 @@ fem_all_mods <- dredge(fem_full_model, beta = "none",
 
 plot(fem_all_mods)
 
-# We have one very good model (weight = 0.30), a good model (weight = 0.18), 
-# five alright models (weights < .10 & > 0.05), and seven meh models (weights < 0.05 & > 0.01)
+fem_all_mods
+
+# We have two good models (weight ~ 0.2), one okay model (weight = 0.1), and 11 meh models (weights < 0.10 & > 0.01)
+
 fem_best_mods <- get.models(fem_all_mods, subset = weight > 0.01)
 
 summary(fem_best_mods)
 
 # See what each of the models look like. Comments compare it to the best model (1)
 fem_best_mods[1]                               
-fem_best_mods[2] # Adds depth
-# Start of alright models
-fem_best_mods[3] # Drops Black Mat
-fem_best_mods[4] # Drops latitude
-fem_best_mods[5] # Adds depth, drops latitude
-fem_best_mods[6] # Drops leg condition
-fem_best_mods[7] # Adds depth, drops Black Mat
+fem_best_mods[2] # Adds latitude
+# Start of okay models
+fem_best_mods[3]# Drops temperature
 # Start of meh models
-fem_best_mods[8] # Drops leg condition, adds depth
-fem_best_mods[9] # Drops Black Mat and latitude
-fem_best_mods[10] # Drops Black Mat and latitude, adds depth
-fem_best_mods[11] # Drops Black Mat and leg condition
-fem_best_mods[12] # Drops leg condition and latitude
-fem_best_mods[13] # Drops leg condition and latitude, adds depth
-fem_best_mods[14] # Drops Black Mat and leg condition, adds depth
+fem_best_mods[4] # Adds latitude, drops temperature
+fem_best_mods[5] # Drops leg condition
+fem_best_mods[6] # Adds latitude, drops leg condition
+fem_best_mods[7] # Drops black mat
+fem_best_mods[8] # Drops black mat, adds latitude
+fem_best_mods[9] # Drops leg condition and temperature
+fem_best_mods[10] # Drops black mat and temperature
+fem_best_mods[11] # Drops leg condition and temperature, adds latitude
+fem_best_mods[12] # Drops black mat and temperature, adds latitude
+fem_best_mods[13] # Drops black mat and leg condition
+fem_best_mods[14] # Drops black mat and leg condition, adds latitude
 
 # Average models based on AICc
 fem_avg_model <- model.avg(fem_best_mods, beta = "none")
@@ -845,10 +842,9 @@ colSums(is.na(masc_crabs))
 # Subtract 2004 from all years, so that our earliest year is 1
 masc_crabs$s.Year <- masc_crabs$Year-(min(masc_crabs$Year)-1)
 
-# Scale latitude, longitude, Julian day, depth, and temperature
+# Scale latitude, longitude, depth, and temperature
 masc_crabs$s.Latitude <- scale(masc_crabs$Latitude)
 masc_crabs$s.Longitude <- scale(masc_crabs$Longitude)
-masc_crabs$s.Jul.Day <- scale(masc_crabs$Jul.Day)
 masc_crabs$s.Depth <- scale(masc_crabs$Depth)
 masc_crabs$s.Temp <- scale(masc_crabs$Temp)
 # Just need to scale CW once this time
@@ -864,7 +860,7 @@ colnames(masc_crabs)
 ```{r}
 # Select all variables to be used in our model for male crabs
 masccrabs_dat <- masc_crabs %>%
-  dplyr::select(c(s.Year, Site, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp, mat_stat))
+  dplyr::select(c(s.Year, Site, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Depth, s.Temp, mat_stat))
 
 # Select independent variables
 modeled_vars <- names(masccrabs_dat)
@@ -907,9 +903,8 @@ Here's the order of the impact of our variables, from most to least impactful.
 Shell Condition
 Maturity
 Carapace width
+Black Mat
 Temperature
-Julian day
-Black Mat infection
 Leg condition
 [Null model]
 Latitude
@@ -920,7 +915,7 @@ Depth
 Alright, we'll again use glmmTMB to build a full model, then we'll check for collinearity
 
 ```{r}
-masc_full_model <- glmmTMB(Bitter ~ Shell.Condition + mat_stat + s.CW + s.Temp + s.Jul.Day + Blackmat + Leg.Condition + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
+masc_full_model <- glmmTMB(Bitter ~ Shell.Condition + mat_stat + s.CW + s.Temp + Blackmat + Leg.Condition + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
                        data = masccrabs_dat,
                        family = binomial,
                        na.action = "na.fail"              # This line is for the dredge() function used later
@@ -943,14 +938,13 @@ simulateResiduals(masc_full_model, plot = TRUE)
 # Perform ANOVA on model fits
 car::Anova(masc_full_model)
 
-# Alright, looks like in our full model, shell condition, maturity, CW, temperature, and leg condition are significant, while Julian day, Black Mat, Latitude, and Depth aren't.
+# Alright, looks like in our full model, shell condition, maturity, CW, leg condition, and depth are significant, while temperature, Black Mat, and latitude aren't
 
 # Test for effects. You can plot these all together with plot(allEffects(masc_full_model)), but that gets crowded visually
 plot(predictorEffect("Shell.Condition", masc_full_model))
 plot(predictorEffect("mat_stat", masc_full_model))
 plot(predictorEffect("s.CW", masc_full_model))
 plot(predictorEffect("s.Temp", masc_full_model))
-plot(predictorEffect("s.Jul.Day", masc_full_model))
 plot(predictorEffect("Blackmat", masc_full_model))
 plot(predictorEffect("Leg.Condition", masc_full_model))
 plot(predictorEffect("s.Latitude", masc_full_model))
@@ -978,29 +972,24 @@ masc_all_mods <- dredge(masc_full_model, beta = "none",
        rank = "AICc")
 
 plot(masc_all_mods)
+masc_all_mods
 
-# Looks like we have 16 total models above 0.01. Of these, two are best (combined weight: 0.39), and an additional 6 are decent (combined weight with the two best: combined weight: 0.83). There are then 9 more models with weights from 0.3 to 0.1
+# Looks like we have 9 total models above 0.01. Of these, two are good (weight > 0.2), four are okay (weight > 0.05 & < 0.15), and five are meh (weight > 0.01 & < 0.05)
 
 masc_best_mods <- get.models(masc_all_mods, subset = weight > 0.01)
 
 # See what each of the models looks like
 # Descriptions compare each to the best model (Model 1)
 masc_best_mods[1]
-masc_best_mods[2]  # Drops Julian day
-masc_best_mods[3]  # Adds Depth
-masc_best_mods[4]  # Adds Depth, drops Julian day
-masc_best_mods[5]  # Adds Black Mat
-masc_best_mods[6]  # Adds Latitude
-masc_best_mods[7]  # Adds Latitude, drops Julian day
-masc_best_mods[8]  # Adds Black Mat, drops Julian day
-masc_best_mods[9]  # Adds Black Mat and Depth
-masc_best_mods[10] # Adds Depth and Latitude
-masc_best_mods[11] # Adds Depth and Latitude, drops Julian day
-masc_best_mods[12] # Adds Black Mat and Depth, drops Julian day
-masc_best_mods[13] # Adds Black Mat and Latitude
-masc_best_mods[14] # Adds Black Mat and Latitude, drops Julian day
-masc_best_mods[15] # Adds Black Mat, Depth, and Latitude
-masc_best_mods[16] # Adds Black Mat, Depth, and Latitude, drops Julian day
+masc_best_mods[2] # Drops temperature
+masc_best_mods[3] # Adds latitude
+masc_best_mods[4] # Adds Black Mat
+masc_best_mods[5] # Adds latitude, drops temperature
+masc_best_mods[6] # Adds Black Mat, drops temperature
+masc_best_mods[7] # Adds latitude and Black Mat
+masc_best_mods[8] # Adds latitude and Black Mat, drops temperature
+masc_best_mods[9] # Drops depth
+
 
 # Average models based on AICc
 masc_avg_model <- model.avg(masc_best_mods, beta = "none")
@@ -1125,10 +1114,9 @@ mat_crabs <- rbind(mat_crabs_f, mat_crabs_m)
 # Subtract 2004 from all years, so that our earliest year is 1
 mat_crabs$s.Year <- mat_crabs$Year-(min(mat_crabs$Year)-1)
 
-# Scale latitude, longitude, Julian day, depth, and temperature
+# Scale latitude, longitude, depth, and temperature
 mat_crabs$s.Latitude <- scale(mat_crabs$Latitude)
 mat_crabs$s.Longitude <- scale(mat_crabs$Longitude)
-mat_crabs$s.Jul.Day <- scale(mat_crabs$Jul.Day)
 mat_crabs$s.Depth <- scale(mat_crabs$Depth)
 mat_crabs$s.Temp <- scale(mat_crabs$Temp)
 
@@ -1146,7 +1134,7 @@ colnames(mat_crabs)
 ```{r}
 # Select all variables to be used in our model for male crabs
 matcrabs_dat <- mat_crabs %>%
-  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Jul.Day, s.Depth, s.Temp, mat_stat))
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Depth, s.Temp, mat_stat))
 
 # Select independent variables
 modeled_vars <- names(matcrabs_dat)
@@ -1189,11 +1177,10 @@ Here's the order of the impact of our variables, from most to least impactful.
 Shell Condition
 Black Mat
 Carapace width
-Temperature
 Maturity
 Leg Condition
+Temperature
 Sex
-Julian day
 Latitude
 Depth
 
@@ -1202,7 +1189,7 @@ Depth
 Alright, we'll again use glmmTMB to build a full model, then we'll check for collinearity
 
 ```{r}
-mat_full_model <- glmmTMB(Bitter ~ Shell.Condition + Blackmat + s.CW + s.Temp + mat_stat + Leg.Condition + Sex + s.Jul.Day + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
+mat_full_model <- glmmTMB(Bitter ~ Shell.Condition + Blackmat + s.CW + s.Temp + mat_stat + Leg.Condition + Sex + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
                        data = matcrabs_dat,
                        family = binomial,
                        na.action = "na.fail"              # This line is for the dredge() function used later
@@ -1226,14 +1213,13 @@ simulateResiduals(mat_full_model, plot = TRUE)
 # Perform ANOVA on model fits
 car::Anova(mat_full_model)
 
-# Alright, looks like in our full model, shell condition, maturity, CW, temperature, and leg condition are significant, while Julian day, Black Mat, Latitude, and Depth aren't.
+# Alright, looks like in our full model, shell condition, CW, temperature, maturity, leg condition, depth, and sex are significant while Black Mat and Latitude aren't aren't.
 
 # Test for effects. You can plot these all together with plot(allEffects(mat_full_model)), but that gets crowded visually
 plot(predictorEffect("Shell.Condition", mat_full_model))
 plot(predictorEffect("mat_stat", mat_full_model))
 plot(predictorEffect("s.CW", mat_full_model))
 plot(predictorEffect("s.Temp", mat_full_model))
-plot(predictorEffect("s.Jul.Day", mat_full_model))
 plot(predictorEffect("Blackmat", mat_full_model))
 plot(predictorEffect("Leg.Condition", mat_full_model))
 plot(predictorEffect("s.Latitude", mat_full_model))
@@ -1251,26 +1237,23 @@ mat_all_mods <- dredge(mat_full_model, beta = "none",
        rank = "AICc")
 
 plot(mat_all_mods)
+mat_all_mods
 
-# Looks like we have two good models (weights ~ 0.2), four meh models (weights > 0.05 & < 0.15) and eight marginal models (weights between 0.04 and 0.01). Easier to see this in summary(mat_avg_model) below. 
+# We've got eight models total. One very good model (weight = 0.3), two good models (weight = 0.17), and five meh models (weight < 0.1)
+
 mat_best_mods <- get.models(mat_all_mods, subset = weight > 0.01)
 
 # See what each of the best models look like
 # Comments compare each to the best model (mat_best_mods[1])
 mat_best_mods[1]
-mat_best_mods[2] # Adds Depth
+mat_best_mods[2] # Adds latitude
 mat_best_mods[3] # Drops Black Mat
-mat_best_mods[4] # Adds Depth, drops Black Mat
-mat_best_mods[5] # Drops Leg Condition
-mat_best_mods[6] # Adds Depth, drops Leg Condition
-mat_best_mods[7] # Drops Black Mat and Leg Condition
-mat_best_mods[8] # Adds Depth, drops Black Mat and Leg Condition
-mat_best_mods[9] # Drops Julian day
-mat_best_mods[10] # Drops Black Mat and Julian day
-mat_best_mods[11] # Adds Depth, drops Latitude
-mat_best_mods[12] # Drops Latitude
-mat_best_mods[13] # Drops Leg Condition and Julian day
-mat_best_mods[14] # Adds Depth, drops Julian day
+mat_best_mods[4] # Drops Black Mat, adds latitude
+mat_best_mods[5] # Drops leg condition
+mat_best_mods[6] # Drops leg condition, adds latitude
+mat_best_mods[7] # Drops Black Mat and leg condition
+mat_best_mods[8] # Drops Black Mat and leg condition, adds latitude
+
 
 # Average models based on AICc
 mat_avg_model <- model.avg(mat_best_mods, beta = "none")

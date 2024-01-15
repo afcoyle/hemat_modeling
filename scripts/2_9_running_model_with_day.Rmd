@@ -1,0 +1,487 @@
+---
+title: "2_9_running_model_with_day"
+author: "Aspen Coyle"
+date: "8/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+This script is the same as 2_8_running_model, but with the addition of Julian day as a variable in the modeling. In 2_8_running_model, we removed Julian day from the model, due to correlation slightly exceeding the limits (bar was 0.6, correlation between Julian day and temperature was 0.61). To prevent 2_8_running_model from getting too long, I decided to just make another script. 
+
+In this script, we will create a generalized linear mixed model to examine potential associations between _Hematodinium_ infection status and variables within both the environment and the crab.
+
+This script will include both male and female crab, and only include crabs for which temperature data is available.
+
+
+#### Load libraries (and install if necessary)
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Add all required libraries here
+list.of.packages <- c("tidyverse", "lme4", "MuMIn", "rcompanion", "MASS", "generalhoslem", "mgcv", "beepr", "regclass", "car", "DHARMa", "broom.mixed", "dotwhisker", "glmmTMB", "performance", "effects")
+# Get names of all required packages that aren't installed
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+# Install all new packages
+if(length(new.packages)) install.packages(new.packages)
+
+
+# Load all required libraries
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X))
+})
+
+# Read in custom functions
+source("hemat_modeling_functions.R")
+```
+
+# Read in data
+```{r}
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
+```
+
+### Check all variables were read in correctly as either categorical or continuous predictors
+
+```{r}
+# See class of each column
+str(crab_dat)
+# Looks like we've got lots of columns that should be converted to factors!
+crab_dat$Survey <- factor(crab_dat$Survey)
+crab_dat$Site <- factor(crab_dat$Site)
+crab_dat$Sex <- factor(crab_dat$Sex)
+crab_dat$Recruit.Status <- factor(crab_dat$Recruit.Status)
+crab_dat$Shell.Condition <- ordered(crab_dat$Shell.Condition)
+crab_dat$Egg.Condition <- factor(crab_dat$Egg.Condition)
+crab_dat$Egg.Development <- factor(crab_dat$Egg.Development)
+crab_dat$Leg.Condition <- factor(crab_dat$Leg.Condition)
+crab_dat$Bitter <- factor(crab_dat$Bitter)
+crab_dat$Blackmat <- factor(crab_dat$Blackmat)
+
+# See updated class of each column
+str(crab_dat)
+```
+
+### Check for correlation
+
+Prior to modeling anything, we're going to run checks on combinations of variables to see if any are correlated
+
+```{r}
+# CORRELATION BETWEEN CONTINUOUS VARIABLES
+
+crab_nums <- dplyr::select_if(crab_dat, is.numeric)
+numcor <- cor(crab_nums, method = "pearson")
+
+# See the resulting table
+print(numcor)
+
+# See if any correlations are > 0.6 (our bar for correlation) and less than 1 (since every variable is perfectly correlated with itself)
+any(abs(numcor) > 0.6 & numcor < 1)
+which(abs(numcor) > 0.6 & numcor < 1, arr.ind = TRUE)
+# Looks like we have a tight correlation between latitude and longitude
+# Temperature and Julian day are pretty close (corr = 0.61), but nothing else is above 0.5
+# Again, in 2_8_running_model, we kicked out Julian day, but here, we'll keep it
+
+# CORRELATIONS BETWEEN CATEGORICAL VARIABLES
+
+# Now we're using Cramer's V test to look at correlation among our categorical variables
+crabcat <- dplyr::select_if(crab_dat, is.factor)
+
+# Turn all from factors to numeric
+crabcat[] <- sapply(crabcat, as.numeric)
+
+# Initialize a blank matrix
+results_matrix <- matrix(nrow = length(crabcat), ncol = length(crabcat))
+# Name all rows and columns with our variable names
+colnames(results_matrix) <- names(crabcat)
+rownames(results_matrix) <- names(crabcat)
+
+# Fill the matrix by performing Cramer's V test on each possible combination of factors
+for (i in 1:ncol(crabcat)) {
+  for (j in 1:ncol(crabcat)) {
+    cramer.table <- table(crabcat[,i],crabcat[,j])
+    cramer.matrix <- as.matrix(cramer.table)
+    results_matrix[i,j] <- rcompanion::cramerV(cramer.matrix)
+  }
+}
+# See the resulting matrix
+print(results_matrix)
+
+# See if any of our correlations (aside from self-correlations) cross our boundary of too much correlation
+any(results_matrix > 0.6 & results_matrix < 1)
+which(abs(results_matrix) > 0.6 & results_matrix < 1, arr.ind = TRUE)
+
+# Tight correlation between survey and site, which is fine - we weren't planning to include survey in any model
+# Correlations of 1 between recruit status and sex too, indicating we should choose one for our models
+#       We'll pick sex, since recruit status is mostly captured by sex + CW
+# No other strong correlations
+
+# CORRELATIONS BETWEEN CATEGORICAL AND CONTINUOUS VARIABLES
+
+# We'll use Spearman rank-order correlation to determine whether we have any correlation
+crabrank <- crab_dat
+crabrank[] <- sapply(crab_dat, as.numeric)
+crabcomps <- cor(crabrank, method = "spearman")
+any(abs(crabcomps) > 0.6 & crabcomps < 1)
+# Looks like we do have some significant correlations this time! Let's pull them out
+which(abs(crabcomps) > 0.6 & crabcomps < 1, arr.ind = TRUE)
+print(crabcomps)
+# Correlations are between:
+    # Julian day and survey (don't care, not including survey in model)
+    # Recruit status and CW (already decided to exclude recruit status from model since it's mostly CW + sex)
+    # Latitude and longitude (we'll likely just use latitude, or skip altogether and just use site)
+    # Temperature and Julian day (already discussed this, keeping both)
+```
+
+
+
+# Adjust numeric variables, scaling some
+
+```{r}
+# Subtract 2004 from all years, so that our earliest year is 1
+crab_dat$s.Year <- crab_dat$Year-(min(crab_dat$Year)-1)
+
+# Scale chela height, egg percent, latitude, longitude, Julian day, depth, and temperature
+crab_dat$s.Chela.Ht <- scale(crab_dat$Chela.Ht)
+crab_dat$s.Egg.Percent <- scale(crab_dat$Egg.Percent)
+crab_dat$s.Latitude <- scale(crab_dat$Latitude)
+crab_dat$s.Longitude <- scale(crab_dat$Longitude)
+crab_dat$s.Jul.Day <- scale(crab_dat$Jul.Day)
+crab_dat$s.Depth <- scale(crab_dat$Depth)
+crab_dat$s.Temp <- scale(crab_dat$Temp)
+
+# We'll scale CW twice - once for males, and once for females. This'll capture the sexual dimorphism within Tanner crabs
+crab_dat_f <- crab_dat[crab_dat$Sex == "2", ]
+crab_dat_m <- crab_dat[crab_dat$Sex == "1", ]
+
+crab_dat_f$s.CW <- scale(crab_dat_f$CW)
+crab_dat_m$s.CW <- scale(crab_dat_m$CW)
+
+crab_dat <- rbind(crab_dat_f, crab_dat_m)
+```
+
+#### QUICK LITTLE TEST MODEL
+
+This is purely to look at the effects of temperature in combination with site and year
+
+
+```{r}
+
+# Check that temperature scaled correctly
+bitter <- crab_dat
+bitter$Bitter <- as.numeric(bitter$Bitter)
+bitter$Temp <- round(bitter$Temp, digits = 1)
+bitter$s.Temp <- scale(bitter$Temp)
+table(bitter$s.Temp)
+table(bitter$Temp)
+
+
+bitter <- bitter %>%
+  group_by(s.Temp) %>%
+  summarize(bitter_avg = mean(Bitter)) %>%
+  ungroup()
+
+ggplot(bitter) +
+  geom_point(aes(x = s.Temp, y = bitter_avg))
+
+# Yep, it scaled correctly!
+
+# Alright, let's build a model with just temperature and site
+
+trash_model <- glmmTMB(Bitter ~ Temp + (1 | Site) + (1 | s.Year),
+                       data = crab_dat,
+                       family = binomial,
+                       na.action = "na.fail")
+
+summary(trash_model)
+
+plot(predictorEffect("Temp", trash_model))
+
+# Okay, let's figure out what the heck is going on with temperature and our random effects!
+
+
+
+
+```
+
+
+# MODEL OF ALL CRABS
+
+This model will include ALL crabs, both male and female. Therefore, it will not include sex-specific measurements, such as chela height and egg-related measurements
+
+We have a Bernoulli distribution (binomial), plus random effects of year and location
+
+
+```{r}
+# Select all variables to be used in our model for all crabs
+allcrabs_dat <- crab_dat %>%
+  dplyr::select(c(s.Year, Site, Sex, s.CW, Shell.Condition, Leg.Condition, Bitter, Blackmat, s.Latitude, s.Depth, s.Temp, s.Jul.Day))
+
+# Select independent variables
+modeled_vars <- names(allcrabs_dat)
+modeled_vars <- modeled_vars[!modeled_vars %in% c("s.Year", "Site", "Bitter")]
+
+# Initialize dataframe with model values
+AIC_vals <- matrix(nrow = length(modeled_vars), ncol = 2)
+
+# Create a null model and get AIC
+null_mod <- glmer(Bitter ~ (1 | Site) + (1 | s.Year), 
+                  data = allcrabs_dat,
+                  family = binomial)
+AIC_null <- extractAIC(null_mod)[2]
+AIC_vals[1, 1] <- "null_mod"
+AIC_vals[1, 2] <- extractAIC(null_mod)[2] - AIC_null
+
+# Create for loop to extract AIC for all variables
+for (i in 1:length(modeled_vars)){
+  my_formula = paste0("Bitter ~ ", modeled_vars[i], " + (1 | Site) + (1 | s.Year)")
+  test_mod <- glmer(my_formula,
+                    data = allcrabs_dat,
+                    family = binomial)
+  
+  AIC_vals[i, 1] <- modeled_vars[i]
+  AIC_vals[i, 2] <- extractAIC(test_mod)[2] - AIC_null
+}
+beep()
+
+
+# See which variables improve the model the most
+# I just printed these and reordered them around a bit
+AIC_vals[order(as.numeric(AIC_vals[, 2])), ]
+```
+
+Here's the order of the impact of our variables, from most to least impactful. 
+
+Shell condition
+CW
+Black Mat
+Leg condition
+Julian day
+Temp
+Sex
+---------Null model line ------------------
+Latitude
+Depth
+
+### Build model
+
+```{r}
+full_model <- glmmTMB(Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + Sex + s.Jul.Day + s.Latitude + s.Depth + (1 | Site) + (1 | s.Year),
+                       data = allcrabs_dat,
+                       family = binomial,
+                       na.action = "na.fail")              # This line is for the dredge() function used later
+                       
+
+check_collinearity(full_model)
+
+# Alright, VIFs look good!
+
+```
+
+
+### Model Diagnostics
+
+Now that we have produced a full model, before we start fine-tuning it, we need to do some diagnostics to ensure it meets our assumptions
+
+```{r}
+# Simulate residuals and plot
+testOutliers(full_model, alternative = "two.sided", margin = "both", type = "bootstrap", plot = TRUE)
+simulateResiduals(full_model, plot = TRUE)
+
+# Perform ANOVA on model fits
+car::Anova(full_model)
+
+# Alright, looks like in our full model, everything is significant except temperature, leg condition, and latitude!
+
+# Test for effects. You can plot these all together with plot(allEffects(full_model)), but that gets crowded visually
+plot(predictorEffect("Shell.Condition", full_model))
+plot(predictorEffect("s.Temp", full_model))
+plot(predictorEffect("s.CW", full_model))
+plot(predictorEffect("Blackmat", full_model))
+plot(predictorEffect("Leg.Condition", full_model))
+plot(predictorEffect("Sex", full_model))
+plot(predictorEffect("s.Latitude", full_model))
+plot(predictorEffect("s.Depth", full_model))
+plot(predictorEffect("s.Jul.Day", full_model))
+
+
+# Get influence measures of each datapoint.
+# Sadly, the only way to do this with glmmTMB is bruteforce it
+# That means refitting the model with each element removed using glmmTMB::influence_mixed()
+# May prove to be too long to be feasible, let's test!
+
+# Update: yep, it's too long, Did the calculations, it took us 
+# about 12 hours to run dredge(), which analyzed 512 possible models
+# This would be 150,000 possible models, which would be almost 150 days
+
+# Check significance of random effects using bootstrapped LRT
+
+full_model.onlySite <- glmmTMB(Bitter ~ Shell.Condition + s.Temp + s.CW + Blackmat + Leg.Condition + Sex + s.Jul.Day + s.Latitude + s.Depth + (1 | Site),
+                       data = allcrabs_dat,
+                       family = binomial,
+                       na.action = "na.fail")
+
+  
+
+```
+### Dredging
+
+We will now use the dredge() function from the MuMIn package to go through each of our model possibilities and select an optimal full model using AICc.
+
+```{r}
+all_mods <- dredge(full_model, beta = "none",
+       eval = TRUE,
+       rank = "AICc")
+
+plot(all_mods)
+
+all_mods
+
+# Looks like we have one good model (weight = 0.33), three solid models (weight > 0.1 & < 0.2), and four marginal models (weight < 0.08), for a total of eight
+
+best_mods <- get.models(all_mods, subset = weight > 0.01)
+
+all_best_mod <- get.models(all_mods, subset = 1)[[1]]
+
+# See what each of the best models look like
+best_mods[1]
+best_mods[2]  # Drops leg condition
+best_mods[3]  # Adds temperature
+best_mods[4]  # Adds latitude
+best_mods[5]  # Drops leg condition, adds temperature
+best_mods[6]  # Drops leg condition, adds latitude
+best_mods[7]  # Adds latitude and temperature
+best_mods[8]  # Drops leg condition, adds latitude and temperature
+
+
+# Average models based on AICc
+avg_model <- model.avg(best_mods, beta = "none")
+
+# See what that average model looks like
+avg_model$coefficients
+summary(avg_model)
+
+# Save each of the best models! This lets us reload them in case R crashes
+# This saves a LOT of time - dredge() takes forever to run!
+for (i in 1:length(best_mods)) {
+  saveRDS(best_mods[i], file = paste0("../output/ADFG_SE_AK_pot_surveys/models/weighted_models/includes_day/model", i, ".rds"))
+}
+
+# Also save the average model
+saveRDS(avg_model, file = "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/includes_day/avg_model.rds")
+
+# Un-comment the below code to re-read model files back in when R crashes
+
+#### Set model filepath
+#model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/includes_day/"
+
+##### Read in average model
+#avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Read in best models individually
+
+#### Get vector of relevant files
+#best_mod_files <- list.files(model_filepath)
+#### Remove average model from vector
+#best_mod_files <- best_mod_files[grep("^model", best_mod_files)]
+#### Create blank list
+#best_mods <- list()
+##### Read in files
+#for (i in 1:length(best_mod_files)) {
+#  best_mods[i] <- readRDS(file = paste0(model_filepath, best_mod_files[i]))
+#}
+```
+
+### Get a summary of full model
+```{r}
+# Set up path to put plots
+plot_path <- "../output/ADFG_SE_AK_pot_surveys/model_results/full_models/includes_day/images/"
+
+# Get coefficients
+summary(avg_model)
+
+# Plot coefficients, and save file
+png(filename = paste0(plot_path, "coefficients.png"))
+plot(avg_model)
+dev.off()
+
+# Plot predictor effects
+plot(allEffects("Shell.Condition", test))
+
+
+# First, get the names of our variables
+test <- summary(avg_model)
+var_names <- colnames(test$coefficients)
+attr(var_names, "order") <- NULL
+var_names <- 
+
+
+
+
+png(filename="your/file/location/name.png")
+plot(fit)
+dev.off()
+
+# Plot predictor effects
+
+plot(predictorEffect("s.Temp", avg_model))
+
+plot(predictorEffect("Shell.Condition", best_mods[1]))
+plot(predictorEffect("s.Temp", full_model))
+plot(predictorEffect("s.CW", full_model))
+plot(predictorEffect("Blackmat", full_model))
+plot(predictorEffect("Leg.Condition", full_model))
+plot(predictorEffect("Sex", full_model))
+plot(predictorEffect("s.Latitude", full_model))
+plot(predictorEffect("s.Depth", full_model))
+
+```
+
+
+
+### More tests 
+```{r}
+#### Test dispersion of each of our models
+
+# Note: they're all going to fail the KS test, just because our sample size is huge. As long as the QQ plot looks fine, no cause for concern. 
+
+# First plot: a Q-Q plot and a plot of residuals. THe latter should appear as a line around 0.5, followed by a few dots up at 1
+
+# Second plot: Standardized residuals for crabs predicted as bitter and not bitter. Has the number of the model in the title (1 = best model, 14 = worst model)
+
+# Third plot: Dispersion test of residuals. Red line should be approx around mean, p value should be not significant
+
+# Fourth plot: Dispersion test for zero inflation. Red line should be approx around mean, p value should be not significant
+
+for (i in 1:length(best_mods)){
+  print(paste("Model", i))
+  simulationOutput <- simulateResiduals(fittedModel = best_mods[i][[1]], plot = TRUE) 
+  plotResiduals(simulationOutput, allcrabs_dat$Bitter, quantreg = TRUE, rank = TRUE, main = paste("Model", i))
+  testDispersion(simulationOutput, alternative = "greater", plot = TRUE)
+  testZeroInflation(simulationOutput)
+}
+
+# Lovely, all models look just fine!
+```
+
+Quick break just so we can visualize plots easier
+
+```{r}
+
+# Create for loop, predicting data and plotting results for each model
+# Predicted should effectively be a line with no outliers, histogram should be one block
+
+for (i in 1:length(best_mods)) {
+  # Simulate data, see how accurate models are. This uses our custom function pred_dat()
+  pred_data <- pred_dat(model = best_mods[i][[1]], data = allcrabs_dat, num_sims = 500)
+  # Plot simulated data with a red line as the real data
+  plot(pred_data$sim_num, pred_data$total_bitter, main = paste("Model", i)) +
+    abline(h = sum(allcrabs_dat$Bitter == 1), col = "red")
+  # Plot percent change from real data
+  hist(pred_data$pct_change_from_data, main = paste("Histogram of Model", i))
+  # Print total mean difference from data
+  print(paste("Mean difference for Model", i, "is", mean(pred_data$total_bitter) - sum(allcrabs_dat$Bitter == 1)))
+}
+```

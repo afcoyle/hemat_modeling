@@ -160,7 +160,7 @@ crab_dat_m$s.CW <- scale(crab_dat_m$CW)
 crab_dat <- rbind(crab_dat_f, crab_dat_m)
 ```
 
-#### TRASHY LIL TEST MODEL
+#### QUICK LITTLE TEST MODEL
 
 This is purely to look at the effects of temperature in combination with site and year
 

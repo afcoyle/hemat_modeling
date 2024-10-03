@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "lubridate", "beepr", "maps", "sf", "rnaturalearth", "rnaturalearthdata")
+list.of.packages <- c("tidyverse", "lubridate", "beepr", "maps", "sf", "ggmap", "leaflet", "ggthemes", "cowplot")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -66,27 +66,15 @@ ggplot(data = crab_dat, aes(x = crab_density, y = infection_rate)) +
 # Save plot
 ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/density_vs_infection.png")
 ```
-## Map showing infection rates at each location
+## Map showing surveys at each location
 
 ```{r}
-# Start with reading in data again, it doesn't take long and this way we can run these chunks separately
-crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", header = TRUE)
-
-# Remove all except Location and Bitter
-crab_dat <- crab_dat %>%
-  select("Location", "Bitter")
-
-# Get average bitterness by location
-crab_dat <- crab_dat %>%
-  group_by(Location) %>%
-  summarise(avg_bitter = mean(Bitter, na.rm = TRUE))
-
 # Read in the pot data to get the locations
 loc_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_data_with_temperature.csv")
 
-# Remove all except Location, Latitude, and Longitude, rename columns to be easier
+# Remove all except Project, Location, Latitude, and Longitude, rename columns to be easier
 loc_dat <- loc_dat %>%
-  select("Location", "Latitude.Decimal.Degrees", "Longitude.Decimal.Degrees") %>%
+  select("Project", "Location", "Latitude.Decimal.Degrees", "Longitude.Decimal.Degrees") %>%
   rename(Latitude = Latitude.Decimal.Degrees, 
          Longitude = Longitude.Decimal.Degrees)
 
@@ -99,15 +87,13 @@ loc_dat <- loc_dat %>%
 
 # Average lat and long by location
 loc_dat <- loc_dat %>%
-  group_by(Location) %>%
+  group_by(Location, Project) %>%
   summarise(avg_lat = mean(Latitude, na.rm = TRUE),
             avg_long = mean(Longitude, na.rm = TRUE))
 
-# Merge our crab and location data
-full_dat <- inner_join(crab_dat, loc_dat, by = "Location")
 
-# Use merged data to create a geometry column which has compatible coordinates
-map_dat <- full_dat %>% 
+# Use data to create a geometry column which has compatible coordinates
+map_dat <- loc_dat %>% 
   as.data.frame %>% 
   sf::st_as_sf(coords = c(4, 3))
 
@@ -117,20 +103,56 @@ sites_sfc <- st_sfc(map_dat$geometry, crs = 4326)
 # Test that it's working and looking good
 plot(sites_sfc)
 
-# Start creating our basemap
-world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
+# Define the boundaries of our basemap
+southeast <- get_stadiamap(
+  bbox = c(left = -138, bottom = 56, right = -132, top = 59),
+  zoom = 8,
+  maptype = "stamen_terrain_background")
+
+# Create map of southeast
+se_map <- ggmap(southeast) +
+  geom_point(data = loc_dat,
+             aes(x = avg_long, 
+                 y = avg_lat,
+                 shape = Project),
+             size = 3) +
+  theme_map() +
+  theme(legend.position = "none")
+
+# Define boundaries of our Alaska map
+alaska <- get_stadiamap(
+  bbox = c(left = -180, bottom = 46, right = -120, top = 73),
+  zoom = 5,
+  maptype = "stamen_terrain_background")
+
+# Create map of Alaska
+ak_map <- ggmap(alaska) +
+  theme_map() +
+  geom_rect(
+    xmin = -138,
+    ymin = 56, 
+    xmax = -132,
+    ymax = 59,
+    fill = NA,
+    colour = "black",
+    linewidth = 0.5) +
+  theme(legend.position = "none")
+
+# Put AK map on top of SE map, with border around AK map
+full_map <- se_map %>%
+  ggdraw () +
+  draw_plot(ak_map,
+            x = 0.0,
+            y = 0.0,
+            width = 0.45,
+            height = 0.45) 
 
 
 
-ggplot(data = world) +
-  geom_sf() +
-  xlab("Longitude") + ylab("Latitude") +
-  geom_point(data = full_dat, aes(x = avg_long, y = avg_lat, size = avg_bitter)) +
-  coord_sf(xlim = c(-138, -132), ylim = c(56.5, 59), crs = st_crs(4326))
+
 
 # Save plot
-ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/infection_rate_map.png")
+ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/survey_location_map.png")
 
 
 ```

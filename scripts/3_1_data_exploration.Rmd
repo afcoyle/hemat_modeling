@@ -156,5 +156,41 @@ ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/survey_loc
 
 
 ```
+### Graph of infection rates by year
+
+```{r}
+# Read in data
+crab_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", header = TRUE)
+
+# Drop all except year, infection status
+crab_dat <- crab_dat %>%
+  dplyr::select("Year", "Bitter")
+
+# Group by year and location, get frequency of bitter crab in each year
+crab_dat <- crab_dat %>%
+  group_by(Year)%>%
+  summarise(infection_rate = (sum(Bitter)/length(Bitter)))
+
+# Create line graph using ggplot to visualize infection rate changes over time
+
+crab_dat %>%
+  ggplot(aes(x = Year, y = infection_rate)) +
+  labs(y = italic("Rate of Infection"),
+       x = "Year") +
+  geom_line()
+         
+         
+         +
+  geom_line()
+
+
+
+
+```
+### Graphing Coefficients for All Models
+
+```{r}
+
+```
 
 

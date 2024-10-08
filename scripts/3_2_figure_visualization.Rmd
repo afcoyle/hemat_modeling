@@ -15,7 +15,7 @@ This script creates figures for the final paper.
 
 ```{r libraries, message=FALSE, warning=FALSE}
 # Add all required libraries here
-list.of.packages <- c("tidyverse", "lubridate", "beepr", "maps", "sf", "ggmap", "leaflet", "ggthemes", "cowplot", "easystats")
+list.of.packages <- c("tidyverse", "lubridate", "beepr", "maps", "sf", "ggmap", "leaflet", "ggthemes", "cowplot", "easystats", "ggpubr")
 # Get names of all required packages that aren't installed
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 # Install all new packages
@@ -67,6 +67,9 @@ sites_sfc <- st_sfc(map_dat$geometry, crs = 4326)
 # Test that it's working and looking good
 plot(sites_sfc)
 
+# Register Stadia Maps key
+register_stadiamaps("bbdd148e-ddf4-4650-ac62-ec8dfed17f18", write = TRUE)
+
 # Define the boundaries of our basemap
 southeast <- get_stadiamap(
   bbox = c(left = -138, bottom = 56, right = -132, top = 59),
@@ -112,12 +115,12 @@ full_map <- se_map %>%
             height = 0.45)
 
 # Save plot
-ggsave(filename = "../output/ADFG_SE_AK_pot_surveys/diagnostic_images/survey_location_map.png")
+ggsave(filename = "../paper/images/Fig1_survey_location_map.png")
 ```
 
-### Figure 2: Coefficients of Full Model
+### Figure 2: Coefficients of General Model
 
-```{r}
+```{r, fig.height=5}
 # Set model filepath
 model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/"
 
@@ -137,16 +140,197 @@ coef_tab <- rownames_to_column(coef_tab, var = "variable")
 # Remove column header whitespace
 colnames(coef_tab) <- str_remove_all(colnames(coef_tab), " ")
 
-# Create graph
-coef_tab %>%
-  ggplot(aes(x = Estimate, y = variable)) +
+# Edit variable column to remove unneeded elements
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("^cond\\(", "")
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("s.", "")
+
+# Remove int row
+coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
+
+
+# Arrange by magnitude of estimated coefficient
+coef_tab <- coef_tab %>%
+  arrange(desc(abs(Estimate)))
+
+# Create graph. Start with basic image and sorting
+gen_mod <- coef_tab %>%
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
   geom_point() + 
   geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
                     xmax = Estimate + AdjustedSE),
                 width = 0.3) +
   geom_vline(xintercept=0, linetype = "dotted") +
-  scale_y_discrete(labels = c("Intercept", "Black Mat", "Leg Condition", "Carapace Width", "Depth", "Latitude", 'Temperature', 'Sex', 'Shell Condition (Cubic)', 'Shell Condition (Linear)', 'Shell Condition (Quadratic)'))
+
+  #mess with labels and axes
+  scale_y_discrete(labels = c("Latitude", "Leg Condition", "Temperature",
+                              "Depth", "Carapace Width", "Sex",
+                              "Shell Cond. (Cubic)", "Black Mat", "Shell Cond. (Quadratic)",
+                              "Shell Cond. (Linear)")) +
+  scale_x_continuous(limits = c(-5, 1.7)) +
+  ylab("Predictor Variable") +
+  xlab ("Estimated Coefficient") +
+  
+  # mess with theme and appearance
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "grey",
+                                          linewidth = 0.2,
+                                          linetype = 2))
+
+# Save plot
+ggsave(filename = "../paper/images/Fig2_gen_model_coefficients.png")
+```
+
+
+
+### Figure 3: Coefficients of Female Model
+
+```{r, fig.height=5}
+# Set model filepath
+model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/"
+
+# Read in average model
+avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Get basic plot
+plot(avg_model)
+
+# Create table of coefficients
+coef_tab <- summary(avg_model)$coefmat.full
+coef_tab <- as.data.frame(coef_tab)
+
+# Turn rownames into column
+coef_tab <- rownames_to_column(coef_tab, var = "variable")
+
+# Remove column header whitespace
+colnames(coef_tab) <- str_remove_all(colnames(coef_tab), " ")
+
+# Edit variable column to remove unneeded elements
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("^cond\\(", "")
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("s.", "")
+
+# Remove int row
+coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
+
+# Arrange by magnitude of estimated coefficient
+coef_tab <- coef_tab %>%
+  arrange(desc(abs(Estimate)))
+
+# Create graph. Start with basic image and sorting
+fem_mod <- coef_tab %>%
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
+  geom_point() + 
+  geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
+                    xmax = Estimate + AdjustedSE),
+                width = 0.3) +
+  geom_vline(xintercept=0, linetype = "dotted") +
+
+  #mess with labels and axes
+  scale_y_discrete(labels = c("Latitude", "Leg Condition", "Depth",
+                              "Egg Dev. (Uneyed)", "Temperature", "Carapace Width",
+                              "Egg Percent", "Black Mat", "Egg Dev. (Barren)", 
+                              "Egg Dev. (Dead Eggs)", "Egg Dev. (Juvenile)", "Shell Cond. (Cubic)",
+                              "Shell Cond. (Quadratic)", "Shell Cond. (Linear)")) +
+  scale_x_continuous(limits = c(-5, 1.7)) +
+  ylab("Predictor Variable") +
+  xlab ("Estimated Coefficient") +
+  
+  # mess with theme and appearance
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "grey",
+                                          linewidth = 0.2,
+                                          linetype = 2))
+
+# Save plot
+ggsave(filename = "../paper/images/Fig3_female_model_coefficients.png")
+```
+
+### Figure 4: Coefficients of Male Model
+
+```{r, fig.height = 5}
+# Set model filepath
+model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/"
+
+# Read in average model
+avg_model <- readRDS(file = paste0(model_filepath, "avg_model.rds"))
+
+# Get basic plot
+plot(avg_model)
+
+# Create table of coefficients
+coef_tab <- summary(avg_model)$coefmat.full
+coef_tab <- as.data.frame(coef_tab)
+
+# Turn rownames into column
+coef_tab <- rownames_to_column(coef_tab, var = "variable")
+
+# Remove column header whitespace
+colnames(coef_tab) <- str_remove_all(colnames(coef_tab), " ")
+
+# Edit variable column to remove unneeded elements
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("^cond\\(", "")
+coef_tab$variable <- coef_tab$variable %>%
+  str_replace("s.", "")
+
+# Remove int row
+coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
+
+# Arrange by magnitude of estimated coefficient
+coef_tab <- coef_tab %>%
+  arrange(desc(abs(Estimate)))
+
+# Create graph. Start with basic image and sorting
+male_mod <- coef_tab %>%
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
+  geom_point() + 
+  geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
+                    xmax = Estimate + AdjustedSE),
+                width = 0.3) +
+  geom_vline(xintercept=0, linetype = "dotted") +
+
+  #mess with labels and axes
+  scale_y_discrete(labels = c("Latitude", "Black Mat", "Temperature",
+                              "Depth", "Leg Condition", "Carapace Width",
+                              "Shell Cond. (Cubic)", "Maturity", "Shell Cond. (Quadratic)",
+                              "Shell Cond. (Linear)")) +
+  scale_x_continuous(limits = c(-5, 1.7)) +
+  ylab("Predictor Variable") +
+  xlab ("Estimated Coefficient") +
+  
+  # mess with theme and appearance
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(color = "grey",
+                                          linewidth = 0.2,
+                                          linetype = 2))
+
+# Save plot
+ggsave(filename = "../paper/images/Fig4_male_model_coefficients.png")
+```
+
+# Create a single figure uniting the general, female, and male mods
+
+```{r, fig.height=9}
+ggarrange(gen_mod + rremove("xlab"), 
+          fem_mod + rremove("xlab"), 
+          male_mod,
+          labels = c("A", "B", "C"),
+          ncol = 1, nrow = 3,
+          align = "h")
+
+# Save plot
+ggsave(filename = "../paper/images/test.png")
 
 
 ```
+
 

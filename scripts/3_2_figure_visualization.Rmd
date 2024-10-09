@@ -120,7 +120,7 @@ ggsave(filename = "../paper/images/Fig1_survey_location_map.png")
 
 ### Figure 2: Coefficients of General Model
 
-```{r, fig.height=5}
+```{r, fig.height=5, fig.width=7}
 # Set model filepath
 model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/all_crabs/"
 
@@ -145,6 +145,7 @@ coef_tab$variable <- coef_tab$variable %>%
   str_replace("^cond\\(", "")
 coef_tab$variable <- coef_tab$variable %>%
   str_replace("s.", "")
+coef_tab <- dplyr::rename(coef_tab, significant = `Pr(>|z|)`)
 
 # Remove int row
 coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
@@ -154,9 +155,14 @@ coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
 coef_tab <- coef_tab %>%
   arrange(desc(abs(Estimate)))
 
+# Change pval to y/n
+coef_tab$significant[coef_tab$significant >= 0.05] <- "n"
+coef_tab$significant[coef_tab$significant < 0.05] <- "y"
+
 # Create graph. Start with basic image and sorting
-gen_mod <- coef_tab %>%
-  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
+coef_tab %>%
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE), 
+             colour = significant)) +
   geom_point() + 
   geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
                     xmax = Estimate + AdjustedSE),
@@ -168,17 +174,21 @@ gen_mod <- coef_tab %>%
                               "Depth", "Carapace Width", "Sex",
                               "Shell Cond. (Cubic)", "Black Mat", "Shell Cond. (Quadratic)",
                               "Shell Cond. (Linear)")) +
-  scale_x_continuous(limits = c(-5, 1.7)) +
   ylab("Predictor Variable") +
   xlab ("Estimated Coefficient") +
-  
+  ggtitle("General Model") +
+
   # mess with theme and appearance
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_line(color = "grey",
                                           linewidth = 0.2,
-                                          linetype = 2))
+                                          linetype = 2)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(values = c("darkgrey", "black")) +
+  theme(legend.position = "none")
+
 
 # Save plot
 ggsave(filename = "../paper/images/Fig2_gen_model_coefficients.png")
@@ -186,9 +196,11 @@ ggsave(filename = "../paper/images/Fig2_gen_model_coefficients.png")
 
 
 
-### Figure 3: Coefficients of Female Model
+### Figure 3a: Coefficients of Sex-Specific Models
 
-```{r, fig.height=5}
+Here, we'll build female-specific and male-specific model coefficient graphs in separate chunks, and then compile them into a single plot
+
+```{r, fig.height=5, fig.width=8}
 # Set model filepath
 model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/fem_crabs/"
 
@@ -213,6 +225,7 @@ coef_tab$variable <- coef_tab$variable %>%
   str_replace("^cond\\(", "")
 coef_tab$variable <- coef_tab$variable %>%
   str_replace("s.", "")
+coef_tab <- dplyr::rename(coef_tab, significant = `Pr(>|z|)`)
 
 # Remove int row
 coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
@@ -221,9 +234,14 @@ coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
 coef_tab <- coef_tab %>%
   arrange(desc(abs(Estimate)))
 
+# Change pval to y/n
+coef_tab$significant[coef_tab$significant >= 0.05] <- "n"
+coef_tab$significant[coef_tab$significant != "n"] <- "y"
+
 # Create graph. Start with basic image and sorting
 fem_mod <- coef_tab %>%
-  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE),
+             colour = significant)) +
   geom_point() + 
   geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
                     xmax = Estimate + AdjustedSE),
@@ -246,15 +264,17 @@ fem_mod <- coef_tab %>%
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_line(color = "grey",
                                           linewidth = 0.2,
-                                          linetype = 2))
+                                          linetype = 2)) +
+  scale_color_manual(values = c("darkgrey", "black")) +
+  theme(legend.position = "none")
 
 # Save plot
-ggsave(filename = "../paper/images/Fig3_female_model_coefficients.png")
+ggsave(filename = "../paper/images/Fig3a_female_model_coefficients.png")
 ```
 
 ### Figure 4: Coefficients of Male Model
 
-```{r, fig.height = 5}
+```{r, fig.height = 5, fig.width = 8}
 # Set model filepath
 model_filepath <- "../output/ADFG_SE_AK_pot_surveys/models/weighted_models/male_crabs/"
 
@@ -279,6 +299,7 @@ coef_tab$variable <- coef_tab$variable %>%
   str_replace("^cond\\(", "")
 coef_tab$variable <- coef_tab$variable %>%
   str_replace("s.", "")
+coef_tab <- dplyr::rename(coef_tab, significant = `Pr(>|z|)`)
 
 # Remove int row
 coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
@@ -287,9 +308,14 @@ coef_tab <- coef_tab[coef_tab$variable != "(Int))", ]
 coef_tab <- coef_tab %>%
   arrange(desc(abs(Estimate)))
 
+# Change pval to y/n
+coef_tab$significant[coef_tab$significant >= 0.05] <- "n"
+coef_tab$significant[coef_tab$significant != "n"] <- "y"
+
 # Create graph. Start with basic image and sorting
 male_mod <- coef_tab %>%
-  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE))) +
+  ggplot(aes(x = Estimate, y = reorder(variable, abs(Estimate), decreasing = FALSE),
+             colour = significant)) +
   geom_point() + 
   geom_errorbar(aes(xmin = Estimate - AdjustedSE, 
                     xmax = Estimate + AdjustedSE),
@@ -311,26 +337,25 @@ male_mod <- coef_tab %>%
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_line(color = "grey",
                                           linewidth = 0.2,
-                                          linetype = 2))
+                                          linetype = 2)) +
+  scale_color_manual(values = c("darkgrey", "black")) +
+  theme(legend.position = "none")
 
 # Save plot
-ggsave(filename = "../paper/images/Fig4_male_model_coefficients.png")
+ggsave(filename = "../paper/images/Fig3b_male_model_coefficients.png")
 ```
 
-# Create a single figure uniting the general, female, and male mods
+# Create a single figure uniting the female, and male mods
 
-```{r, fig.height=9}
-ggarrange(gen_mod + rremove("xlab"), 
-          fem_mod + rremove("xlab"), 
+```{r, fig.height=9, fig.width = 10}
+ggarrange(fem_mod + rremove("xlab"), 
           male_mod,
-          labels = c("A", "B", "C"),
-          ncol = 1, nrow = 3,
+          labels = c("F", "M"),
+          ncol = 1, nrow = 2,
           align = "h")
 
 # Save plot
-ggsave(filename = "../paper/images/test.png")
-
-
+ggsave(filename = "../paper/images/Fig_3_sex_specific_models.png")
 ```
 
 

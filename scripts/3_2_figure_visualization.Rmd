@@ -176,7 +176,6 @@ coef_tab %>%
                               "Shell Cond. (Linear)")) +
   ylab("Predictor Variable") +
   xlab ("Estimated Coefficient") +
-  ggtitle("General Model") +
 
   # mess with theme and appearance
   theme_bw() +

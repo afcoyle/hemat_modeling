@@ -82,9 +82,10 @@ se_map <- ggmap(southeast) +
              aes(x = avg_long, 
                  y = avg_lat,
                  shape = Project),
-             size = 3) +
-  theme_map() +
-  theme(legend.position = "none")
+             size = 2) +
+  xlab ("Longitude") +
+  ylab ("Latitude (°N)") +
+  guides(shape = FALSE)
 
 # Define boundaries of our Alaska map
 alaska <- get_stadiamap(
@@ -109,8 +110,8 @@ ak_map <- ggmap(alaska) +
 full_map <- se_map %>%
   ggdraw () +
   draw_plot(ak_map,
-            x = 0.0,
-            y = 0.0,
+            x = 0.141,
+            y = 0.079,
             width = 0.45,
             height = 0.45)
 

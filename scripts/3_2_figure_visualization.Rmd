@@ -358,4 +358,52 @@ ggarrange(fem_mod + rremove("xlab"),
 ggsave(filename = "../paper/images/Fig_3_sex_specific_models.png")
 ```
 
+#### Graphing Raw Data
+
+```{r}
+# Read in data
+crabdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
+
+# Calculate means and standard errors
+SC_means <- tapply(crabdat$Bitter, crabdat$Shell.Condition, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, Shell.Condition, FUN = sd) / sqrt(table(crabdat$Shell.Condition)))
+
+# Create new data table
+SC_table <- data.frame(SC_means, SE_vals)
+# Rename and reorder columns
+SC_table <- SC_table %>%
+  rename(bitter_mean = SC_means,
+         SC = Var1, 
+         std_error = Freq) %>%
+  relocate(SC)
+
+# Multiply values by 100 to get percentages
+SC_table$bitter_mean = SC_table$bitter_mean * 100
+SC_table$std_error = SC_table$std_error * 100
+
+# Plot 
+ggplot(SC_table) +
+  geom_bar(aes(x = SC, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = SC, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  ylab("Percent of Crabs with BCS") +
+  xlab("Shell Condition") +
+  scale_x_discrete(labels = c("New", "Old", "Very Old", "Very Very Old"))
+  
+  
+  
+
+
+
+
+
+```
+
 

@@ -538,7 +538,12 @@ colSums(is.na(fem_crabs))
 
 # Drop all rows with NAs
 fem_crabs <- na.omit(fem_crabs)
+
 # Great, we've got around 25,000 rows! Neat stuff.
+# Let's write that out
+
+write.csv(fem_crabs, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/female_data_for_model.csv")
+
 
 #### Re-scale all variables for our new dataset
 
@@ -809,8 +814,7 @@ masc_crabs <- masc_crabs %>%
   dplyr::select(-contains("s."))
 
 # We'll use the ratio of chela height to carapace width to indicate crab maturity
-# Note: This is using the EBS line for height-CW, will have to get the SE AK ratio later
-# EBS equation = ln(chela_ht) = (1.189*ln(CW)) - 2.674
+# Note: equation = ln(chela_ht) = (1.189*ln(CW)) - 2.674
 # Create new column for maturity line. Remember, log() computes ln, R is weird like that 
 # Also, male crabs with a CW < 60 are immature
 masc_crabs$mat_line <- (1.189 * log(masc_crabs$CW)) - 2.674
@@ -836,6 +840,9 @@ masc_crabs <- masc_crabs %>%
 colSums(is.na(masc_crabs))
 
 # Great, we've got around 25,000 rows! Neat stuff.
+
+# Let's write that out
+write.csv(masc_crabs, file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/male_data_for_model.csv")
 
 #### Re-scale all variables for our new dataset
 

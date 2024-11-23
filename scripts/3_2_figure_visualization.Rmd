@@ -39,7 +39,7 @@ loc_dat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/pot_da
 # Remove all except Project, Location, Latitude, and Longitude, rename columns to be easier
 loc_dat <- loc_dat %>%
   select("Project", "Location", "Latitude.Decimal.Degrees", "Longitude.Decimal.Degrees") %>%
-  rename(Latitude = Latitude.Decimal.Degrees, 
+  dplyr::rename(Latitude = Latitude.Decimal.Degrees, 
          Longitude = Longitude.Decimal.Degrees)
 
 # We've got some weird latitudes and longitudes, let's fix
@@ -194,9 +194,185 @@ coef_tab %>%
 ggsave(filename = "../paper/images/Fig2_gen_model_coefficients.png")
 ```
 
+### Figure 3: Graphing General Model Raw Datal
+
+```{r}
+# Read in data
+crabdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
 
 
-### Figure 3a: Coefficients of Sex-Specific Models
+#### Shell Condition -----------------------------------------------------------------
+# Calculate means and standard errors
+SC_means <- tapply(crabdat$Bitter, crabdat$Shell.Condition, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, Shell.Condition, FUN = sd) / sqrt(table(crabdat$Shell.Condition)))
+
+# Create new data table
+SC_table <- data.frame(SC_means, SE_vals)
+# Rename and reorder columns
+SC_table <- SC_table %>%
+  dplyr::rename(bitter_mean = SC_means,
+         SC = Var1, 
+         std_error = Freq) %>%
+  relocate(SC)
+
+# Multiply values by 100 to get percentages
+SC_table$bitter_mean = SC_table$bitter_mean * 100
+SC_table$std_error = SC_table$std_error * 100
+
+# Plot SC
+SC_plot <- ggplot(SC_table) +
+  geom_bar(aes(x = SC, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = SC, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  ylab("Percent of Crabs with BCS") +
+  xlab("Shell Condition") +
+  scale_x_discrete(labels = c("New", "Old", "Very Old", "Very Very Old")) +
+  scale_y_continuous(limits = c(0,18))
+
+  
+SC_plot
+  
+#### Black Mat ----------------------------------------
+
+# Calculate means and standard errors
+BM_means <- tapply(crabdat$Bitter, crabdat$Blackmat, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, Blackmat, FUN = sd) / sqrt(table(crabdat$Blackmat)))
+
+# Create new data table
+BM_table <- data.frame(BM_means, SE_vals)
+# Rename and reorder columns
+BM_table <- BM_table %>%
+  dplyr::rename(bitter_mean = BM_means,
+         BM = Var1, 
+         std_error = Freq) %>%
+  relocate(BM)
+
+# Multiply values by 100 to get percentages
+BM_table$bitter_mean = BM_table$bitter_mean * 100
+BM_table$std_error = BM_table$std_error * 100
+
+# Plot BM
+BM_plot <- ggplot(BM_table) +
+  geom_bar(aes(x = BM, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = BM, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  xlab("Black Mat Status") +
+  scale_x_discrete(labels = c("Uninfected", "Infected")) +
+  scale_y_continuous(limits = c(0,18)) +
+  theme(axis.title.y = element_blank())
+
+  
+BM_plot
+
+#### Sex -------------------------------------
+
+# Calculate means and standard errors
+sex_means <- tapply(crabdat$Bitter, crabdat$Sex, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, Sex, FUN = sd) / sqrt(table(crabdat$Sex)))
+
+# Create new data table
+sex_table <- data.frame(sex_means, SE_vals)
+# Rename and reorder columns
+sex_table <- sex_table %>%
+  dplyr::rename(bitter_mean = sex_means,
+         sex = Var1, 
+         std_error = Freq) %>%
+  relocate(sex)
+
+# Multiply values by 100 to get percentages
+sex_table$bitter_mean = sex_table$bitter_mean * 100
+sex_table$std_error = sex_table$std_error * 100
+
+# Plot sex
+sex_plot <- ggplot(sex_table) +
+  geom_bar(aes(x = sex, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = sex, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  ylab("Percent of Crabs with BCS") +
+  xlab("Sex") +
+  scale_x_discrete(labels = c("Male", "Female")) +
+  scale_y_continuous(limits = c(0,18))
+
+  
+sex_plot
+
+#### CW -------------------------------------
+
+# Calculate means and standard errors
+cw_means <- tapply(crabdat$Bitter, crabdat$CW, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, CW, FUN = sd) / sqrt(table(crabdat$CW)))
+
+# Create new data table
+cw_table <- data.frame(cw_means, SE_vals)
+# Rename and reorder columns
+cw_table <- cw_table %>%
+  dplyr::rename(bitter_mean = cw_means,
+         cw = Var1, 
+         std_error = Freq) %>%
+  relocate(cw)
+
+# Filter to only include rows with a CW between 70mm and 180mm, as those have 50+ observations
+cw_table$cw <- as.numeric(levels(cw_table$cw))
+cw_table <- cw_table %>%
+  filter(cw >= 70 & cw <= 180)
+
+# Multiply values by 100 to get percentages
+cw_table$bitter_mean = cw_table$bitter_mean * 100
+cw_table$std_error = cw_table$std_error * 100
+
+# Plot cw
+cw_plot <- ggplot(cw_table) +
+  geom_point(aes(x = cw, y = bitter_mean), 
+           stat = "identity") +
+  geom_errorbar(aes(x = cw, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  xlab("Carapace Width") +
+  scale_y_continuous(limits = c(0,18)) +
+  theme(axis.title.y = element_blank())
+
+
+cw_plot
+
+ggdraw() +
+  draw_plot(SC_plot, x = 0, y = .5, width = .5, height = .5) +
+  draw_plot(BM_plot, x = 0.5, y = .5, width = .5, height = .5) +
+  draw_plot(sex_plot, x = 0, y = 0, width = .5, height = .5) +
+  draw_plot(cw_plot, x = .5, y = 0, width = .5, height = .5)
+
+ggsave(filename = "../paper/images/Fig3_general_model_data.png")
+
+
+
+```
+
+
+### Figure 4a: Coefficients of Sex-Specific Models
 
 Here, we'll build female-specific and male-specific model coefficient graphs in separate chunks, and then compile them into a single plot
 
@@ -269,10 +445,10 @@ fem_mod <- coef_tab %>%
   theme(legend.position = "none")
 
 # Save plot
-ggsave(filename = "../paper/images/Fig3a_female_model_coefficients.png")
+ggsave(filename = "../paper/images/Fig4a_female_model_coefficients.png")
 ```
 
-### Figure 4: Coefficients of Male Model
+### Figure 4b: Coefficients of Male Model
 
 ```{r, fig.height = 5, fig.width = 8}
 # Set model filepath
@@ -342,10 +518,10 @@ male_mod <- coef_tab %>%
   theme(legend.position = "none")
 
 # Save plot
-ggsave(filename = "../paper/images/Fig3b_male_model_coefficients.png")
+ggsave(filename = "../paper/images/Fig4b_male_model_coefficients.png")
 ```
 
-# Create a single figure uniting the female, and male mods
+### Figure 4: Create a single figure uniting the female, and male mods
 
 ```{r, fig.height=9, fig.width = 10}
 ggarrange(fem_mod + rremove("xlab"), 
@@ -355,38 +531,41 @@ ggarrange(fem_mod + rremove("xlab"),
           align = "h")
 
 # Save plot
-ggsave(filename = "../paper/images/Fig_3_sex_specific_models.png")
+ggsave(filename = "../paper/images/Fig_4_sex_specific_models.png")
 ```
 
-#### Graphing Raw Data
+
+#### Figure 5: Graphing Sex-Specific Raw Data
 
 ```{r}
 # Read in data
-crabdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_examined_crab_with_temperature.csv")
+femdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/female_data_for_model.csv")
+mascdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/male_data_for_model.csv")
 
+#### Egg Development -----------------------------------------------------------------
 # Calculate means and standard errors
-SC_means <- tapply(crabdat$Bitter, crabdat$Shell.Condition, FUN = mean)
-SE_vals <- with(crabdat, tapply(Bitter, Shell.Condition, FUN = sd) / sqrt(table(crabdat$Shell.Condition)))
+dev_means <- tapply(femdat$Bitter, femdat$Egg.Development, FUN = mean)
+SE_vals <- with(femdat, tapply(Bitter, Egg.Development, FUN = sd) / sqrt(table(femdat$Egg.Development)))
 
 # Create new data table
-SC_table <- data.frame(SC_means, SE_vals)
+dev_table <- data.frame(dev_means, SE_vals)
 # Rename and reorder columns
-SC_table <- SC_table %>%
-  rename(bitter_mean = SC_means,
-         SC = Var1, 
+dev_table <- dev_table %>%
+  dplyr::rename(bitter_mean = dev_means,
+         dev = Var1, 
          std_error = Freq) %>%
-  relocate(SC)
+  relocate(dev)
 
 # Multiply values by 100 to get percentages
-SC_table$bitter_mean = SC_table$bitter_mean * 100
-SC_table$std_error = SC_table$std_error * 100
+dev_table$bitter_mean = dev_table$bitter_mean * 100
+dev_table$std_error = dev_table$std_error * 100
 
-# Plot 
-ggplot(SC_table) +
-  geom_bar(aes(x = SC, y = bitter_mean), 
+# Plot dev
+dev_plot <- ggplot(dev_table) +
+  geom_bar(aes(x = dev, y = bitter_mean), 
            stat = "identity", 
            fill = "grey")+
-  geom_errorbar(aes(x = SC, 
+  geom_errorbar(aes(x = dev, 
                     ymin = bitter_mean - std_error, 
                     ymax = bitter_mean + std_error),
                 width = 0.3) +
@@ -394,14 +573,97 @@ ggplot(SC_table) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
   ylab("Percent of Crabs with BCS") +
-  xlab("Shell Condition") +
-  scale_x_discrete(labels = c("New", "Old", "Very Old", "Very Very Old"))
-  
-  
-  
+  xlab("Egg Development") +
+  scale_x_discrete(labels = c("Clean", "Matted", "Dead Eggs", "Juvenile", "Uneyed")) +
+  scale_y_continuous(limits = c(0,40)) 
 
+dev_plot
 
+#### Egg Percent -----------------------------------------------------------------
+# Calculate means and standard errors
+pct_means <- tapply(femdat$Bitter, femdat$Egg.Percent, FUN = mean)
+SE_vals <- with(femdat, tapply(Bitter, Egg.Percent, FUN = sd) / sqrt(table(femdat$Egg.Percent)))
 
+# Create new data table
+pct_table <- data.frame(pct_means, SE_vals)
+# Rename and reorder columns
+pct_table <- pct_table %>%
+  dplyr::rename(bitter_mean = pct_means,
+         pct = Var1, 
+         std_error = Freq) %>%
+  relocate(pct)
+
+# Remove values without representation
+pct_table$pct <- as.numeric(levels(pct_table$pct))
+pct_table <- pct_table %>%
+  filter(bitter_mean > 0.01) %>%
+  filter(pct != 5)
+  
+# Multiply values by 100 to get percentages
+pct_table$bitter_mean = pct_table$bitter_mean * 100
+pct_table$std_error = pct_table$std_error * 100
+
+# Plot pct
+pct_plot <- ggplot(pct_table) +
+  geom_bar(aes(x = pct, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = pct, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 1.5) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  ylab("Percent of Crabs with BCS") +
+  xlab("Egg Percent") +
+  scale_y_continuous(limits = c(0,40)) +
+  theme(axis.title.y = element_blank())
+
+pct_plot
+
+#### Maturity (Males) -----------------------------------------------------------------
+# Calculate means and standard errors
+mat_means <- tapply(mascdat$Bitter, mascdat$mat_stat, FUN = mean)
+SE_vals <- with(mascdat, tapply(Bitter, mat_stat, FUN = sd) / sqrt(table(mascdat$mat_stat)))
+
+# Create new data table
+mat_table <- data.frame(mat_means, SE_vals)
+# Rename and reorder columns
+mat_table <- mat_table %>%
+  dplyr::rename(bitter_mean = mat_means,
+         mat = Var1, 
+         std_error = Freq) %>%
+  relocate(mat)
+
+# Multiply values by 100 to get percentages
+mat_table$bitter_mean = mat_table$bitter_mean * 100
+mat_table$std_error = mat_table$std_error * 100
+
+# Plot mat
+mat_plot <- ggplot(mat_table) +
+  geom_bar(aes(x = mat, y = bitter_mean), 
+           stat = "identity", 
+           fill = "grey")+
+  geom_errorbar(aes(x = mat, 
+                    ymin = bitter_mean - std_error, 
+                    ymax = bitter_mean + std_error),
+                width = 0.3) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  ylab("Percent of Crabs with BCS") +
+  xlab("Male Maturity") +
+  scale_x_discrete(labels = c("Immature", "Mature"))
+
+mat_plot
+
+ggdraw() +
+  draw_plot(dev_plot, x = 0, y = 0, width = .5, height = .5) +
+  draw_plot(pct_plot, x = 0.5, y = 0, width = .5, height = .5) +
+  draw_plot(mat_plot, x = 0.25, y = 0.5, width = .5, height = .5)
+
+ggsave(filename = "../paper/images/Fig5_sex_models_data.png")
 
 
 ```

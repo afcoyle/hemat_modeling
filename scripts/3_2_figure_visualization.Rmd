@@ -538,7 +538,7 @@ ggsave(filename = "../paper/images/Fig_4_sex_specific_models.png")
 
 #### Figure 5: Graphing Sex-Specific Raw Data
 
-```{r}
+```{r fig.height=8, fig.width=8}
 # Read in data
 femdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/female_data_for_model.csv")
 mascdat <- read.csv(file = "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/male_data_for_model.csv")
@@ -657,7 +657,7 @@ CF_hist <- CF_distrib %>%
   xlab("Egg Percent") +
   ylab("Frequency") +
   scale_fill_manual("Bitter Status", labels = c("Bitter", "Not Bitter"), values = c("grey", "black")) +
-  theme(legend.position = "inside", legend.position.inside = c(0.1, 0.8))
+  theme(legend.position = "inside", legend.position.inside = c(0.2, 0.6))
   
   
   
@@ -703,20 +703,15 @@ ggdraw() +
   draw_plot(dev_plot, x = 0, y = 0.5, width = .5, height = .5) +
   draw_plot(pct_plot, x = 0.5, y = 0.5, width = .5, height = .5) +
   draw_plot(mat_plot, x = 0.5, y = 0, width = .5, height = .5) +
-  draw_plot(CF_hist, x = 0, y = 0, width = .5, height = .5)
-
-
-
-ggarrange(dev_plot,
-          pct_plot,
-          CF_hist,
-          mat_plot,
-          ncol = 2, nrow = 2,
-          align = "h")
+  draw_plot(CF_hist, x = 0, y = 0, width = .5, height = .5) +
+  draw_label(label = "A", x = .42, y = .95) +
+  draw_label(label = "B", x = .92, y = .95) +
+  draw_label(label = "C", x = .42, y = .45) +
+  draw_label(label = "D", x = .92, y = .45) 
+  
 
 # Save plot
-ggsave(filename = "../paper/images/Fig_5_sex_specific_models.png",
-       width = 10, height = 10, units = "in")
+ggsave(filename = "../paper/images/Fig_5_sex_specific_models.png")
 
 ```
 

@@ -318,18 +318,23 @@ sex_plot <- ggplot(sex_table) +
 sex_plot
 
 #### CW -------------------------------------
+
+# Scale CW separately for each sex
 crabdat_f <- crabdat[crabdat$Sex == "2", ]
 crabdat_m <- crabdat[crabdat$Sex == "1", ]
 
 crabdat_f$s.CW <- scale(crabdat_f$CW)
 crabdat_m$s.CW <- scale(crabdat_m$CW)
 
-crab_dat <- rbind(crabdat_f, crabdat_m)
+crabdat <- rbind(crabdat_f, crabdat_m)
+
+# Get percentile of each scaled CW
+crabdat$perc_CW <- ntile(crabdat$s.CW, n = 100)
 
 
 # Calculate means and standard errors
-cw_means <- tapply(crabdat$Bitter, crabdat$CW, FUN = mean)
-SE_vals <- with(crabdat, tapply(Bitter, CW, FUN = sd) / sqrt(table(crabdat$CW)))
+cw_means <- tapply(crabdat$Bitter, crabdat$perc_CW, FUN = mean)
+SE_vals <- with(crabdat, tapply(Bitter, perc_CW, FUN = sd) / sqrt(table(crabdat$perc_CW)))
 
 # Create new data table
 cw_table <- data.frame(cw_means, SE_vals)
@@ -340,14 +345,12 @@ cw_table <- cw_table %>%
          std_error = Freq) %>%
   relocate(cw)
 
-# Filter to only include rows with a CW between 70mm and 180mm, as those have 50+ observations
-cw_table$cw <- as.numeric(levels(cw_table$cw))
-cw_table <- cw_table %>%
-  filter(cw >= 70 & cw <= 180)
-
 # Multiply values by 100 to get percentages
 cw_table$bitter_mean = cw_table$bitter_mean * 100
 cw_table$std_error = cw_table$std_error * 100
+
+# Convert cw values to numeric
+cw_table$cw <- as.numeric(cw_table$cw)
 
 # Plot cw
 cw_plot <- ggplot(cw_table) +
@@ -360,8 +363,9 @@ cw_plot <- ggplot(cw_table) +
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  xlab("Carapace Width (mm)") +
+  xlab("Sex-Specific Percentile of Carapace Width") +
   scale_y_continuous(limits = c(0,18)) +
+  scale_x_continuous(limits = c(0, 100), expand = c(0,1)) +
   theme(axis.title.y = element_blank())
 
 
@@ -372,7 +376,11 @@ ggdraw() +
   draw_plot(SC_plot, x = 0, y = .5, width = .5, height = .5) +
   draw_plot(BM_plot, x = 0.5, y = .5, width = .5, height = .5) +
   draw_plot(sex_plot, x = 0, y = 0, width = .5, height = .5) +
-  draw_plot(cw_plot, x = .5, y = 0, width = .5, height = .5)
+  draw_plot(cw_plot, x = .5, y = 0, width = .5, height = .5) +
+  draw_label(label = "A", x = .1, y = .93) +
+  draw_label(label = "B", x = .58, y = .93) +
+  draw_label(label = "C", x = .1, y = .43) +
+  draw_label(label = "D", x = .58, y = .43) 
 
 ggsave(filename = "../paper/images/Fig3_general_model_data.png")
 
@@ -584,7 +592,7 @@ dev_plot <- ggplot(dev_table) +
   ylab("Percent of Crabs with BCS") +
   xlab("Egg Development") +
   scale_x_discrete(labels = c("Clean", "Matted", "Dead Eggs", "Juvenile", "Uneyed")) +
-  scale_y_continuous(limits = c(0,40)) 
+  scale_y_continuous(limits = c(0,42)) 
 
 dev_plot
 
@@ -626,7 +634,7 @@ pct_plot <- ggplot(pct_table) +
         panel.grid.minor = element_blank()) +
   ylab("Percent of Crabs with BCS") +
   xlab("Clutch Fullness (%)") +
-  scale_y_continuous(limits = c(0,40)) +
+  scale_y_continuous(limits = c(0,42)) +
   theme(axis.title.y = element_blank())
 
 pct_plot
@@ -652,7 +660,7 @@ CF_distrib$hist_nb <- CF_distrib$non_bitter / sum(CF_distrib$non_bitter)
 # Pivot longer, drop irrelevant columns
 CF_distrib <- CF_distrib %>%
   pivot_longer(cols = c(hist_bitter, hist_nb), names_to = "bitter_status", values_to = "hist_vals") %>%
-  select(c(Egg.Percent, bitter_status, hist_vals))
+  dplyr::select(c(Egg.Percent, bitter_status, hist_vals))
 
  # Plot as histogram
 CF_hist <- CF_distrib %>%
@@ -665,9 +673,7 @@ CF_hist <- CF_distrib %>%
   xlab("Clutch Fullness (%)") +
   ylab("Frequency") +
   scale_fill_manual("BCS Status", labels = c("Positive", "Negative"), values = c("grey", "black")) +
-  theme(legend.position = "inside", legend.position.inside = c(0.2, 0.6))
-  
-  
+  theme(legend.position = "inside", legend.position.inside = c(0.2, 0.6)) 
   
 CF_hist
 

@@ -233,7 +233,7 @@ SC_plot <- ggplot(SC_table) +
         panel.grid.minor = element_blank()) +
   ylab("Percent of Crabs with BCS") +
   xlab("Shell Condition") +
-  scale_x_discrete(labels = c("New", "Old", "Very Old", "Very Very Old")) +
+  scale_x_discrete(labels = c("Light", "New", "Old", "Very Old")) +
   scale_y_continuous(limits = c(0,18))
 
   
@@ -318,6 +318,14 @@ sex_plot <- ggplot(sex_table) +
 sex_plot
 
 #### CW -------------------------------------
+crabdat_f <- crabdat[crabdat$Sex == "2", ]
+crabdat_m <- crabdat[crabdat$Sex == "1", ]
+
+crabdat_f$s.CW <- scale(crabdat_f$CW)
+crabdat_m$s.CW <- scale(crabdat_m$CW)
+
+crab_dat <- rbind(crabdat_f, crabdat_m)
+
 
 # Calculate means and standard errors
 cw_means <- tapply(crabdat$Bitter, crabdat$CW, FUN = mean)
@@ -428,7 +436,7 @@ fem_mod <- coef_tab %>%
   #mess with labels and axes
   scale_y_discrete(labels = c("Latitude", "Leg Condition", "Depth",
                               "Egg Dev. (Uneyed)", "Temperature", "Carapace Width",
-                              "Egg Percent", "Black Mat", "Egg Dev. (Barren)", 
+                              "Clutch Fullness", "Black Mat", "Egg Dev. (Barren)", 
                               "Egg Dev. (Dead Eggs)", "Egg Dev. (Juvenile)", "Shell Cond. (Cubic)",
                               "Shell Cond. (Quadratic)", "Shell Cond. (Linear)")) +
   scale_x_continuous(limits = c(-5, 1.7)) +
@@ -580,7 +588,7 @@ dev_plot <- ggplot(dev_table) +
 
 dev_plot
 
-#### Egg Percent -----------------------------------------------------------------
+#### Clutch Fullness -----------------------------------------------------------------
 # Calculate means and standard errors
 pct_means <- tapply(femdat$Bitter, femdat$Egg.Percent, FUN = mean)
 SE_vals <- with(femdat, tapply(Bitter, Egg.Percent, FUN = sd) / sqrt(table(femdat$Egg.Percent)))
@@ -617,7 +625,7 @@ pct_plot <- ggplot(pct_table) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
   ylab("Percent of Crabs with BCS") +
-  xlab("Egg Percent") +
+  xlab("Clutch Fullness (%)") +
   scale_y_continuous(limits = c(0,40)) +
   theme(axis.title.y = element_blank())
 
@@ -654,9 +662,9 @@ CF_hist <- CF_distrib %>%
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  xlab("Egg Percent") +
+  xlab("Clutch Fullness (%)") +
   ylab("Frequency") +
-  scale_fill_manual("Bitter Status", labels = c("Bitter", "Not Bitter"), values = c("grey", "black")) +
+  scale_fill_manual("BCS Status", labels = c("Positive", "Negative"), values = c("grey", "black")) +
   theme(legend.position = "inside", legend.position.inside = c(0.2, 0.6))
   
   

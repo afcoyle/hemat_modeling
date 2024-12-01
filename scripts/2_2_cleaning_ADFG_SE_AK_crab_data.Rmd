@@ -162,16 +162,18 @@ crabdat %>%
   arrange(desc(Width.Millimeters)) %>%
   slice(1:10)
 
-# Alright, we can maaaybe accept a 224-mm crab. That's immense, but not impossible.
-# There is absolutely no way they have a crab with a carapace width of nearly 2 meters (at least I hope not)
-# We'll turn everything with a CW > 400 to NA
-crabdat[crabdat$Width.Millimeters > 400 & !is.na(crabdat$Width.Millimeters), ]$Width.Millimeters <- NA
+# I'm extremely skeptical of our measurements of a crab with a CW of 224 and our one of 400+. Let's remove those both
+crabdat[crabdat$Width.Millimeters > 200 & !is.na(crabdat$Width.Millimeters), ]$Width.Millimeters <- NA
 
 # We'll also look at females separately \
 crabdat[crabdat$Sex == "Female", ] %>%
   arrange(desc(Width.Millimeters)) %>%
   slice(1:20)
-# Those are definitely big females, but not unreasonably so
+
+# Let's remove all femailes with a CW that isn't seen at least 10 times, as everything else is likely a data entry error
+# That CW is 124.
+crabdat <- crabdat %>%
+  dplyr::filter(Sex == "Male" | Width.Millimeters < 124)
 
 # Check 10 lowest values too
 crabdat %>%
@@ -190,7 +192,7 @@ hist(crabdat[crabdat$Sex == "Female", ]$Width.Millimeters)
 
 # Let's also check how many crabs we have without a measurement for Width
 sum(is.na(crabdat$Width.Millimeters))
-# 7800 sounds like a lot, but that's just under 5%
+# Just 300!
 ```
 
 ### Weight.Grams
@@ -584,10 +586,12 @@ NOTE: This is NOT the actual data that will be used inside each model. It includ
 
 ```{r}
 # Black Mat data
-write.csv(BM.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/crab_data/black_mat_cleaned.csv", row.names = FALSE)
+write.csv(BM.crabdat, "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/black_mat_cleaned.csv", row.names = FALSE)
+          
 
 # Bitter Crab Syndrome data
-write.csv(BCS.crabdat, "../output/ADFG_SE_AK pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", row.names = FALSE)
+write.csv(BCS.crabdat, "../output/ADFG_SE_AK_pot_surveys/cleaned_data/crab_data/BCS_cleaned.csv", row.names = FALSE)
+          
 
 ```
 

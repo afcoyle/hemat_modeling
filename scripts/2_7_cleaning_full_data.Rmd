@@ -264,7 +264,7 @@ table(crab_dat$Site)
 # We've got some very low numbers here at some sites
 # Cape Fanshaw has three and Round Rock has one. We'll remove both
 crab_dat <- crab_dat %>%
-  filter(Site != "Cape_Fanshaw" & Site != "Round_Rock")
+  dplyr::filter(Site != "Cape_Fanshaw" & Site != "Round_Rock")
 # Alright, now all good!
 
 #### Pot.No ----------------------------
@@ -279,6 +279,8 @@ table(crab_dat$Sex)
 crab_dat[crab_dat$Sex == "Male", ]$Sex <- 1
 crab_dat[crab_dat$Sex == "Female", ]$Sex <- 2
 
+crab_dat$Sex <- as.factor(crab_dat$Sex)
+
 #### Carapace Width (CW) -------------------------------
 head(sort(crab_dat$CW), n = 10)
 # Upon sorting and looking at the full table, all these look legit except the first one. No way there's a mature female with eggs and a CW of 9. Let's remove that
@@ -288,7 +290,6 @@ crab_dat <- crab_dat %>%
 head(sort(crab_dat$CW, decreasing = TRUE), n = 10)
 # Also looks all good. Let's check our females specifically, since they mature at smaller sizes
 head(sort(crab_dat[crab_dat$Sex == 2, ]$CW, decreasing = TRUE), n = 10)
-# A bit suspicious, since I've never seen a female Tanner close to that big. But still doesn't mean it's impossible, and there are a good number within relatively close sizes. We'll assume these are accurate female measurements.
 
 #### Chela Height ------------------------------
 head(sort(crab_dat$Chela.Ht), n = 10)
@@ -321,7 +322,7 @@ crab_dat <- crab_dat %>%
 
 #### Egg.Development ------------------------------------------------------
 table(crab_dat$Egg.Development)
-# Only 4 have eyed eggs, let's remove. Then we'll replace any values for males with NAs
+# Replace any values for males with NAs
 crab_dat <- crab_dat %>%
   mutate(Egg.Development = replace(Egg.Development, Sex == 1, NA))
 

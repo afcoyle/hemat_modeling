@@ -513,10 +513,6 @@ fem_crabs <- fem_crabs %>%
 fem_crabs <- fem_crabs %>%
   mutate(Egg.Development = ifelse(Egg.Condition == "Dead_eggs_under_20pct", "Dead_Eggs", as.character(Egg.Development)))
 
-# Only three crabs have eyed eggs, we'll just remove those
-fem_crabs <- fem_crabs %>%
-  filter(Egg.Development != "Eyed")
-
 # Change all crabs with a recruit status of Juvenile Female to Egg Development = Juvenile
 fem_crabs <- fem_crabs %>%
   mutate(Egg.Development = ifelse(Recruit.Status == "Juvenile_Female", "Juvenile", as.character(Egg.Development)))
@@ -532,6 +528,9 @@ fem_crabs <- fem_crabs %>%
 # If a crab is juvenile or barren, change egg percent to zero
 fem_crabs <- fem_crabs %>%
   mutate(Egg.Percent = ifelse(Egg.Percent != 0 & (Egg.Development == "Barren_Clean" | Egg.Development == "Barren_Matted" | Egg.Development == "Juvenile"), NA, Egg.Percent))
+
+# Change egg development column back to factor
+fem_crabs$Egg.Development <- as.factor(fem_crabs$Egg.Development)
 
 # See how many NAs we have
 colSums(is.na(fem_crabs))
@@ -803,7 +802,7 @@ This model will include all male crabs with chela height measurements
 ```{r}
 # Select only male crabs
 masc_crabs <- crab_dat %>%
-  filter(Sex == "1")
+  filter(Sex == 1)
 
 # Drop egg columns
 masc_crabs <- masc_crabs %>%
@@ -835,6 +834,9 @@ masc_crabs <- masc_crabs %>%
 # Remove maturity value and line columns, no longer needed
 masc_crabs <- masc_crabs %>%
   dplyr::select(-c(mat_val, mat_line))
+
+# Change maturity status to factor
+masc_crabs$mat_stat <- as.factor(masc_crabs$mat_stat)
 
 # See how many NAs we have
 colSums(is.na(masc_crabs))

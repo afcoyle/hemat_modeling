@@ -289,7 +289,7 @@ crabdat <-  crabdat %>%
 # New = 3
 # Old = 4
 # Very Old = 5
-crabdat$Shell.Condition <- recode(crabdat$Shell.Condition, "Soft" = "1",
+crabdat$Shell.Condition <- dplyr::recode(crabdat$Shell.Condition, "Soft" = "1",
                                                        "Light" = "2",
                                                        "New" = "3",
                                                        "Old" = "4",
@@ -313,7 +313,7 @@ crabdat <- crabdat %>%
   mutate(Egg.Condition = na_if(Egg.Condition, ""))
 
 # We'll simplify these variable names somewhat
-crabdat$Egg.Condition <- recode(crabdat$Egg.Condition, "Normal Eggs" = "Normal",
+crabdat$Egg.Condition <- dplyr::recode(crabdat$Egg.Condition, "Normal Eggs" = "Normal",
                                                        "Dead Eggs < 20%" = "Dead_eggs_under_20pct",
                                                        "Dead Eggs > 20%" = "Dead_eggs_over_20pct",
                                                        'Barren With Clean "Silky" Setae' = "Barren_Clean",
@@ -335,7 +335,7 @@ table(crabdat$Egg.Development, useNA = "ifany")
 crabdat <- crabdat %>%
   mutate(Egg.Development = na_if(Egg.Development, ""))
 # Like before, we'll also change some of the variable names to play a little easier in R
-crabdat$Egg.Development <- recode(crabdat$Egg.Development, "Eyed eggs" = "Eyed", 
+crabdat$Egg.Development <- dplyr::recode(crabdat$Egg.Development, "Eyed eggs" = "Eyed", 
                                   "No eggs" = "Barren",
                                   "Uneyed eggs" = "Uneyed")
 # Let's cross-reference the Egg Development and Egg Condition tables
@@ -393,7 +393,7 @@ crabdat <- crabdat %>%
 # 3 = 2+ legs missing or regenerated
 # 4 = carapace damage
 # 5 = combination of conditions
-crabdat$Leg.Condition <- recode(crabdat$Leg.Condition, "Normal" = "1",
+crabdat$Leg.Condition <- dplyr::recode(crabdat$Leg.Condition, "Normal" = "1",
                                 "One leg or claw missing or regenerated" = "2",
                                 "Two or more legs/claws missing or regenerated" = "3",
                                 "Abnormal carapace" = "4",

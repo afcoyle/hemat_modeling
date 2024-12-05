@@ -41,9 +41,6 @@ Now, let's look at the column names of each
 ```{r}
 colnames(crabdat)
 
-crabdat <- crabdat %>%
-  dplyr::rename(Year = "ï..Year")
-
 # We can start by removing several columns.
 
 # Project, Trip Number, and Pot Number are likely to be useful in the future to match skipper data to survey data.
